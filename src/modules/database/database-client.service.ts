@@ -1,62 +1,81 @@
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { ClientSession, Db, MongoClient } from 'mongodb';
+import { Filter, Firestore } from '@google-cloud/firestore';
+import { Injectable } from '@nestjs/common';
+import { CollectionName } from './enum';
 
 @Injectable()
-export class DatabaseClientService implements OnApplicationShutdown {
-  constructor(
-    @Inject('DATABASE_CONNECTION')
-    private client: MongoClient,
-  ) {}
-
-  async onApplicationShutdown(signal?: string | undefined) {
-    await this.client.close();
+export class DatabaseClientService {
+  private firestore: Firestore;
+  constructor() {
+    this.firestore = new Firestore();
   }
 
-  /**
-   *
-   * Properly type the query function
-   * so we don't have to explicitly type the return value
-   */
-  async runQuery<T>(query: (db: Db) => Promise<T>) {
+  async create({
+    collectionName,
+    data,
+  }: {
+    collectionName: CollectionName;
+    data: Record<string, any>;
+  }) {
     try {
-      const db = this.client.db(process.env.DATABASE_NAME);
-      return await query(db);
+      const res = await this.firestore.collection(collectionName).add(data);
+      return res;
     } catch (err) {
-      console.error('Run query failed', err);
+      console.error('err', err);
       throw err;
     }
   }
 
-  async runTransaction<T>(
-    queries: ((session: ClientSession, db: Db) => Promise<T>)[],
-  ) {
-    // await this.client.connect().catch((reason) => {
-    //   console.error('Client could not establish connection', reason);
-    //   throw reason;
-    // });
+  /**
+   * Updates included fields
+   */
+  async update({
+    collectionName,
+    docId,
+    data,
+  }: {
+    collectionName: CollectionName;
+    docId: string;
+    data: Record<string, any>;
+  }) {
     try {
-      const db = this.client.db(process.env.DATABASE_NAME);
-      const session = this.client.startSession();
-      session.startTransaction();
-
-      try {
-        // lets stick to this for now since...
-        for (const query of queries) await query(session, db);
-
-        // using promise.all not sure if this will work since no way to test this for now.
-        // await Promise.all(queries.map(async (query) => query(session, db)));
-
-        await session.commitTransaction();
-      } catch (err) {
-        session.abortTransaction();
-        console.error('Transaction failed', err);
-        return false;
-      } finally {
-        session.endSession();
-        return true;
-      }
+      await this.firestore.collection(collectionName).doc(docId).update(data);
     } catch (err) {
-      console.error('Transfer failed', err);
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  /**
+   * These are good examples - but I don't think this is the right
+   */
+  async getMany({
+    collectionName,
+    filter,
+  }: {
+    collectionName: CollectionName;
+    filter: Filter;
+  }) {
+    try {
+      const records = await this.firestore
+        .collection(collectionName)
+        .where(filter)
+        .get();
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  async deleteDocument({
+    collectionName,
+    docId,
+  }: {
+    collectionName: CollectionName;
+    docId: string;
+  }) {
+    try {
+      await this.firestore.collection(collectionName).doc(docId).delete();
+    } catch (err) {
       throw err;
     }
   }
