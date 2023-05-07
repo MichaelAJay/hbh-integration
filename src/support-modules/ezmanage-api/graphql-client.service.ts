@@ -10,12 +10,25 @@ export class GraphqlClientService {
       process.env;
     if (!(apiUrl && authToken))
       throw new InternalServerErrorException('Bad config');
-    this.client = new GraphQLClient(apiUrl);
+    this.client = new GraphQLClient(apiUrl, {
+      headers: {
+        Authorization: authToken,
+      },
+    });
   }
 
   async queryOrder(orderId: string) {
-    const query = gql``;
-    const data = await this.client.request(query);
-    return data;
+    try {
+      const query = gql`
+        {
+          Order(id: ${orderId}) {}
+        }
+      `;
+      const data = await this.client.request(query);
+      return data;
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
   }
 }

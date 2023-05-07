@@ -3,5 +3,6 @@ import { DatabaseClientService } from './database-client.service';
 
 @Module({
   providers: [DatabaseClientService],
+  exports: [DatabaseClientService],
 })
 export class DatabaseModule {}

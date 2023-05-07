@@ -1,5 +1,8 @@
+import { Filter } from '@google-cloud/firestore';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { DatabaseClientService } from 'src/support-modules/database/database-client.service';
+import { CollectionName } from 'src/support-modules/database/enum';
 import { EzmanageApiService } from 'src/support-modules/ezmanage-api/ezmanage-api.service';
 import {
   EventNotificationPayloadEntityType,
@@ -12,6 +15,7 @@ import { IEventNotificationPayload } from './interfaces';
 export class EzmanageSubscriberService {
   constructor(
     private readonly ezManageApiService: EzmanageApiService,
+    private readonly dbClientService: DatabaseClientService,
     private readonly customLogger: CustomLoggerService,
   ) {}
 
@@ -107,5 +111,15 @@ export class EzmanageSubscriberService {
      * Make GraphQL query to check order details
      * Is order completed?  Then ready to
      */
+    const order = await this.dbClientService.getOne({
+      collectionName: CollectionName.ORDERS,
+      docId: orderId,
+    });
   }
 }
+
+/**
+ * Order looks like:
+ * id
+ *
+ */

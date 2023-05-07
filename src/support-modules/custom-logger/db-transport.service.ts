@@ -27,7 +27,7 @@ export class DbTransportService extends Transport {
      * }
      */
     try {
-      this.dbClientService.create({
+      this.dbClientService.add({
         collectionName: CollectionName.LOGS,
         data: info,
       });

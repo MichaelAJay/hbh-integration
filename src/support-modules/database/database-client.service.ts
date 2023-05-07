@@ -1,5 +1,6 @@
 import { Filter, Firestore } from '@google-cloud/firestore';
 import { Injectable } from '@nestjs/common';
+import { DbTransportService } from '../custom-logger/db-transport.service';
 import { CollectionName } from './enum';
 
 @Injectable()
@@ -9,7 +10,24 @@ export class DatabaseClientService {
     this.firestore = new Firestore();
   }
 
-  async create({
+  async set({
+    collectionName,
+    orderId,
+    data,
+  }: {
+    collectionName: CollectionName;
+    orderId: string;
+    data: Record<string, any>;
+  }) {
+    try {
+      await this.firestore.doc(orderId).set(data);
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  async add({
     collectionName,
     data,
   }: {
@@ -39,6 +57,25 @@ export class DatabaseClientService {
   }) {
     try {
       await this.firestore.collection(collectionName).doc(docId).update(data);
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  async getOne({
+    collectionName,
+    docId,
+  }: {
+    collectionName: CollectionName;
+    docId: string;
+  }) {
+    try {
+      const data = await this.firestore
+        .collection(collectionName)
+        .doc(docId)
+        .get();
+      return data;
     } catch (err) {
       console.error('err', err);
       throw err;
