@@ -1,4 +1,6 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { EzmanageApiService } from 'src/support-modules/ezmanage-api/ezmanage-api.service';
 import {
   EventNotificationPayloadEntityType,
   EventNotificationPayloadKey,
@@ -8,6 +10,11 @@ import { IEventNotificationPayload } from './interfaces';
 
 @Injectable()
 export class EzmanageSubscriberService {
+  constructor(
+    private readonly ezManageApiService: EzmanageApiService,
+    private readonly customLogger: CustomLoggerService,
+  ) {}
+
   async handleWebhook(payload: IEventNotificationPayload) {
     try {
       const {
@@ -32,17 +39,18 @@ export class EzmanageSubscriberService {
         )
       ) {
         /**
-         * System should only be configured to accepted Order event notifications
-         * Note:  We should really log this as well
+         * System is configured to accept:
+         * parent type Caterer
+         * entity type Order
+         * AND key in ['accepted', 'cancelled']
          */
+        const msg = `System received parent type: ${parent_type}; entity type: ${entity_type}, key: ${key} `;
         const info = {
           entity_type,
           event_type: key,
         };
-
-        throw new UnprocessableEntityException(
-          "System is only configured to accept Order event notifications 'accepted' and 'cancelled'",
-        );
+        this.customLogger.error(msg, info);
+        throw new UnprocessableEntityException(msg);
       }
 
       /**
@@ -69,7 +77,8 @@ export class EzmanageSubscriberService {
 
   private async handleOrderCancelled(orderId: string) {
     /**
-     * Delete from system
+     * Business logic:
+     * These should be entered into Nutshell CRM
      */
   }
 

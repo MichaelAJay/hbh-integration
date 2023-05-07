@@ -1,5 +1,6 @@
 export enum CollectionName {
   ORDERS = 'orders',
+  LOGS = 'logs',
 }
 
 /**
