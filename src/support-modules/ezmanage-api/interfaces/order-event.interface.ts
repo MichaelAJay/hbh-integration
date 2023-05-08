@@ -1,4 +1,5 @@
 import { IEzManageAddress } from '.';
+import { OrderType } from '../enums';
 
 interface IEzManageOrderEventContact {
   name?: string;
@@ -10,7 +11,7 @@ export interface IEzManageOrderEvent {
   catererHandoffFoodTime: string;
   contact: IEzManageOrderEventContact;
   headcount?: number;
-  orderType: any; // enum
+  orderType: OrderType;
   thirdPartyDeliveryPartner?: string;
   timeZoneIdentifier: string;
   timeZoneOffset: string;

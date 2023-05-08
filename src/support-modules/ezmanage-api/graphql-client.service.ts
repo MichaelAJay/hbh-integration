@@ -17,6 +17,13 @@ export class GraphqlClientService {
     });
   }
 
+  /**
+   * @TODO
+   * Make it fail
+   *
+   * @TODO
+   * determine what happens when the orderId is bad
+   */
   async queryOrder(orderId: string) {
     try {
       const query = gql`
