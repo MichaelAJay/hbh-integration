@@ -20,7 +20,7 @@ export class DatabaseClientService {
     data: Record<string, any>;
   }) {
     try {
-      await this.firestore.doc(orderId).set(data);
+      await this.firestore.collection(collectionName).doc(orderId).set(data);
     } catch (err) {
       console.error('err', err);
       throw err;
@@ -71,10 +71,10 @@ export class DatabaseClientService {
     docId: string;
   }) {
     try {
-      const data = await this.firestore
-        .collection(collectionName)
-        .doc(docId)
-        .get();
+      const data: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
+        await this.firestore.collection(collectionName).doc(docId).get();
+      if (!data.exists) return null;
+
       return data;
     } catch (err) {
       console.error('err', err);

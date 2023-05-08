@@ -115,6 +115,17 @@ export class EzmanageSubscriberService {
       collectionName: CollectionName.ORDERS,
       docId: orderId,
     });
+
+    if (!order) {
+      /**
+       * Is new
+       */
+      const ezManageOrder = await this.ezManageApiService.getOrder(orderId);
+    } else {
+      /**
+       * Is not new
+       */
+    }
   }
 }
 

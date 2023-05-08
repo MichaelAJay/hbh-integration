@@ -1,0 +1,5 @@
+export enum OrderType {
+  DELIVERY = 'DELIVERY',
+  TAKEOUT = 'TAKEOUT',
+  THIRD_PARTY_DELIVERY = 'THIRD_PARTY_DELIVERY',
+}
