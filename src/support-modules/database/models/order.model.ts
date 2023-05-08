@@ -1,9 +1,9 @@
+import { UUID } from '../../../common/types';
+
 export interface IOrderModel {
-  id: string;
   accountId: string;
+  catererId: UUID;
   name: string;
-  date: Date;
+  acceptedAt: Date; // Firestore calls this the "timestamp" field type
+  lastUpdatedAt: Date;
 }
-/**
- * need accountId
- */

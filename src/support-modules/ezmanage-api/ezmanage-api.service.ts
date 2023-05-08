@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CustomLoggerService } from '../custom-logger/custom-logger.service';
 import { GraphqlClientService } from './graphql-client.service';
+import { IEzManageOrder } from '../../support-modules/ezmanage-api/interfaces';
 
 @Injectable()
 export class EzmanageApiService {

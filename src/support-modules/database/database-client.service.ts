@@ -1,6 +1,5 @@
 import { Filter, Firestore } from '@google-cloud/firestore';
 import { Injectable } from '@nestjs/common';
-import { DbTransportService } from '../custom-logger/db-transport.service';
 import { CollectionName } from './enum';
 
 @Injectable()

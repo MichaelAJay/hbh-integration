@@ -1,9 +1,9 @@
-import { Filter } from '@google-cloud/firestore';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { DatabaseClientService } from 'src/support-modules/database/database-client.service';
 import { CollectionName } from 'src/support-modules/database/enum';
 import { EzmanageApiService } from 'src/support-modules/ezmanage-api/ezmanage-api.service';
+import { OrderDbService } from '../order/order-db.service';
 import {
   EventNotificationPayloadEntityType,
   EventNotificationPayloadKey,
@@ -17,6 +17,7 @@ export class EzmanageSubscriberService {
     private readonly ezManageApiService: EzmanageApiService,
     private readonly dbClientService: DatabaseClientService,
     private readonly customLogger: CustomLoggerService,
+    private readonly orderDbService: OrderDbService,
   ) {}
 
   async handleWebhook(payload: IEventNotificationPayload) {
@@ -111,14 +112,14 @@ export class EzmanageSubscriberService {
      * Make GraphQL query to check order details
      * Is order completed?  Then ready to
      */
-    const order = await this.dbClientService.getOne({
-      collectionName: CollectionName.ORDERS,
-      docId: orderId,
-    });
+    const order = await this.orderDbService.findOne(orderId);
 
     if (!order) {
       /**
        * Is new
+       */
+      /**
+       * May not even need to get.  Although we may need data like caterer, etc...
        */
       const ezManageOrder = await this.ezManageApiService.getOrder(orderId);
     } else {
