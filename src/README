@@ -1,0 +1,43 @@
+Each module in the modules directory has a first-class provider.
+
+A first-class provider is a provider which has an accompanying controller.
+RULE:  A first-class provider may ONLY be injected into its accompanying controller.
+
+Each first-class provider may have an accompanying db service provider.
+
+Each db service provider injects the db client and uses the db client to make queries
+
+A db service provider may carry out a sequential or parallel set of queries and implements
+business logic directly relating to query results
+
+Each db service provider may employ one or more utility classes which are responsible
+for forming queries from input into the db service provider's methods
+
+The primary project modules are found in the following directories, and represent distinct layers:
+- api
+- internal-modules
+- external-modules
+
+*** API LAYER ***
+- Each API module represents a unique route path & has one controller
+- Each controller has a single provider dependency.  The set of all such providers represent the FIRST-CLASS PROVIDERS.
+- Each first-class provider has a single dependency - the internal interface provider.
+- The first-class provider performs non-conditional tasks related to returning data to the controller
+- The first-class provider may perform end-of-line data checks before returning to controller
+- The first-class providers do not perform any business logic - all required business logic must be carried out in the first-class provider's companion internal interface provider.
+- The internal interface providers have a set of dependencies from the internal modules layer
+
+*** INTERNAL MODULE LAYER ***
+- Internal modules do not directly handle requests (API layer) or make requests to external sources (external module layer)
+- May reference other internal modules directly
+- May not circularly reference modules
+- Are injected into the api layer by the internal interface providers
+- Inject external services in at least one EXTERNAL INTERFACE HANDLER SERVICE PROVIDER within the internal module layer
+- External interface handler service providers may not depend upon other external interface handler service providers
+- External interface handler service providers may be used by any number of other internal module layer service providers
+- External interface handler service providers may be used directly by api layer internal interface providers
+
+*** EXTERNAL MODULE LAYER ***
+- Modules in the external module layer represent exactly one interface with an external source, such as a database, a third-party provider, storage, etc.
+- Each external module has exactly one interface provider
+- Each interface provider must be used in exactly one internal layer external interface handler service provider.
