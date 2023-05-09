@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
+import { AccountService } from 'src/internal-modules/account/account.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
@@ -8,34 +8,32 @@ import { EventNotificationPayloadKey } from './enums';
 @Injectable()
 export class EzmanageSubscriberInternalInterfaceService {
   constructor(
+    private readonly accountService: AccountService,
     private readonly orderService: OrderService,
-    private readonly accountDbHandler: AccountDbHandlerService,
     private readonly orderDbHandler: OrderDbHandlerService,
     private readonly logger: CustomLoggerService,
   ) {}
 
+  /**
+   * PRECONDITIONS:
+   * 1) parent_id references a Caterer
+   * 2) entity_id is an EzManage Order UUID
+   * 3) key is either 'accepted' or 'cancelled'
+   * @param param0
+   * @returns
+   */
   async handleWebhook({
-    accountName,
     parent_id,
     entity_id,
     key,
     occurred_at,
   }: {
-    accountName: string;
     parent_id: string;
     entity_id: string;
     key: EventNotificationPayloadKey;
     occurred_at: string;
   }) {
-    /**
-     * If here, parent_type is 'Caterer', entity_type is 'Order', and key is either 'accepted' or 'cancelled'
-     * Thus, parent_id should be catererId, entityId should be orderId
-     */
-    const account = (await this.accountDbHandler.findByName(accountName)) as {
-      id: string;
-      authTokenPrefix: string;
-    };
-
+    const account = await this.accountService.findAccountByCatererId(parent_id);
     /**
      * What if account isn't found
      */
@@ -80,7 +78,7 @@ export class EzmanageSubscriberInternalInterfaceService {
     occurredAt: string;
     authTokenPrefix: string;
   }) {
-    const order = await this.orderDbHandler.findOne(orderId);
+    const order = await this.orderDbHandler.getOne(orderId);
 
     if (!order) {
       /**

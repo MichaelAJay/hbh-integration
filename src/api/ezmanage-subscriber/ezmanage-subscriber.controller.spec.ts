@@ -9,7 +9,9 @@ describe('EzmanageSubscriberController', () => {
       controllers: [EzmanageSubscriberController],
     }).compile();
 
-    controller = module.get<EzmanageSubscriberController>(EzmanageSubscriberController);
+    controller = module.get<EzmanageSubscriberController>(
+      EzmanageSubscriberController,
+    );
   });
 
   it('should be defined', () => {

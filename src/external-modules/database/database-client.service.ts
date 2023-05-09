@@ -73,8 +73,8 @@ export class DatabaseClientService {
       const data: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> =
         await this.firestore.collection(collectionName).doc(docId).get();
       if (!data.exists) return null;
-
-      return data;
+      const record = data.data();
+      return { id: data.id, ...record };
     } catch (err) {
       console.error('err', err);
       throw err;

@@ -5,9 +5,15 @@ import { EzmanageSubscriberService } from './ezmanage-subscriber.service';
 import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscriber-internal-interface.service';
 import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
 import { OrderModule } from 'src/internal-modules/order/order.module';
+import { AccountModule } from 'src/internal-modules/account/account.module';
 
 @Module({
-  imports: [CustomLoggerModule, InternalDatabaseModule, OrderModule],
+  imports: [
+    CustomLoggerModule,
+    InternalDatabaseModule,
+    AccountModule,
+    OrderModule,
+  ],
   controllers: [EzmanageSubscriberController],
   providers: [
     EzmanageSubscriberService,

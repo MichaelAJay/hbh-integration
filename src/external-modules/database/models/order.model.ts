@@ -8,6 +8,19 @@ export interface IOrderModel {
   lastUpdatedAt: Date;
 }
 
+export interface IOrderModelWithId extends IOrderModel {
+  id: string;
+}
+
 export type UpdateOrder = Partial<
   Omit<IOrderModel, 'accountId' | 'catererId' | 'acceptedAt'>
 >;
+
+export function isIOrderModelWithId(obj: any): obj is IOrderModelWithId {
+  return (
+    typeof obj.id === 'string' &&
+    typeof obj.accountId === 'string' &&
+    typeof obj.catererId === 'string' &&
+    typeof obj.name === 'string'
+  );
+}
