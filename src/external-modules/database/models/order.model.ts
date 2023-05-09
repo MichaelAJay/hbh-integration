@@ -7,3 +7,7 @@ export interface IOrderModel {
   acceptedAt: Date; // Firestore calls this the "timestamp" field type
   lastUpdatedAt: Date;
 }
+
+export type UpdateOrder = Partial<
+  Omit<IOrderModel, 'accountId' | 'catererId' | 'acceptedAt'>
+>;

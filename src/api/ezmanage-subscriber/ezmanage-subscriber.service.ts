@@ -16,7 +16,7 @@ export class EzmanageSubscriberService {
     private readonly customLogger: CustomLoggerService,
   ) {}
 
-  async handleWebhook(accountId, payload: IEventNotificationPayload) {
+  async handleWebhook(accountName: string, payload: IEventNotificationPayload) {
     try {
       const {
         parent_type,
@@ -55,7 +55,7 @@ export class EzmanageSubscriberService {
       }
 
       await this.ezManageInternalInterface.handleWebhook({
-        accountId,
+        accountName,
         parent_id,
         entity_id,
         key,

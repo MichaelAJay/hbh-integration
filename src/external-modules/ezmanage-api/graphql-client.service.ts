@@ -6,15 +6,9 @@ export class GraphqlClientService {
   private readonly client: GraphQLClient;
 
   constructor() {
-    const { EZMANAGE_API_URL: apiUrl, EZMANAGE_AUTH_TOKEN: authToken } =
-      process.env;
-    if (!(apiUrl && authToken))
-      throw new InternalServerErrorException('Bad config');
-    this.client = new GraphQLClient(apiUrl, {
-      headers: {
-        Authorization: authToken,
-      },
-    });
+    const { EZMANAGE_API_URL: apiUrl } = process.env;
+    if (!apiUrl) throw new InternalServerErrorException('Bad config');
+    this.client = new GraphQLClient(apiUrl);
   }
 
   /**
@@ -24,8 +18,15 @@ export class GraphqlClientService {
    * @TODO
    * determine what happens when the orderId is bad
    */
-  async queryOrder(orderId: string) {
+  async queryOrder(orderId: string, authTokenPrefix: string) {
     try {
+      const { AUTH_TOKEN_POSTFIX } = process.env;
+      if (!AUTH_TOKEN_POSTFIX)
+        throw new InternalServerErrorException('Bad config');
+      const authToken = process.env[`${authTokenPrefix}_${AUTH_TOKEN_POSTFIX}`];
+      if (!authToken) throw new InternalServerErrorException('Bad config');
+      this.client.setHeader('Authorization', authToken);
+
       const query = gql`
         {
           Order(id: ${orderId}) {}

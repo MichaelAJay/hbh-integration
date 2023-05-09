@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
+import { InternalDatabaseModule } from '../external-interface-handlers/database/database.module';
+import { EzmanageApiHandlerModule } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.module';
 import { OrderService } from './order.service';
 
 @Module({
-  imports: [ExternalDatabaseModule],
+  imports: [InternalDatabaseModule, EzmanageApiHandlerModule],
   providers: [OrderService],
   exports: [OrderService],
 })

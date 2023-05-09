@@ -4,14 +4,10 @@ import { EzmanageSubscriberController } from './ezmanage-subscriber.controller';
 import { EzmanageSubscriberService } from './ezmanage-subscriber.service';
 import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscriber-internal-interface.service';
 import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
-import { InternalEzmanageApiModule } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api.module';
+import { OrderModule } from 'src/internal-modules/order/order.module';
 
 @Module({
-  imports: [
-    CustomLoggerModule,
-    InternalDatabaseModule,
-    InternalEzmanageApiModule,
-  ],
+  imports: [CustomLoggerModule, InternalDatabaseModule, OrderModule],
   controllers: [EzmanageSubscriberController],
   providers: [
     EzmanageSubscriberService,

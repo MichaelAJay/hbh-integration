@@ -1,4 +1,4 @@
-import { Filter, Firestore } from '@google-cloud/firestore';
+import { Filter, Firestore, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable } from '@nestjs/common';
 import { CollectionName } from './enum';
 
@@ -83,19 +83,23 @@ export class DatabaseClientService {
 
   /**
    * These are good examples - but I don't think this is the right
+   * *** SPECIAL NOTE ***
+   * At the moment, this can only handle querying on a
    */
   async getMany({
     collectionName,
     filter,
   }: {
     collectionName: CollectionName;
-    filter: Filter;
+    filter: { fieldPath: string; filterOp: WhereFilterOp; value: any };
   }) {
+    const { fieldPath, filterOp, value } = filter;
     try {
       const records = await this.firestore
         .collection(collectionName)
-        .where(filter)
+        .where(fieldPath, filterOp, value)
         .get();
+      return records;
     } catch (err) {
       console.error('err', err);
       throw err;
