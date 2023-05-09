@@ -3,13 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthGuard } from './guards';
-import { AccountModule } from './modules/account/account.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { CatererModule } from './modules/caterer/caterer.module';
-import { EzmanageSubscriberModule } from './modules/ezmanage-subscriber/ezmanage-subscriber.module';
-import { OrderModule } from './modules/order/order.module';
-import { UserModule } from './modules/user/user.module';
-import { DatabaseModule } from './support-modules/database/database.module';
+import { AccountModule } from './internal-modules/account/account.module';
+import { AuthModule } from './api/auth/auth.module';
+import { CatererModule } from './internal-modules/caterer/caterer.module';
+import { EzmanageSubscriberModule } from './api/ezmanage-subscriber/ezmanage-subscriber.module';
+import { OrderModule } from './internal-modules/order/order.module';
+import { UserModule } from './api/user/user.module';
+import { ExternalDatabaseModule } from './external-modules/database/database.module';
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { DatabaseModule } from './support-modules/database/database.module';
     }),
     ConfigModule.forRoot({}),
     AuthModule,
-    DatabaseModule,
+    ExternalDatabaseModule,
     EzmanageSubscriberModule,
     /**
      * @TODO these shouldn't be imported at the app level because there are no controllers

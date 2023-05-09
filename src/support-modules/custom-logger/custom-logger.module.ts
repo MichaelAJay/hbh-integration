@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TransportStreamOptions } from 'winston-transport';
-import { DatabaseClientService } from '../database/database-client.service';
+import { DatabaseClientService } from '../../external-modules/database/database-client.service';
 import { CustomLoggerService } from './custom-logger.service';
 import { DbTransportService } from './db-transport.service';
 

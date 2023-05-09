@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 // import Transport from 'winston-transport';
-import { DatabaseClientService } from '../database/database-client.service';
-import { CollectionName } from '../database/enum';
+import { DatabaseClientService } from '../../external-modules/database/database-client.service';
+import { CollectionName } from '../../external-modules/database/enum';
 // const Transport = require('winston-transport');
 import Transport, { TransportStreamOptions } from 'winston-transport';
 
