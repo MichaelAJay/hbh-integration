@@ -20,12 +20,10 @@ export class AuthGuard implements CanActivate {
       ]);
       if (isPublic) return true;
 
-      const req = context.switchToHttp().getRequest();
-      const authHeader = req.headers['authorization'];
-      const atToken = authHeader.split(' ')[1];
-      //   const user = this.auth.verifyJwt(atToken);
-      //   if (!user) return false;
-      //   req.user = user;
+      // const req = context.switchToHttp().getRequest();
+      // const authHeader = req.headers['authorization'];
+      // const atToken = authHeader.split(' ')[1];
+
       return true;
     } catch (err) {
       return false;
