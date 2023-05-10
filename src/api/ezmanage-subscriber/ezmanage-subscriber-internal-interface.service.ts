@@ -34,19 +34,14 @@ export class EzmanageSubscriberInternalInterfaceService {
     occurred_at: string;
   }) {
     const account = await this.accountService.findAccountByCatererId(catererId);
-    /**
-     * @START
-     */
-    /**
-     * What if account isn't found
-     * Then we can't proceed - the orders have to be associated to accounts
-     */
-
     if (key === EventNotificationPayloadKey.CANCELLED)
       return this.handleOrderCancelled(orderId);
 
     /**
      * If not cancelled, is accepted
+     */
+    /**
+     * @START
      */
     return this.handleOrderAccepted({
       accountId: account.id,
@@ -85,9 +80,9 @@ export class EzmanageSubscriberInternalInterfaceService {
     /**
      * Actually need to catch here
      */
-    const order = await this.orderDbHandler.getOne(orderId).catch((reason) => {
-      console.error('Caught error from orderDbHandler.getOne', reason);
-    });
+    const order = await this.orderDbHandler
+      .getOne(orderId)
+      .catch((reason) => {});
 
     if (!order) {
       /**

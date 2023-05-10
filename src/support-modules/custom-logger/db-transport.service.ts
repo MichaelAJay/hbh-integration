@@ -26,6 +26,7 @@ export class DbTransportService extends Transport {
      *  ...metadata
      * }
      */
+    console.log('info', info);
     try {
       this.dbClientService.add({
         collectionName: CollectionName.LOGS,
@@ -36,14 +37,5 @@ export class DbTransportService extends Transport {
       console.error('err', err);
       callback(err);
     }
-
-    return new Promise(() => {})
-      .then(() => callback())
-      .catch((err) => {
-        console.error('Error while saving log: ', err);
-        callback(err);
-      });
-
-    callback();
   }
 }

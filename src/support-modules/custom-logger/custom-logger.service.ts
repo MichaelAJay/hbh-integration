@@ -2,7 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { DbTransportService } from './db-transport.service';
 import winston = require('winston');
 const { format } = winston;
-const { combine, label, json } = format;
+const { combine, label, json, timestamp, printf } = format;
 
 @Injectable()
 export class CustomLoggerService implements LoggerService {
@@ -10,7 +10,10 @@ export class CustomLoggerService implements LoggerService {
   constructor(private dbTransport: DbTransportService) {
     this.container = new winston.Container();
     this.container.add('dbLogger', {
-      format: combine(label({ label: 'db logger' })),
+      format: combine(
+        timestamp(),
+        printf((info) => `${info.timestamp}`),
+      ),
       transports: [new winston.transports.Console(), this.dbTransport],
     });
 
@@ -18,13 +21,6 @@ export class CustomLoggerService implements LoggerService {
       format: combine(label({ label: 'console logger' })),
       transports: [new winston.transports.Console()],
     });
-
-    // this.logger = winston.createLogger({
-    //   level: 'info',
-    //   format: winston.format.json(),
-    //   defaultMeta: { service: 'user-service' },
-    //   transports: [new winston.transports.Console(), dbTransport],
-    // });
   }
 
   log(message: any, data: Record<string, any>) {

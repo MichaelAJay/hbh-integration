@@ -18,8 +18,7 @@ export class AccountDbHandlerService {
         docId: accountId,
       });
 
-      if (!account)
-        throw new UnprocessableEntityException('Could not find account');
+      if (!account) return null;
 
       if (isIAccountModelWithId(account)) {
         return account;

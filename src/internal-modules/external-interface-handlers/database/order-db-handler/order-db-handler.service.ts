@@ -48,7 +48,12 @@ export class OrderDbHandlerService {
         docId: orderId,
       });
 
-      if (!order) throw new NotFoundException('Could not find order');
+      if (!order) return null;
+
+      /**
+       * @START
+       * @TODO - use isIOrderRecord instead & convert if so
+       */
 
       if (isIOrderModelWithId(order)) {
         return order;

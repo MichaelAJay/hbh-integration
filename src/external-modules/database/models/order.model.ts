@@ -9,7 +9,7 @@ export interface IOrderModel {
 }
 
 export interface IOrderModelWithId extends IOrderModel {
-  id: string;
+  id: UUID;
 }
 
 export type UpdateOrder = Partial<

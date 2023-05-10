@@ -21,13 +21,13 @@ export class CatererDbHandlerService {
       docId: id,
     });
 
-    if (!catererRecord)
-      throw new UnprocessableEntityException('Could not find caterer');
+    if (!catererRecord) return null;
 
-    if (!isICatererRecord(catererRecord))
+    if (!isICatererRecord(catererRecord)) {
       throw new UnprocessableEntityException(
         'Caterer record does not match expected model',
       );
+    }
 
     const caterer: ICatererModelWithId = {
       ...catererRecord,

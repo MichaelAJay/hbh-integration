@@ -24,3 +24,7 @@ export function isICatererRecord(record: any): record is ICatererRecord {
     typeof accountId.id === 'string'
   );
 }
+
+/**
+ * @TODO try out the isInputDocumentReference
+ */
