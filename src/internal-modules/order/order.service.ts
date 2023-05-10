@@ -26,6 +26,9 @@ export class OrderService {
     /**
      * Need order name for db
      */
+    /**
+     * @TODO add request to check for order name
+     */
     // const ezManageOrder = await this.ezManageApiHandler.getOrder(
     //   orderId,
     //   authTokenPrefix,
@@ -49,5 +52,7 @@ export class OrderService {
     };
 
     await this.orderDbService.create({ orderId, data });
+    console.log('ORDER CREATION SUCCESSFUL');
+    return;
   }
 }

@@ -1,17 +1,28 @@
-import { DocumentReference } from '@google-cloud/firestore';
-import { UUID } from 'src/common/types';
+import { DocumentReference, Timestamp } from '@google-cloud/firestore';
+import { Overwrite, UUID } from 'src/common/types';
 import { isInputDocumentReference } from '../../utility/methods';
 
 export interface IOrderRecord {
-  id: UUID;
   accountId: DocumentReference;
   catererId: DocumentReference;
   name: string;
-  acceptedAt: Date;
-  lastUpdatedAt: Date;
+  acceptedAt: Timestamp;
+  lastUpdatedAt: Timestamp;
 }
 
-export function isIOrderRecord(record: any): record is IOrderRecord {
+export interface IOrderRecordWithId extends IOrderRecord {
+  id: UUID;
+}
+
+export type OrderRecordInput = Overwrite<
+  IOrderRecord,
+  {
+    acceptedAt: Date;
+    lastUpdatedAt: Date;
+  }
+>;
+
+export function isIOrderRecord(record: any): record is IOrderRecordWithId {
   const { id, accountId, catererId, name } = record;
   return (
     typeof id === 'string' &&

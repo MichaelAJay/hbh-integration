@@ -12,10 +12,6 @@ export interface IOrderModelWithId extends IOrderModel {
   id: UUID;
 }
 
-export type UpdateOrder = Partial<
-  Omit<IOrderModel, 'accountId' | 'catererId' | 'acceptedAt'>
->;
-
 export function isIOrderModelWithId(obj: any): obj is IOrderModelWithId {
   return (
     typeof obj.id === 'string' &&

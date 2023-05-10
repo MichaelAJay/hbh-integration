@@ -1,4 +1,4 @@
-import { Filter, Firestore, WhereFilterOp } from '@google-cloud/firestore';
+import { Firestore, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable } from '@nestjs/common';
 import { CollectionName } from './enum';
 
@@ -7,6 +7,16 @@ export class DatabaseClientService {
   private firestore: Firestore;
   constructor() {
     this.firestore = new Firestore();
+  }
+
+  getDocRef({
+    collectionName,
+    docId,
+  }: {
+    collectionName: CollectionName;
+    docId: string;
+  }) {
+    return this.firestore.collection(collectionName).doc(docId);
   }
 
   async set({

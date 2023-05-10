@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
-
 import { EventNotificationPayloadKey } from './enums';
 import { IEventNotificationPayload } from './interfaces';
 import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscriber-internal-interface.service';
@@ -10,10 +9,17 @@ import { EzManagePayloadValidator } from './utility/methods/validators';
 export class EzmanageSubscriberService {
   constructor(
     private readonly ezManageInternalInterface: EzmanageSubscriberInternalInterfaceService,
-    private readonly customLogger: CustomLoggerService,
+    private readonly logger: CustomLoggerService,
   ) {}
 
   async handleWebhook(payload: IEventNotificationPayload) {
+    /**
+     * @TODO DELETE
+     * Getting an idea of how the data is sent
+     */
+    console.log('PAYLOAD', payload);
+    this.logger.log('webhook request received', payload);
+
     /**
      * Custom validator with logging
      */

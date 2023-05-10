@@ -80,9 +80,7 @@ export class EzmanageSubscriberInternalInterfaceService {
     /**
      * Actually need to catch here
      */
-    const order = await this.orderDbHandler
-      .getOne(orderId)
-      .catch((reason) => {});
+    const order = await this.orderDbHandler.getOne(orderId);
 
     if (!order) {
       /**
@@ -99,6 +97,7 @@ export class EzmanageSubscriberInternalInterfaceService {
       /**
        * Is not new
        */
+      console.log(order);
     }
   }
 }

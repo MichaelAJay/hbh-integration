@@ -24,9 +24,9 @@ export class CustomLoggerService implements LoggerService {
   }
 
   log(message: any, data: Record<string, any>) {
-    // throw new Error('Method not implemented.');
-    const logger = this.container.get('consoleLogger');
-    logger.info(message);
+    // console.log('In custom logger service, data is', data);
+    const logger = this.container.get('dbLogger');
+    logger.info(message, data);
   }
 
   warn(message: any, data: Record<string, any>) {

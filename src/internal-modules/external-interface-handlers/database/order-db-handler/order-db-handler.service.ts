@@ -1,15 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { UUID } from 'src/common/types';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
-  isIOrderModelWithId,
+  IOrderModelWithId,
 } from 'src/external-modules/database/models';
+import { isIOrderRecord, OrderRecordInput } from './interfaces';
 
 @Injectable()
 export class OrderDbHandlerService {
@@ -25,10 +22,25 @@ export class OrderDbHandlerService {
    */
   async create({ orderId, data }: { orderId: UUID; data: IOrderModel }) {
     try {
+      const accountRef = this.dbClientService.getDocRef({
+        collectionName: CollectionName.ACCOUNTS,
+        docId: data.accountId,
+      });
+      const catererRef = this.dbClientService.getDocRef({
+        collectionName: CollectionName.CATERERS,
+        docId: data.catererId,
+      });
+
+      const input: OrderRecordInput = {
+        ...data,
+        accountId: accountRef,
+        catererId: catererRef,
+      };
+
       await this.dbClientService.set({
         collectionName: this.collectionName,
         orderId,
-        data,
+        data: input,
       });
     } catch (err) {
       console.error('err', err);
@@ -43,28 +55,39 @@ export class OrderDbHandlerService {
    */
   async getOne(orderId: string) {
     try {
-      const order = await this.dbClientService.getOne({
+      const orderRecord = await this.dbClientService.getOne({
         collectionName: this.collectionName,
         docId: orderId,
       });
 
-      if (!order) return null;
+      if (!orderRecord) return null;
 
       /**
        * @START
        * @TODO - use isIOrderRecord instead & convert if so
        */
-
-      if (isIOrderModelWithId(order)) {
-        return order;
-      } else {
+      if (!isIOrderRecord(orderRecord)) {
         throw new UnprocessableEntityException(
-          'Order does not match expected model',
+          'Order record does not match expected model',
         );
       }
+
+      const order: IOrderModelWithId = {
+        ...orderRecord,
+        accountId: orderRecord.accountId.id,
+        catererId: orderRecord.catererId.id,
+        acceptedAt: orderRecord.acceptedAt.toDate(),
+        lastUpdatedAt: orderRecord.lastUpdatedAt.toDate(),
+      };
+
+      return order;
     } catch (err) {
       console.error('err', err);
       throw err;
     }
   }
 }
+
+/**
+ * @TODO failing on
+ */
