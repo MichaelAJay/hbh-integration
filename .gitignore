@@ -1,7 +1,10 @@
 # compiled output
 /dist
 /node_modules
+
+# utility
 /utility
+.vscode
 
 # Logs
 logs

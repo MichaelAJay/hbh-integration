@@ -78,7 +78,12 @@ export class EzmanageSubscriberInternalInterfaceService {
     occurredAt: string;
     authTokenPrefix: string;
   }) {
-    const order = await this.orderDbHandler.getOne(orderId);
+    /**
+     * Actually need to catch here
+     */
+    const order = await this.orderDbHandler.getOne(orderId).catch((reason) => {
+      console.error('Caught error from orderDbHandler.getOne', reason);
+    });
 
     if (!order) {
       /**

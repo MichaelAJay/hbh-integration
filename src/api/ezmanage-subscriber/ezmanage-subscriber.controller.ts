@@ -8,9 +8,6 @@ export class EzmanageSubscriberController {
     private readonly ezManageSubscriberService: EzmanageSubscriberService,
   ) {}
 
-  /**
-   * Make this specific to H4H
-   */
   @Post('hams-for-Him')
   async handleWebhook(@Body() payload: IEventNotificationPayload) {
     return this.ezManageSubscriberService.handleWebhook(payload);

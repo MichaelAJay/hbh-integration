@@ -1,15 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 
-import {
-  EventNotificationPayloadEntityType,
-  EventNotificationPayloadKey,
-  EventNotificationPayloadParentType,
-} from './enums';
+import { EventNotificationPayloadKey } from './enums';
 import { IEventNotificationPayload } from './interfaces';
 import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscriber-internal-interface.service';
 import { EzManagePayloadValidator } from './utility/methods/validators';

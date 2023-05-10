@@ -1,4 +1,8 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { UUID } from 'src/common/types';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
@@ -44,8 +48,7 @@ export class OrderDbHandlerService {
         docId: orderId,
       });
 
-      if (!order)
-        throw new UnprocessableEntityException('Could not find order');
+      if (!order) throw new NotFoundException('Could not find order');
 
       if (isIOrderModelWithId(order)) {
         return order;
