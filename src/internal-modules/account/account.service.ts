@@ -12,7 +12,6 @@ export class AccountService {
   async findAccountByCatererId(catererId: string) {
     const caterer = await this.catererDbService.getCaterer(catererId);
     const account = await this.accountDbService.getAccount(caterer.accountId);
-    throw new Error('chokepoint');
     return account;
   }
 }

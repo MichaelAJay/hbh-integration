@@ -35,6 +35,9 @@ export class EzmanageSubscriberInternalInterfaceService {
   }) {
     const account = await this.accountService.findAccountByCatererId(catererId);
     /**
+     * @START
+     */
+    /**
      * What if account isn't found
      * Then we can't proceed - the orders have to be associated to accounts
      */
