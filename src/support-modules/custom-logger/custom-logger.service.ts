@@ -24,7 +24,6 @@ export class CustomLoggerService implements LoggerService {
   }
 
   log(message: any, data: Record<string, any>) {
-    // console.log('In custom logger service, data is', data);
     const logger = this.container.get('dbLogger');
     logger.info(message, data);
   }
