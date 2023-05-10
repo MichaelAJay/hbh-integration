@@ -81,7 +81,7 @@ export class EzmanageSubscriberInternalInterfaceService {
      * Actually need to catch here
      */
     const order = await this.orderDbHandler.getOne(orderId);
-
+    console.log('looked for one');
     if (!order) {
       /**
        * Is new
@@ -93,11 +93,12 @@ export class EzmanageSubscriberInternalInterfaceService {
         occurredAt,
         authTokenPrefix,
       });
+      console.log('made one');
     } else {
       /**
        * Is not new
        */
-      console.log(order);
+      console.log('found one', order);
     }
   }
 }

@@ -52,7 +52,6 @@ export class OrderService {
     };
 
     await this.orderDbService.create({ orderId, data });
-    console.log('ORDER CREATION SUCCESSFUL');
     return;
   }
 }

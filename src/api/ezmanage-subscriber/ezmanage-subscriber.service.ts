@@ -17,7 +17,6 @@ export class EzmanageSubscriberService {
      * @TODO DELETE
      * Getting an idea of how the data is sent
      */
-    console.log('PAYLOAD', payload);
     this.logger.log('webhook request received', payload);
 
     /**
@@ -26,10 +25,9 @@ export class EzmanageSubscriberService {
     try {
       EzManagePayloadValidator(payload);
     } catch (err) {
-      /** @TODO LOG ERR */
-      throw new BadRequestException(
-        'Payload did not meet validation requirements',
-      );
+      const msg = 'Unexpected payload failed validation requirements';
+      this.logger.error(msg, payload);
+      throw new BadRequestException(msg);
     }
 
     try {
