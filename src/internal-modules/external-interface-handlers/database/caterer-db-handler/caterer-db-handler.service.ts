@@ -1,7 +1,8 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
-import { isICatererModelWithId } from 'src/external-modules/database/models';
+import { ICatererModelWithId } from 'src/external-modules/database/models';
+import { isICatererRecord } from './interfaces';
 
 @Injectable()
 export class CatererDbHandlerService {
@@ -15,24 +16,23 @@ export class CatererDbHandlerService {
    * @returns Caterer
    */
   async getCaterer(id: string) {
-    const caterer = await this.dbClientService.getOne({
+    const catererRecord = await this.dbClientService.getOne({
       collectionName: this.collectionName,
       docId: id,
     });
 
-    if (!caterer)
+    if (!catererRecord)
       throw new UnprocessableEntityException('Could not find caterer');
 
-    if (isICatererModelWithId(caterer)) {
-      return caterer;
-    } else {
+    if (!isICatererRecord(catererRecord))
       throw new UnprocessableEntityException(
-        'Caterer does not match expected model',
+        'Caterer record does not match expected model',
       );
-    }
+
+    const caterer: ICatererModelWithId = {
+      ...catererRecord,
+      accountId: catererRecord.accountId.id,
+    };
+    return caterer;
   }
 }
-
-/**
- * Implementation note:  the DB handlers are a great place to make type checks
- */
