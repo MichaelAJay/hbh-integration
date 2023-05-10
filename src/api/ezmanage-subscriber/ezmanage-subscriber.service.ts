@@ -27,11 +27,16 @@ export class EzmanageSubscriberService {
     }
 
     try {
-      const { parent_id, entity_id, key, occurred_at } = payload;
+      const {
+        parent_id: catererId,
+        entity_id: orderId,
+        key,
+        occurred_at,
+      } = payload;
 
       await this.ezManageInternalInterface.handleWebhook({
-        parent_id,
-        entity_id,
+        catererId,
+        orderId,
         key: key as EventNotificationPayloadKey,
         occurred_at,
       });

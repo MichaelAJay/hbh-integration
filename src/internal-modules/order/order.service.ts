@@ -26,10 +26,15 @@ export class OrderService {
     /**
      * Need order name for db
      */
-    const ezManageOrder = await this.ezManageApiHandler.getOrder(
-      orderId,
-      authTokenPrefix,
-    );
+    // const ezManageOrder = await this.ezManageApiHandler.getOrder(
+    //   orderId,
+    //   authTokenPrefix,
+    // );
+
+    /**
+     * @TODO this is spoofing until I can get some order ids in the system
+     */
+    const ezManageOrder = { name: 'PLACEHOLDER NAME' };
 
     /**
      * @TODO fix the date issue

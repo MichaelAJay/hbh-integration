@@ -23,31 +23,32 @@ export class EzmanageSubscriberInternalInterfaceService {
    * @returns
    */
   async handleWebhook({
-    parent_id,
-    entity_id,
+    catererId,
+    orderId,
     key,
     occurred_at,
   }: {
-    parent_id: string;
-    entity_id: string;
+    catererId: string;
+    orderId: string;
     key: EventNotificationPayloadKey;
     occurred_at: string;
   }) {
-    const account = await this.accountService.findAccountByCatererId(parent_id);
+    const account = await this.accountService.findAccountByCatererId(catererId);
     /**
      * What if account isn't found
+     * Then we can't proceed - the orders have to be associated to accounts
      */
 
     if (key === EventNotificationPayloadKey.CANCELLED)
-      return this.handleOrderCancelled(entity_id);
+      return this.handleOrderCancelled(orderId);
 
     /**
      * If not cancelled, is accepted
      */
     return this.handleOrderAccepted({
       accountId: account.id,
-      catererId: parent_id,
-      orderId: entity_id,
+      catererId,
+      orderId: orderId,
       occurredAt: occurred_at,
       authTokenPrefix: account.authTokenPrefix,
     });
