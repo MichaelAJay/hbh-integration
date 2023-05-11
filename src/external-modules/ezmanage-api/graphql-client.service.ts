@@ -18,12 +18,12 @@ export class GraphqlClientService {
    * @TODO
    * determine what happens when the orderId is bad
    */
-  async queryOrder(orderId: string, accEnvVarPrefix: string) {
+  async queryOrder(orderId: string, acctEnvVarPrefix: string) {
     try {
       const { AUTH_TOKEN_POSTFIX } = process.env;
       if (!AUTH_TOKEN_POSTFIX)
         throw new InternalServerErrorException('Bad config');
-      const authToken = process.env[`${accEnvVarPrefix}_${AUTH_TOKEN_POSTFIX}`];
+      const authToken = process.env[`${acctEnvVarPrefix}_${AUTH_TOKEN_POSTFIX}`];
       if (!authToken) throw new InternalServerErrorException('Bad config');
       this.client.setHeader('Authorization', authToken);
 

@@ -15,13 +15,13 @@ export class OrderService {
     catererId,
     orderId,
     occurredAt,
-    accEnvVarPrefix,
+    acctEnvVarPrefix,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     occurredAt: string;
-    accEnvVarPrefix: string;
+    acctEnvVarPrefix: string;
   }) {
     /**
      * Need order name for db
@@ -31,7 +31,7 @@ export class OrderService {
      */
     // const ezManageOrder = await this.ezManageApiHandler.getOrder(
     //   orderId,
-    //   accEnvVarPrefix,
+    //   acctEnvVarPrefix,
     // );
 
     /**

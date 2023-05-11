@@ -26,7 +26,6 @@ export class DbTransportService extends Transport {
      *  ...metadata
      * }
      */
-    console.log('info', info);
     try {
       this.dbClientService.add({
         collectionName: CollectionName.LOGS,

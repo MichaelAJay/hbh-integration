@@ -48,7 +48,7 @@ export class EzmanageSubscriberInternalInterfaceService {
       catererId,
       orderId: orderId,
       occurredAt: occurred_at,
-      accEnvVarPrefix: account.accEnvVarPrefix,
+      acctEnvVarPrefix: account.acctEnvVarPrefix,
     });
   }
 
@@ -69,13 +69,13 @@ export class EzmanageSubscriberInternalInterfaceService {
     catererId,
     orderId,
     occurredAt,
-    accEnvVarPrefix,
+    acctEnvVarPrefix,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     occurredAt: string;
-    accEnvVarPrefix: string;
+    acctEnvVarPrefix: string;
   }) {
     /**
      * Actually need to catch here
@@ -91,7 +91,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         catererId,
         orderId,
         occurredAt,
-        accEnvVarPrefix,
+        acctEnvVarPrefix,
       });
       console.log('made one');
     } else {

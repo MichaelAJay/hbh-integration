@@ -36,6 +36,6 @@ export class AccountService {
     catererId: string,
   ): Promise<string> {
     const account = await this.findAccountByCatererId(catererId);
-    return account.accEnvVarPrefix;
+    return account.acctEnvVarPrefix;
   }
 }
