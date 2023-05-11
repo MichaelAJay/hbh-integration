@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OrderStatus } from 'src/external-modules/database/enum';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
@@ -35,13 +36,16 @@ export class EzmanageSubscriberInternalInterfaceService {
   }) {
     const account = await this.accountService.findAccountByCatererId(catererId);
     if (key === EventNotificationPayloadKey.CANCELLED)
-      return this.handleOrderCancelled(orderId);
+      return this.handleOrderCancelled({
+        accountId: account.id,
+        catererId,
+        orderId: orderId,
+        occurredAt: occurred_at,
+        acctEnvVarPrefix: account.acctEnvVarPrefix,
+      });
 
     /**
      * If not cancelled, is accepted
-     */
-    /**
-     * @START
      */
     return this.handleOrderAccepted({
       accountId: account.id,
@@ -52,17 +56,64 @@ export class EzmanageSubscriberInternalInterfaceService {
     });
   }
 
-  private async handleOrderCancelled(orderId: string) {
+  private async handleOrderCancelled({
+    accountId,
+    catererId,
+    orderId,
+    occurredAt,
+    acctEnvVarPrefix,
+  }: {
+    accountId: string;
+    catererId: string;
+    orderId: string;
+    occurredAt: string;
+    acctEnvVarPrefix: string;
+  }) {
     /**
      * Business logic:
      * These should be entered into Nutshell CRM
      */
+    const order = await this.orderDbHandler.getOne(orderId);
+
+    /**
+     * If order, change status to "Cancelled" and start cancellation process.
+     * If !order, create Order with "Cancelled" status & start cancellation process
+     */
+    if (!order) {
+      await this.orderService.createOrder({
+        accountId,
+        catererId,
+        orderId,
+        status: OrderStatus.CANCELLED,
+        occurredAt,
+        acctEnvVarPrefix,
+      });
+    }
+
+    if (order && order.status === OrderStatus.ACCEPTED) {
+      await this.orderDbHandler.updateOne({
+        orderId,
+        updates: { status: OrderStatus.CANCELLED },
+      });
+    }
+
+    /**
+     * Do I want to do the update from the orderDbHandler or through the OrderService?
+     * Typically, if it's a single operation, going through the db handler is fine.
+     * And now the Order status has been updated and we can proceed with the role of the
+     * api controller & related providers, which is to control the process of handling the "Cancelled" event
+     *
+     * The next thing to do in the "Cancelled" event is to prepare for the Nutshell integration
+     */
+    await this.orderService.handleCancelledOrder(orderId);
   }
 
   /**
    * This handles order accepted events, which include
    * 1) Initial acceptance
    * 2) Order update acceptance
+   *
+   * @TODO need to think through process of "Accepted" after "Cancelled" - is that possible?
    */
   private async handleOrderAccepted({
     accountId,
@@ -90,6 +141,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         accountId,
         catererId,
         orderId,
+        status: OrderStatus.ACCEPTED,
         occurredAt,
         acctEnvVarPrefix,
       });

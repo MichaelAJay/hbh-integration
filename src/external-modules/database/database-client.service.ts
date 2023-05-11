@@ -29,6 +29,9 @@ export class DatabaseClientService {
     data: Record<string, any>;
   }) {
     try {
+      /**
+       * @QUESTION to answer: Does set return the created object?
+       */
       await this.firestore.collection(collectionName).doc(orderId).set(data);
     } catch (err) {
       console.error('err', err);

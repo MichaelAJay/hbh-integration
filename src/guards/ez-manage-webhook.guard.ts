@@ -19,6 +19,8 @@ export class EzManageWebhookGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
+      if (process.env.ENV === 'local') return true;
+
       const req = context.switchToHttp().getRequest();
 
       /**

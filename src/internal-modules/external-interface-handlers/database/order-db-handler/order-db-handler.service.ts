@@ -86,8 +86,27 @@ export class OrderDbHandlerService {
       throw err;
     }
   }
-}
 
-/**
- * @TODO failing on
- */
+  /**
+   * **********
+   * * UPDATE *
+   * **********
+   */
+  async updateOne({
+    orderId,
+    updates,
+  }: {
+    orderId: UUID;
+    updates: Partial<IOrderModel>;
+  }) {
+    try {
+      await this.dbClientService.update({
+        collectionName: this.collectionName,
+        docId: orderId,
+        data: updates,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+}

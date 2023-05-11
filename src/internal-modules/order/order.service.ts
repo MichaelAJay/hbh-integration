@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OrderStatus } from 'src/external-modules/database/enum';
 import { IOrderModel } from 'src/external-modules/database/models';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
@@ -14,12 +15,14 @@ export class OrderService {
     accountId,
     catererId,
     orderId,
+    status,
     occurredAt,
     acctEnvVarPrefix,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
+    status: OrderStatus;
     occurredAt: string;
     acctEnvVarPrefix: string;
   }) {
@@ -47,11 +50,19 @@ export class OrderService {
       accountId,
       catererId,
       name: ezManageOrder.name,
+      status,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
 
     await this.orderDbService.create({ orderId, data });
+    return;
+  }
+
+  async handleCancelledOrder(orderId: string) {
+    /**
+     * This should interface with the Nutshell API and do some undetermined number of things
+     */
     return;
   }
 }
