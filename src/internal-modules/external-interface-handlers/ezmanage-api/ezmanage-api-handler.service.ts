@@ -5,10 +5,10 @@ import { EzmanageApiService } from 'src/external-modules/ezmanage-api/ezmanage-a
 export class EzmanageApiHandlerService {
   constructor(private readonly ezManageApiService: EzmanageApiService) {}
 
-  async getOrder(orderId: string, authTokenPrefix: string) {
+  async getOrder(orderId: string, accEnvVarPrefix: string) {
     const order = await this.ezManageApiService.getOrder(
       orderId,
-      authTokenPrefix,
+      accEnvVarPrefix,
     );
     if (!(order && order.orderNumber))
       throw new UnprocessableEntityException('Bad data from graphql');
