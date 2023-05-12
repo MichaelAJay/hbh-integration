@@ -44,8 +44,6 @@ export class EzManageWebhookGuard implements CanActivate {
        * @CHECKED
        */
       if (!(body && typeof body === 'object' && Object.keys(body).length > 0)) {
-        console.log('typeof body', typeof body);
-        console.log('body keys', Object.keys(body));
         const msg = 'Payload is not object with keys';
         this.logger.error(msg, { payload: JSON.stringify(body) });
         throw new BadRequestException(msg);
@@ -136,7 +134,6 @@ export class EzManageWebhookGuard implements CanActivate {
 
   private async getWebhookSecret(body: any): Promise<string> {
     const { parent_type, parent_id } = body;
-    console.log('parent type', parent_type, 'parent_id', parent_id);
 
     const missingData: string[] = [];
     /**
