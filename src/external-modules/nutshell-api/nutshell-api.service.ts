@@ -11,12 +11,15 @@ import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-lo
 
 @Injectable()
 export class NutshellApiService {
-  private cacheTTL: number;
+  private cacheTTL_in_MS: number;
   constructor(
     private readonly logger: CustomLoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    this.cacheTTL = 20 * 60 * 1000;
+    /**
+     * As of cache-manager@5, TTL is set in milliseconds
+     */
+    this.cacheTTL_in_MS = 20 * 60 * 1000;
   }
 
   /**
@@ -30,7 +33,7 @@ export class NutshellApiService {
     const client = jayson.Client.http({ host: 'api.nutshell.com' });
     const response = await client.request('getApiForUsername', { username });
     const selectedDomain = this.selectDomain(response.result);
-    await this.cacheManager.set(username, selectedDomain, this.cacheTTL);
+    await this.cacheManager.set(username, selectedDomain, this.cacheTTL_in_MS);
     return selectedDomain;
   }
 
