@@ -20,10 +20,11 @@ export class GraphqlClientService {
    */
   async queryOrder(orderId: string, acctEnvVarPrefix: string) {
     try {
-      const { AUTH_TOKEN_POSTFIX } = process.env;
-      if (!AUTH_TOKEN_POSTFIX)
+      const { EZMANAGE_AUTH_TOKEN_POSTFIX } = process.env;
+      if (!EZMANAGE_AUTH_TOKEN_POSTFIX)
         throw new InternalServerErrorException('Bad config');
-      const authToken = process.env[`${acctEnvVarPrefix}_${AUTH_TOKEN_POSTFIX}`];
+      const authToken =
+        process.env[`${acctEnvVarPrefix}_${EZMANAGE_AUTH_TOKEN_POSTFIX}`];
       if (!authToken) throw new InternalServerErrorException('Bad config');
       this.client.setHeader('Authorization', authToken);
 

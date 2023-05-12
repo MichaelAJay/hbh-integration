@@ -2,6 +2,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import * as jayson from 'jayson/promise';
@@ -17,6 +18,10 @@ export class NutshellApiService {
   ) {
     this.cacheTTL = 20 * 60 * 1000;
   }
+
+  /**
+   * Configuration & setup
+   */
 
   async getApiForUsername(username: string) {
     const userCachedDomain = await this.cacheManager.get(username);
@@ -87,4 +92,47 @@ export class NutshellApiService {
 
     return true;
   }
+
+  private getBasicAuth(acctEnvVarPrefix: string) {
+    const {
+      NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
+      NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
+    } = process.env;
+
+    if (!(userNamePostfix && apiKeyPostfix)) {
+      const msg = 'Missing necessary system configuration variables';
+      this.logger.error(msg, { userNamePostfix, apiKeyPostfix });
+      throw new InternalServerErrorException(msg);
+    }
+
+    const userNameEnvVarName = `${acctEnvVarPrefix}_${userNamePostfix}`;
+    const apiKeyEnvVarName = `$${acctEnvVarPrefix}_${apiKeyPostfix}`;
+    const userName = process.env[userNameEnvVarName];
+    const apiKey = process.env[apiKeyEnvVarName];
+
+    if (!(userName && apiKey)) {
+      const msg = 'Missing neccessary client configuration variables';
+      this.logger.error(msg, {
+        ref: acctEnvVarPrefix,
+        userNameEnvVarName,
+        apiKeyEnvVarName,
+        userName,
+        apiKey,
+      });
+      throw new InternalServerErrorException(msg);
+    }
+
+    /**
+     * Return Base64-encoded string <username>:<apikey>
+     */
+    return Buffer.from(`${userName}:${apiKey}`).toString('base64');
+  }
+
+  /**
+   * Specific route implementations below
+   * Steps:
+   * 1) GetApiForUserName
+   * 2) GetBasicAuth by acct prefix
+   * 3) Send request to URL from step 1 w/ Basic auth from step 2
+   */
 }
