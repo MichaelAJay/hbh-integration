@@ -14,6 +14,7 @@ export class UserInternalInterfaceService {
       id: userId,
       hashedPassword,
       salt,
+      accountId,
     } = await this.userDbHandler.getOneByEmail(email);
 
     /**
@@ -27,8 +28,8 @@ export class UserInternalInterfaceService {
       salt,
     });
 
-    const at = await this.authService.signAuthToken();
-    const rt = await this.authService.signRefreshToken();
+    const at = await this.authService.signAuthToken({ userId, accountId });
+    const rt = await this.authService.signRefreshToken({ userId });
     const hashedRt = await this.authService.hashValue({
       value: rt,
       salt,
