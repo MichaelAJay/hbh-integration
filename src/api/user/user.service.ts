@@ -1,4 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ILogin } from './interfaces/login.interface';
+import { UserInternalInterfaceService } from './user-internal-interface/user-internal-interface.service';
 
 @Injectable()
-export class UserService {}
+export class UserService {
+  constructor(
+    private readonly userInternalInterface: UserInternalInterfaceService,
+  ) {}
+
+  async login(loginDto: ILogin) {
+    await this.userInternalInterface.login(loginDto);
+  }
+}

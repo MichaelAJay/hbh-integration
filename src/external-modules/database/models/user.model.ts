@@ -5,6 +5,7 @@ export interface IUserModel {
   email: string;
   hashedPassword: string;
   salt: string;
+  hashedRt?: string;
 }
 
 export interface IUserModelWithId extends IUserModel {

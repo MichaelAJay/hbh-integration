@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
-import { UserDbService } from './user-db.service';
 import { UserService } from './user.service';
+import { UserController } from './user.controller';
+import { UserInternalInterfaceService } from './user-internal-interface/user-internal-interface.service';
+import { AuthModule } from 'src/internal-modules/auth/auth.module';
+import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
 
 @Module({
-  imports: [ExternalDatabaseModule],
-  providers: [UserService, UserDbService],
+  imports: [AuthModule, InternalDatabaseModule],
+  providers: [UserService, UserInternalInterfaceService],
+  controllers: [UserController],
 })
 export class UserModule {}

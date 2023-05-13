@@ -3,6 +3,7 @@ import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
 import { isIUserModelWithId } from 'src/external-modules/database/models';
+import { UpdateUser } from './types/update-user.type';
 
 @Injectable()
 export class UserDbHandlerService {
@@ -11,7 +12,7 @@ export class UserDbHandlerService {
     this.collectionName = CollectionName.USERS;
   }
 
-  async getUser(userId: string) {
+  async getOne(userId: string) {
     try {
       const user = await this.dbClientService.getOne({
         collectionName: this.collectionName,
@@ -32,7 +33,7 @@ export class UserDbHandlerService {
     }
   }
 
-  async findByEmail(email: string) {
+  async getOneByEmail(email: string) {
     try {
       const filter = {
         fieldPath: 'email',
@@ -46,6 +47,25 @@ export class UserDbHandlerService {
       /**
        * @TODO figure out how to deal w/ this return type
        */
+      return { id: '', accountId: '', hashedPassword: '', salt: '' };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateOne({
+    userId: docId,
+    updates,
+  }: {
+    userId: string;
+    updates: UpdateUser;
+  }) {
+    try {
+      await this.dbClientService.update({
+        collectionName: this.collectionName,
+        docId,
+        data: updates,
+      });
     } catch (err) {
       throw err;
     }

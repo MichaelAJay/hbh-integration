@@ -93,7 +93,7 @@ export class OrderDbHandlerService {
    * **********
    */
   async updateOne({
-    orderId,
+    orderId: docId,
     updates,
   }: {
     orderId: UUID;
@@ -102,7 +102,7 @@ export class OrderDbHandlerService {
     try {
       await this.dbClientService.update({
         collectionName: this.collectionName,
-        docId: orderId,
+        docId,
         data: updates,
       });
     } catch (err) {
