@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -39,11 +40,55 @@ export class UserInternalInterfaceService {
       salt,
     });
 
+    return await this.getAuthTokens({
+      userId,
+      salt,
+      accountId,
+      acctEnvVarPrefix: account.acctEnvVarPrefix,
+    });
+  }
+
+  async refreshAuth({ userId, rt }: { userId: string; rt: string }) {
+    const user = await this.userDbHandler.getOne(userId);
+    if (!user.hashedRt) throw new ForbiddenException({ reason: 'NO_RT' });
+
+    await this.authService.hashedValueGate({
+      hashedValue: user.hashedRt,
+      valueToHash: rt,
+      salt: user.salt,
+    });
+
+    const account = await this.accountDbhandler.getAccount(user.accountId);
+    if (!account)
+      throw new UnprocessableEntityException('Account not found for user');
+
+    return await this.getAuthTokens({
+      userId,
+      salt: user.salt,
+      accountId: user.accountId,
+      acctEnvVarPrefix: account.acctEnvVarPrefix,
+    });
+  }
+
+  /**
+   * Gets auth & refresh token and updates user record with new hashedRt
+   */
+  private async getAuthTokens({
+    userId,
+    salt,
+    accountId,
+    acctEnvVarPrefix,
+  }: {
+    userId: string;
+    salt: string;
+    accountId: string;
+    acctEnvVarPrefix: string;
+  }) {
     const [at, rt] = await Promise.all([
       this.authService.signAuthToken({
         userId,
         accountId,
-        ref: account.acctEnvVarPrefix,
+        ref: acctEnvVarPrefix,
       }),
       this.authService.signRefreshToken({ userId }),
     ]);

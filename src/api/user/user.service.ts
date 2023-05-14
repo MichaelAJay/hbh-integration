@@ -11,4 +11,8 @@ export class UserService {
   async login(loginDto: ILogin) {
     return await this.userInternalInterface.login(loginDto);
   }
+
+  async refreshAuth({ userId, rt }: { userId: string; rt: string }) {
+    return await this.userInternalInterface.refreshAuth({ userId, rt });
+  }
 }
