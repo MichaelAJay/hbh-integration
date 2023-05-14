@@ -12,7 +12,7 @@ export class OrderController {
     @Param('id') orderId: string,
     @AuthenticatedReq() req: IAuthenticatedRequest,
   ) {
-    const { accountId, userId, ref } = req;
-    return this.orderService.getOrder({ orderId, userId, accountId, ref });
+    const { accountId, ref } = req;
+    return this.orderService.getOrder({ orderId, accountId, ref });
   }
 }
