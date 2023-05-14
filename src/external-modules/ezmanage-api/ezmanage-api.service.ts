@@ -28,4 +28,17 @@ export class EzmanageApiService {
       this.customLogger.error('EzmanageApiService failed', {});
     }
   }
+
+  async getOrderName({
+    orderId,
+    acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    acctEnvVarPrefix: string;
+  }) {
+    const data = await this.graphqlService.getOrderName({
+      orderId,
+      acctEnvVarPrefix,
+    });
+  }
 }

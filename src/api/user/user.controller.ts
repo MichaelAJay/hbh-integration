@@ -11,6 +11,6 @@ export class UserController {
   @Public()
   @Post('login')
   async login(@Body() body: LoginBodyDto) {
-    return this.login(body as ILogin);
+    return this.userService.login(body as ILogin);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderStatus } from 'src/external-modules/database/enum';
 import { IOrderModel } from 'src/external-modules/database/models';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
@@ -64,5 +64,32 @@ export class OrderService {
      * This should interface with the Nutshell API and do some undetermined number of things
      */
     return;
+  }
+
+  async doesOrderBelongToAccount({
+    orderId,
+    accountId,
+  }: {
+    orderId: string;
+    accountId: string;
+  }) {
+    const order = await this.orderDbService.getOne(orderId);
+
+    if (!order) throw new NotFoundException();
+
+    return order.accountId === accountId;
+  }
+
+  async getOrderName({
+    orderId,
+    acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    acctEnvVarPrefix: string;
+  }) {
+    return this.ezManageApiHandler.getOrderName({
+      orderId,
+      acctEnvVarPrefix,
+    });
   }
 }

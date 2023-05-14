@@ -1,19 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrderService } from 'src/internal-modules/order/order.service';
 
 @Injectable()
 export class OrderInternalInterfaceService {
   constructor(private readonly orderService: OrderService) {}
 
-  async getOrder(orderId: string, userId: string) {
+  async getOrder({
+    orderId,
+    accountId,
+    acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    accountId: string;
+    acctEnvVarPrefix: string;
+  }) {
     /**
      * Confirm that order and user belong to the same account
      */
+    if (!this.orderService.doesOrderBelongToAccount({ orderId, accountId }))
+      throw new ForbiddenException({ reason: 'WRONG_ACCT' });
 
     /**
-     * Get order
+     * Get order from EZManage
      */
+    const orderName = await this.orderService.getOrderName({
+      orderId,
+      acctEnvVarPrefix,
+    });
 
-    throw new Error('Method not implemented.');
+    return orderName;
   }
 }

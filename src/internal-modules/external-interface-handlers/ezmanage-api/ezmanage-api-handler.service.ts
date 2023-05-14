@@ -14,4 +14,18 @@ export class EzmanageApiHandlerService {
       throw new UnprocessableEntityException('Bad data from graphql');
     return { name: order.orderNumber };
   }
+
+  async getOrderName({
+    orderId,
+    acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    acctEnvVarPrefix: string;
+  }) {
+    const order = await this.ezManageApiService.getOrderName({
+      orderId,
+      acctEnvVarPrefix,
+    });
+    return '';
+  }
 }

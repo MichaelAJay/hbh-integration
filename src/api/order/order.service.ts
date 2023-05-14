@@ -7,7 +7,21 @@ export class OrderService {
     private readonly orderInternalInterface: OrderInternalInterfaceService,
   ) {}
 
-  async getOrder(orderId: string, userId: string) {
-    return this.orderInternalInterface.getOrder(orderId, userId);
+  async getOrder({
+    orderId,
+    accountId,
+    userId,
+    ref: acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    accountId: string;
+    userId: string;
+    ref: string;
+  }) {
+    return this.orderInternalInterface.getOrder({
+      orderId,
+      accountId,
+      acctEnvVarPrefix,
+    });
   }
 }

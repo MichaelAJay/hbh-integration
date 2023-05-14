@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
-import { AuthService } from 'src/api/auth/auth.service';
+import { AuthService } from 'src/internal-modules/auth/auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -10,9 +9,7 @@ export class AuthGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const isPublic = this.reflector.getAllAndOverride('isPublic', [
         context.getHandler(),
@@ -20,9 +17,20 @@ export class AuthGuard implements CanActivate {
       ]);
       if (isPublic) return true;
 
-      // const req = context.switchToHttp().getRequest();
-      // const authHeader = req.headers['authorization'];
-      // const atToken = authHeader.split(' ')[1];
+      const req = context.switchToHttp().getRequest();
+      const authHeader = req.headers['authorization'];
+      const atToken = authHeader.split(' ')[1];
+
+      const { accountId, userId, ref } = await this.authService.verifyAuthToken(
+        atToken,
+      );
+
+      /**
+       * Must satisfy IAuthenticatedRequest interface
+       */
+      req.accountId = accountId;
+      req.userId = userId;
+      req.ref = ref;
 
       return true;
     } catch (err) {

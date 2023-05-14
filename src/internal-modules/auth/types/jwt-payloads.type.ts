@@ -5,6 +5,7 @@ export type BaseJwtPayload = {
 
 export type AccessJWTPayload = BaseJwtPayload & {
   accountId: string;
+  ref: string;
 };
 
 export type RefreshJWTPayload = BaseJwtPayload;

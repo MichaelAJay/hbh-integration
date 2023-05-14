@@ -9,6 +9,6 @@ export class UserService {
   ) {}
 
   async login(loginDto: ILogin) {
-    await this.userInternalInterface.login(loginDto);
+    return await this.userInternalInterface.login(loginDto);
   }
 }

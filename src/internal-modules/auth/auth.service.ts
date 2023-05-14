@@ -38,6 +38,7 @@ export class AuthService {
   async signAuthToken(payload: {
     userId: string;
     accountId: string;
+    ref: string;
   }): Promise<string> {
     return this.signToken(payload, process.env.AT_JWT_SECRET, '30m');
   }
@@ -47,7 +48,7 @@ export class AuthService {
   }
 
   async signToken(
-    payload: Record<string, any>,
+    payload: Omit<AccessJWTPayload, 'exp'> | Omit<RefreshJWTPayload, 'exp'>,
     secret: string | undefined,
     duration: string,
   ): Promise<string> {
@@ -64,7 +65,7 @@ export class AuthService {
   }
 
   async verifyAuthToken(token: string): Promise<Omit<AccessJWTPayload, 'exp'>> {
-    const { accountId, userId } = await this.verifyToken<AccessJWTPayload>(
+    const { accountId, userId, ref } = await this.verifyToken<AccessJWTPayload>(
       token,
       process.env.AT_JWT_SECRET,
     );
@@ -74,7 +75,7 @@ export class AuthService {
         reason: VerifyJwtErrorMsg.INCORRECT_FORM,
       });
 
-    return { accountId, userId };
+    return { accountId, userId, ref };
   }
 
   async verifyRefreshToken(

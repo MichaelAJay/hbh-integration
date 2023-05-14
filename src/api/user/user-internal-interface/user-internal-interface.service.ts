@@ -1,5 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
+import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
 import { ILogin } from '../interfaces/login.interface';
 
@@ -7,8 +12,10 @@ import { ILogin } from '../interfaces/login.interface';
 export class UserInternalInterfaceService {
   constructor(
     private readonly userDbHandler: UserDbHandlerService,
+    private readonly accountDbhandler: AccountDbHandlerService,
     private readonly authService: AuthService,
   ) {}
+
   async login({ username: email, password }: ILogin) {
     const {
       id: userId,
@@ -16,6 +23,10 @@ export class UserInternalInterfaceService {
       salt,
       accountId,
     } = await this.userDbHandler.getOneByEmail(email);
+
+    const account = await this.accountDbhandler.getAccount(accountId);
+    if (!account)
+      throw new UnprocessableEntityException('Could not find account');
 
     /**
      * If no return, then throw BadRequest
@@ -28,8 +39,15 @@ export class UserInternalInterfaceService {
       salt,
     });
 
-    const at = await this.authService.signAuthToken({ userId, accountId });
-    const rt = await this.authService.signRefreshToken({ userId });
+    const [at, rt] = await Promise.all([
+      this.authService.signAuthToken({
+        userId,
+        accountId,
+        ref: account.acctEnvVarPrefix,
+      }),
+      this.authService.signRefreshToken({ userId }),
+    ]);
+
     const hashedRt = await this.authService.hashValue({
       value: rt,
       salt,

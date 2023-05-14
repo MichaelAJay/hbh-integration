@@ -51,7 +51,13 @@ export class GraphqlClientService {
     }
   }
 
-  async getOrderName(orderId: string, acctEnvVarPrefix: string) {
+  async getOrderName({
+    orderId,
+    acctEnvVarPrefix,
+  }: {
+    orderId: string;
+    acctEnvVarPrefix: string;
+  }) {
     const client = this.setAuthHeaderOnClient(this.client, acctEnvVarPrefix);
 
     try {
