@@ -39,7 +39,7 @@ export class OrderDbHandlerService {
 
       await this.dbClientService.set({
         collectionName: this.collectionName,
-        orderId,
+        docId: orderId,
         data: input,
       });
     } catch (err) {

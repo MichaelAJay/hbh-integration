@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { VerifyJwtErrorMsg } from './enums';
 import { AccessJWTPayload, RefreshJWTPayload } from './types';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,13 @@ export class AuthService {
     private readonly logger: CustomLoggerService,
   ) {}
 
-  async createSalt() {}
+  async createSalt() {
+    return '';
+  }
+
+  generateRandomPassword() {
+    return this.generateRandomBytes(32);
+  }
 
   async hashValue({ value, salt }: { value: string; salt: string }) {
     return '';
@@ -109,5 +116,12 @@ export class AuthService {
       throw new ForbiddenException({ reason: VerifyJwtErrorMsg.EXPIRED });
 
     return payload;
+  }
+
+  /**
+   * Helpers
+   */
+  private generateRandomBytes(numBytes = 32) {
+    return randomBytes(numBytes).toString('hex');
   }
 }

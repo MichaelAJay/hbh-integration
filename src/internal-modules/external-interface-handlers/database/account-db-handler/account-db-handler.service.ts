@@ -1,7 +1,7 @@
 import { WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
-import { CollectionName } from 'src/external-modules/database/enum';
+import { AccountRef, CollectionName } from 'src/external-modules/database/enum';
 import { isIAccountModelWithId } from 'src/external-modules/database/models';
 
 @Injectable()
@@ -38,6 +38,24 @@ export class AccountDbHandlerService {
         filterOp: '==' as WhereFilterOp,
         value: accountName,
       };
+      const records = await this.dbClientService.getMany({
+        collectionName: this.collectionName,
+        filter,
+      });
+      return { id: '' };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findByRef(ref: AccountRef) {
+    try {
+      const filter = {
+        fieldPath: 'ref',
+        filterOp: '==' as WhereFilterOp,
+        value: ref,
+      };
+
       const records = await this.dbClientService.getMany({
         collectionName: this.collectionName,
         filter,

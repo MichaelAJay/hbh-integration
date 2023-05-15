@@ -10,6 +10,7 @@ import { OrderModule } from './internal-modules/order/order.module';
 import { UserModule } from './api/user/user.module';
 import { ExternalDatabaseModule } from './external-modules/database/database.module';
 import { AuthModule } from './internal-modules/auth/auth.module';
+import { AdminModule } from './api/admin/admin.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthModule } from './internal-modules/auth/auth.module';
     CatererModule,
     OrderModule,
     UserModule,
+    AdminModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

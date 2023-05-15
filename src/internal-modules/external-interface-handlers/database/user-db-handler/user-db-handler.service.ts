@@ -2,7 +2,11 @@ import { WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
-import { isIUserModelWithId } from 'src/external-modules/database/models';
+import {
+  isIUserModelWithId,
+  IUserModel,
+} from 'src/external-modules/database/models';
+import { UserRecordInput } from './interfaces/user-record.interface';
 import { UpdateUser } from './types/update-user.type';
 
 @Injectable()
@@ -48,6 +52,23 @@ export class UserDbHandlerService {
        * @TODO figure out how to deal w/ this return type
        */
       return { id: '', accountId: '', hashedPassword: '', salt: '' };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createOne(user: IUserModel) {
+    try {
+      const accountRef = this.dbClientService.getDocRef({
+        collectionName: CollectionName.ACCOUNTS,
+        docId: user.accountId,
+      });
+
+      const data: UserRecordInput = { ...user, accountId: accountRef };
+      return await this.dbClientService.add({
+        collectionName: CollectionName.USERS,
+        data,
+      });
     } catch (err) {
       throw err;
     }
