@@ -80,13 +80,7 @@ export class OrderService {
     return order.accountId === accountId;
   }
 
-  async getOrderName({
-    orderId,
-    ref,
-  }: {
-    orderId: string;
-    ref: string;
-  }) {
+  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     return this.ezManageApiHandler.getOrderName({
       orderId,
       ref,

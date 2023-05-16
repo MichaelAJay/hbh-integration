@@ -5,7 +5,7 @@ import { RefreshTokenGuard } from 'src/guards';
 import { IRefreshAuthenticationRequest } from '../interfaces';
 import { ClaimAccountBodyDto } from './dtos/body';
 import { LoginBodyDto } from './dtos/body/login.body-dto';
-import { IClaimAccount } from './interfaces';
+import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserService } from './user.service';
 
@@ -32,6 +32,6 @@ export class UserController {
   @Public()
   @Patch('claim-account')
   async claimAccount(@Body() body: ClaimAccountBodyDto) {
-    return this.userService.claimAccount(body as IClaimAccount);
+    return this.userService.claimAccount(body as IResetPassword);
   }
 }

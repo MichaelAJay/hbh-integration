@@ -16,7 +16,7 @@ export class OrderService {
     accountId: string;
     ref: string;
   }) {
-    return this.orderInternalInterface.getOrder({
+    return await this.orderInternalInterface.getOrder({
       orderId,
       accountId,
       ref,

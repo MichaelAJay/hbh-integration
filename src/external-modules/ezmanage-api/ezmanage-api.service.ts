@@ -29,13 +29,7 @@ export class EzmanageApiService {
     }
   }
 
-  async getOrderName({
-    orderId,
-    ref,
-  }: {
-    orderId: string;
-    ref: string;
-  }) {
+  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     const data = await this.graphqlService.getOrderName({
       orderId,
       ref,

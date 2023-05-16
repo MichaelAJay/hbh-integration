@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IClaimAccount } from './interfaces';
+import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserInternalInterfaceService } from './user-internal-interface.service';
 
@@ -17,8 +17,8 @@ export class UserService {
     return await this.userInternalInterface.refreshAuth({ userId, rt });
   }
 
-  async claimAccount(input: IClaimAccount) {
-    await this.userInternalInterface.claimAccount(input);
+  async claimAccount(input: IResetPassword) {
+    await this.userInternalInterface.resetPassword(input);
     return { msg: 'Account claimed.  You may log in with your new password' };
   }
 }

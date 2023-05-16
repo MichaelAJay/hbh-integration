@@ -1,4 +1,4 @@
-export interface IClaimAccount {
+export interface IResetPassword {
   token: string;
   newPassword: string;
 }

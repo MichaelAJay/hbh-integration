@@ -7,7 +7,7 @@ import {
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
-import { IClaimAccount } from './interfaces';
+import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 
 @Injectable()
@@ -71,7 +71,7 @@ export class UserInternalInterfaceService {
     });
   }
 
-  async claimAccount({ token, newPassword }: IClaimAccount) {
+  async resetPassword({ token, newPassword }: IResetPassword) {
     const { userId, password } = await this.authService.verifyAcctToken(token);
 
     const user = await this.userDbHandler.getOne(userId);

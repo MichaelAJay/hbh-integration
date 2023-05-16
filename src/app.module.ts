@@ -6,11 +6,11 @@ import { AuthGuard } from './guards';
 import { AccountModule } from './internal-modules/account/account.module';
 import { CatererModule } from './internal-modules/caterer/caterer.module';
 import { EzmanageSubscriberModule } from './api/ezmanage-subscriber/ezmanage-subscriber.module';
-import { OrderModule } from './internal-modules/order/order.module';
 import { UserModule } from './api/user/user.module';
 import { ExternalDatabaseModule } from './external-modules/database/database.module';
 import { AuthModule } from './internal-modules/auth/auth.module';
 import { AdminModule } from './api/admin/admin.module';
+import { OrderModule } from './api/order/order.module';
 
 @Module({
   imports: [

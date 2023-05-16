@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
-import { IClaimAccount } from '../../interfaces';
+import { IResetPassword } from '../../interfaces';
 
-export class ClaimAccountBodyDto implements IClaimAccount {
+export class ClaimAccountBodyDto implements IResetPassword {
   @IsString()
   token: string;
 

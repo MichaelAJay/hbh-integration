@@ -1,2 +1,2 @@
-export * from './claim-account.interface';
+export * from './reset-password.interface';
 export * from './login.interface';
