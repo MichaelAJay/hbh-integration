@@ -81,7 +81,7 @@ export class GraphqlClientService {
 
       if (!isGetOrderNameReturn(data)) {
         const msg = 'Returned data does not match expected data shape';
-        this.logger.error(msg, {});
+        this.logger.error(msg, { data });
         throw new UnprocessableEntityException({ reason: msg });
       }
       return data.order.orderName;
