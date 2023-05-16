@@ -11,26 +11,31 @@ import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-lo
 
 @Injectable()
 export class NutshellApiService {
-  private cacheTTL: number;
+  private cacheTTL_in_MS: number;
   constructor(
     private readonly logger: CustomLoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    this.cacheTTL = 20 * 60 * 1000;
+    /**
+     * As of cache-manager@5, TTL is set in milliseconds
+     */
+    this.cacheTTL_in_MS = 20 * 60 * 1000;
   }
 
   /**
    * Configuration & setup
    */
 
-  async getApiForUsername(username: string) {
-    const userCachedDomain = await this.cacheManager.get(username);
-    if (userCachedDomain) return userCachedDomain;
+  async getApiForUsername(userName: string) {
+    const userCachedDomain = await this.cacheManager.get(userName);
+    if (typeof userCachedDomain === 'string') return userCachedDomain;
 
     const client = jayson.Client.http({ host: 'api.nutshell.com' });
-    const response = await client.request('getApiForUsername', { username });
+    const response = await client.request('getApiForUsername', {
+      username: userName,
+    });
     const selectedDomain = this.selectDomain(response.result);
-    await this.cacheManager.set(username, selectedDomain, this.cacheTTL);
+    await this.cacheManager.set(userName, selectedDomain, this.cacheTTL_in_MS);
     return selectedDomain;
   }
 
@@ -93,7 +98,20 @@ export class NutshellApiService {
     return true;
   }
 
-  private getBasicAuth(acctEnvVarPrefix: string) {
+  private getBasicAuthValue({
+    userName,
+    apiKey,
+  }: {
+    userName: string;
+    apiKey: string;
+  }) {
+    /**
+     * Return Base64-encoded string <username>:<apikey>
+     */
+    return `Basic ${Buffer.from(`${userName}:${apiKey}`).toString('base64')}`;
+  }
+
+  private getUserNameAndApiKeyForAcct(ref: string) {
     const {
       NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
       NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
@@ -105,15 +123,15 @@ export class NutshellApiService {
       throw new InternalServerErrorException(msg);
     }
 
-    const userNameEnvVarName = `${acctEnvVarPrefix}_${userNamePostfix}`;
-    const apiKeyEnvVarName = `$${acctEnvVarPrefix}_${apiKeyPostfix}`;
+    const userNameEnvVarName = `${ref}_${userNamePostfix}`;
+    const apiKeyEnvVarName = `$${ref}_${apiKeyPostfix}`;
     const userName = process.env[userNameEnvVarName];
     const apiKey = process.env[apiKeyEnvVarName];
 
     if (!(userName && apiKey)) {
       const msg = 'Missing neccessary client configuration variables';
       this.logger.error(msg, {
-        ref: acctEnvVarPrefix,
+        ref: ref,
         userNameEnvVarName,
         apiKeyEnvVarName,
         userName,
@@ -121,11 +139,7 @@ export class NutshellApiService {
       });
       throw new InternalServerErrorException(msg);
     }
-
-    /**
-     * Return Base64-encoded string <username>:<apikey>
-     */
-    return Buffer.from(`${userName}:${apiKey}`).toString('base64');
+    return { userName, apiKey };
   }
 
   /**
@@ -135,4 +149,32 @@ export class NutshellApiService {
    * 2) GetBasicAuth by acct prefix
    * 3) Send request to URL from step 1 w/ Basic auth from step 2
    */
+
+  /**
+   * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
+   */
+  async generateClient(ref: string) {
+    const { userName, apiKey } =
+      this.getUserNameAndApiKeyForAcct(ref);
+
+    const domain = await this.getApiForUsername(userName);
+    return jayson.Client.https({
+      host: domain,
+      headers: {
+        Authorization: this.getBasicAuthValue({ userName, apiKey }),
+      },
+    });
+  }
+
+  async getLead(ref: string) {
+    const client = await this.generateClient(ref);
+    await client.request('getLead', { leadId: 1000 });
+  }
 }
+
+/**
+ * implement note:
+ * curl -u <domain or username>:<api token> \
+-d '{ "id": "<id>", "method": "getLead", "params": { "leadId": 1000 } }' \
+https://app.nutshell.com/api/v1/json
+ */

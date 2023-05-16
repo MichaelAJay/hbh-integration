@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderStatus } from 'src/external-modules/database/enum';
 import { IOrderModel } from 'src/external-modules/database/models';
+import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 
@@ -9,6 +10,7 @@ export class OrderService {
   constructor(
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
+    private readonly logger: CustomLoggerService,
   ) {}
 
   async createOrder({
@@ -17,14 +19,14 @@ export class OrderService {
     orderId,
     status,
     occurredAt,
-    acctEnvVarPrefix,
+    ref,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     status: OrderStatus;
     occurredAt: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     /**
      * Need order name for db
@@ -32,15 +34,15 @@ export class OrderService {
     /**
      * @TODO add request to check for order name
      */
-    // const ezManageOrder = await this.ezManageApiHandler.getOrder(
-    //   orderId,
-    //   acctEnvVarPrefix,
-    // );
-
-    /**
-     * @TODO this is spoofing until I can get some order ids in the system
-     */
-    const ezManageOrder = { name: 'PLACEHOLDER NAME' };
+    const ezManageOrderName = await this.ezManageApiHandler
+      .getOrderName({
+        orderId,
+        ref,
+      })
+      .catch((reason) => {
+        const msg = 'Failed to retrieve order name';
+        this.logger.error(msg, reason);
+      });
 
     /**
      * @TODO fix the date issue
@@ -49,7 +51,7 @@ export class OrderService {
     const data: IOrderModel = {
       accountId,
       catererId,
-      name: ezManageOrder.name,
+      name: ezManageOrderName || 'PLACEHOLDER NAME',
       status,
       acceptedAt: now,
       lastUpdatedAt: now,
@@ -64,5 +66,26 @@ export class OrderService {
      * This should interface with the Nutshell API and do some undetermined number of things
      */
     return;
+  }
+
+  async doesOrderBelongToAccount({
+    orderId,
+    accountId,
+  }: {
+    orderId: string;
+    accountId: string;
+  }) {
+    const order = await this.orderDbService.getOne(orderId);
+
+    if (!order) throw new NotFoundException();
+
+    return order.accountId === accountId;
+  }
+
+  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+    return this.ezManageApiHandler.getOrderName({
+      orderId,
+      ref,
+    });
   }
 }

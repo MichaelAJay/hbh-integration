@@ -41,7 +41,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         catererId,
         orderId: orderId,
         occurredAt: occurred_at,
-        acctEnvVarPrefix: account.acctEnvVarPrefix,
+        ref: account.ref,
       });
 
     /**
@@ -52,7 +52,7 @@ export class EzmanageSubscriberInternalInterfaceService {
       catererId,
       orderId: orderId,
       occurredAt: occurred_at,
-      acctEnvVarPrefix: account.acctEnvVarPrefix,
+      ref: account.ref,
     });
   }
 
@@ -61,13 +61,13 @@ export class EzmanageSubscriberInternalInterfaceService {
     catererId,
     orderId,
     occurredAt,
-    acctEnvVarPrefix,
+    ref,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     occurredAt: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     /**
      * Business logic:
@@ -86,7 +86,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         orderId,
         status: OrderStatus.CANCELLED,
         occurredAt,
-        acctEnvVarPrefix,
+        ref,
       });
     }
 
@@ -120,13 +120,13 @@ export class EzmanageSubscriberInternalInterfaceService {
     catererId,
     orderId,
     occurredAt,
-    acctEnvVarPrefix,
+    ref,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     occurredAt: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     /**
      * Actually need to catch here
@@ -143,7 +143,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         orderId,
         status: OrderStatus.ACCEPTED,
         occurredAt,
-        acctEnvVarPrefix,
+        ref,
       });
       console.log('made one');
     } else {

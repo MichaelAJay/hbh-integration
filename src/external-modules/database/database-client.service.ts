@@ -21,18 +21,18 @@ export class DatabaseClientService {
 
   async set({
     collectionName,
-    orderId,
+    docId,
     data,
   }: {
     collectionName: CollectionName;
-    orderId: string;
+    docId: string;
     data: Record<string, any>;
   }) {
     try {
       /**
        * @QUESTION to answer: Does set return the created object?
        */
-      await this.firestore.collection(collectionName).doc(orderId).set(data);
+      await this.firestore.collection(collectionName).doc(docId).set(data);
     } catch (err) {
       console.error('err', err);
       throw err;
@@ -48,7 +48,7 @@ export class DatabaseClientService {
   }) {
     try {
       const res = await this.firestore.collection(collectionName).add(data);
-      return res;
+      return { id: res.id };
     } catch (err) {
       console.error('err', err);
       throw err;

@@ -16,16 +16,23 @@ export class EzmanageApiService {
    * @TODO
    * pare down required data
    */
-  async getOrder(orderId: string, acctEnvVarPrefix: string) {
+  async getOrder(orderId: string, ref: string) {
     try {
       const data = (await this.graphqlService.queryOrder(
         orderId,
-        acctEnvVarPrefix,
+        ref,
       )) as IEzManageOrder;
       return data;
     } catch (err) {
       console.error('err', err);
       this.customLogger.error('EzmanageApiService failed', {});
     }
+  }
+
+  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+    const data = await this.graphqlService.getOrderName({
+      orderId,
+      ref,
+    });
   }
 }
