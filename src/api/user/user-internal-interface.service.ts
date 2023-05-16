@@ -7,13 +7,14 @@ import {
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
-import { ILogin } from '../interfaces/login.interface';
+import { IClaimAccount } from './interfaces';
+import { ILogin } from './interfaces/login.interface';
 
 @Injectable()
 export class UserInternalInterfaceService {
   constructor(
     private readonly userDbHandler: UserDbHandlerService,
-    private readonly accountDbhandler: AccountDbHandlerService,
+    private readonly accountDbHandler: AccountDbHandlerService,
     private readonly authService: AuthService,
   ) {}
 
@@ -25,7 +26,7 @@ export class UserInternalInterfaceService {
       accountId,
     } = await this.userDbHandler.getOneByEmail(email);
 
-    const account = await this.accountDbhandler.getAccount(accountId);
+    const account = await this.accountDbHandler.getAccount(accountId);
     if (!account)
       throw new UnprocessableEntityException('Could not find account');
 
@@ -44,7 +45,7 @@ export class UserInternalInterfaceService {
       userId,
       salt,
       accountId,
-      acctEnvVarPrefix: account.acctEnvVarPrefix,
+      ref: account.ref,
     });
   }
 
@@ -58,7 +59,7 @@ export class UserInternalInterfaceService {
       salt: user.salt,
     });
 
-    const account = await this.accountDbhandler.getAccount(user.accountId);
+    const account = await this.accountDbHandler.getAccount(user.accountId);
     if (!account)
       throw new UnprocessableEntityException('Account not found for user');
 
@@ -66,8 +67,32 @@ export class UserInternalInterfaceService {
       userId,
       salt: user.salt,
       accountId: user.accountId,
-      acctEnvVarPrefix: account.acctEnvVarPrefix,
+      ref: account.ref,
     });
+  }
+
+  async claimAccount({ token, newPassword }: IClaimAccount) {
+    const { userId, password } = await this.authService.verifyAcctToken(token);
+
+    const user = await this.userDbHandler.getOne(userId);
+
+    await this.authService.hashedValueGate({
+      hashedValue: user.hashedPassword,
+      valueToHash: password,
+      salt: user.salt,
+    });
+
+    const newHashedPassword = await this.authService.hashValue({
+      value: newPassword,
+      salt: user.salt,
+    });
+
+    await this.userDbHandler.updateOne({
+      userId,
+      updates: { hashedPassword: newHashedPassword },
+    });
+
+    return;
   }
 
   /**
@@ -77,18 +102,18 @@ export class UserInternalInterfaceService {
     userId,
     salt,
     accountId,
-    acctEnvVarPrefix,
+    ref,
   }: {
     userId: string;
     salt: string;
     accountId: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     const [at, rt] = await Promise.all([
       this.authService.signAuthToken({
         userId,
         accountId,
-        ref: acctEnvVarPrefix,
+        ref: ref,
       }),
       this.authService.signRefreshToken({ userId }),
     ]);

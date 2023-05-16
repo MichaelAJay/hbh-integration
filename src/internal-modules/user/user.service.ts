@@ -5,7 +5,7 @@ import { AuthService } from '../auth/auth.service';
 export class UserService {
   constructor(private readonly authService: AuthService) {}
   async generateSaltAndHashedPassword(password?: string) {
-    const salt = await this.authService.createSalt();
+    const salt = this.authService.createSalt();
 
     if (!password) {
       password = this.authService.generateRandomPassword();

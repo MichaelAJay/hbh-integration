@@ -16,11 +16,11 @@ export class EzmanageApiService {
    * @TODO
    * pare down required data
    */
-  async getOrder(orderId: string, acctEnvVarPrefix: string) {
+  async getOrder(orderId: string, ref: string) {
     try {
       const data = (await this.graphqlService.queryOrder(
         orderId,
-        acctEnvVarPrefix,
+        ref,
       )) as IEzManageOrder;
       return data;
     } catch (err) {
@@ -31,14 +31,14 @@ export class EzmanageApiService {
 
   async getOrderName({
     orderId,
-    acctEnvVarPrefix,
+    ref,
   }: {
     orderId: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     const data = await this.graphqlService.getOrderName({
       orderId,
-      acctEnvVarPrefix,
+      ref,
     });
   }
 }

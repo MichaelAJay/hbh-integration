@@ -1,12 +1,20 @@
 import { WhereFilterOp } from '@google-cloud/firestore';
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
 import {
   isIUserModelWithId,
   IUserModel,
+  IUserModelWithId,
 } from 'src/external-modules/database/models';
-import { UserRecordInput } from './interfaces/user-record.interface';
+import {
+  isIUserRecordWithId,
+  UserRecordInput,
+} from './interfaces/user-record.interface';
 import { UpdateUser } from './types/update-user.type';
 
 @Injectable()
@@ -44,14 +52,27 @@ export class UserDbHandlerService {
         filterOp: '==' as WhereFilterOp,
         value: email,
       };
-      const records = await this.dbClientService.getMany({
+      const querySnapshot = await this.dbClientService.getMany({
         collectionName: this.collectionName,
         filter,
       });
-      /**
-       * @TODO figure out how to deal w/ this return type
-       */
-      return { id: '', accountId: '', hashedPassword: '', salt: '' };
+
+      if (querySnapshot.empty) throw new NotFoundException('No records found');
+      const doc = querySnapshot.docs[0];
+      const record = { id: doc.id, ...doc.data() };
+
+      if (!isIUserRecordWithId(record)) {
+        throw new UnprocessableEntityException(
+          'User record does not match expected model',
+        );
+      }
+
+      const user: IUserModelWithId = {
+        ...record,
+        accountId: record.accountId.id,
+      };
+
+      return user;
     } catch (err) {
       throw err;
     }
@@ -66,7 +87,7 @@ export class UserDbHandlerService {
 
       const data: UserRecordInput = { ...user, accountId: accountRef };
       return await this.dbClientService.add({
-        collectionName: CollectionName.USERS,
+        collectionName: this.collectionName,
         data,
       });
     } catch (err) {

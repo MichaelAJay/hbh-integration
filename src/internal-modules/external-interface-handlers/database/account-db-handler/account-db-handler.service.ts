@@ -1,8 +1,16 @@
 import { WhereFilterOp } from '@google-cloud/firestore';
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { AccountRef, CollectionName } from 'src/external-modules/database/enum';
-import { isIAccountModelWithId } from 'src/external-modules/database/models';
+import {
+  IAccountModelWithId,
+  isIAccountModelWithId,
+} from 'src/external-modules/database/models';
+import { isAccountRecordWithId } from './types';
 
 @Injectable()
 export class AccountDbHandlerService {
@@ -38,11 +46,7 @@ export class AccountDbHandlerService {
         filterOp: '==' as WhereFilterOp,
         value: accountName,
       };
-      const records = await this.dbClientService.getMany({
-        collectionName: this.collectionName,
-        filter,
-      });
-      return { id: '' };
+      return this.findMany(filter);
     } catch (err) {
       throw err;
     }
@@ -55,14 +59,41 @@ export class AccountDbHandlerService {
         filterOp: '==' as WhereFilterOp,
         value: ref,
       };
-
-      const records = await this.dbClientService.getMany({
-        collectionName: this.collectionName,
-        filter,
-      });
-      return { id: '' };
+      return this.findMany(filter);
     } catch (err) {
       throw err;
     }
+  }
+
+  async findMany(filter: {
+    fieldPath: string;
+    filterOp: WhereFilterOp;
+    value: any;
+  }) {
+    const querySnapshot = await this.dbClientService.getMany({
+      collectionName: this.collectionName,
+      filter,
+    });
+
+    if (querySnapshot.empty) throw new NotFoundException('No records found');
+    const doc = querySnapshot.docs[0];
+    const record = { id: doc.id, ...doc.data() };
+
+    if (!isAccountRecordWithId(record))
+      throw new UnprocessableEntityException(
+        'Account record does not match expected model',
+      );
+
+    /**
+     * Note:  Both of these checks are in place for continuity
+     * It is unimportant in the case of the Record vs Model for Account
+     * because there is no difference in type
+     */
+    if (!isIAccountModelWithId(record))
+      throw new UnprocessableEntityException(
+        'Account record does not match expected model',
+      );
+
+    return record as IAccountModelWithId;
   }
 }

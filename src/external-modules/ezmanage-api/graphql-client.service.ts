@@ -14,12 +14,12 @@ export class GraphqlClientService {
   /**
    * GENERAL
    */
-  async setAuthHeaderOnClient(client: GraphQLClient, acctEnvVarPrefix: string) {
+  async setAuthHeaderOnClient(client: GraphQLClient, ref: string) {
     const { EZMANAGE_AUTH_TOKEN_POSTFIX } = process.env;
     if (!EZMANAGE_AUTH_TOKEN_POSTFIX)
       throw new InternalServerErrorException('Bad config');
     const authToken =
-      process.env[`${acctEnvVarPrefix}_${EZMANAGE_AUTH_TOKEN_POSTFIX}`];
+      process.env[`${ref}_${EZMANAGE_AUTH_TOKEN_POSTFIX}`];
     if (!authToken) throw new InternalServerErrorException('Bad config');
     client.setHeader('Authorization', authToken);
     return client;
@@ -36,7 +36,7 @@ export class GraphqlClientService {
   /**
    * Specific queries
    */
-  async queryOrder(orderId: string, acctEnvVarPrefix: string) {
+  async queryOrder(orderId: string, ref: string) {
     try {
       const query = gql`
         {
@@ -53,12 +53,12 @@ export class GraphqlClientService {
 
   async getOrderName({
     orderId,
-    acctEnvVarPrefix,
+    ref,
   }: {
     orderId: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
-    const client = this.setAuthHeaderOnClient(this.client, acctEnvVarPrefix);
+    const client = this.setAuthHeaderOnClient(this.client, ref);
 
     try {
       const query = gql`

@@ -48,7 +48,7 @@ export class DatabaseClientService {
   }) {
     try {
       const res = await this.firestore.collection(collectionName).add(data);
-      return res;
+      return { id: res.id };
     } catch (err) {
       console.error('err', err);
       throw err;

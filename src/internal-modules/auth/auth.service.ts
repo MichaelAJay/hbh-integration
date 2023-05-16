@@ -7,8 +7,12 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { VerifyJwtErrorMsg } from './enums';
-import { AccessJWTPayload, RefreshJWTPayload } from './types';
-import { randomBytes } from 'crypto';
+import {
+  AccessJWTPayload,
+  AccountJwtPayload,
+  RefreshJWTPayload,
+} from './types';
+import { pbkdf2, randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -17,16 +21,31 @@ export class AuthService {
     private readonly logger: CustomLoggerService,
   ) {}
 
-  async createSalt() {
-    return '';
+  createSalt() {
+    return this.generateRandomBytes(16);
   }
 
   generateRandomPassword() {
     return this.generateRandomBytes(32);
   }
 
-  async hashValue({ value, salt }: { value: string; salt: string }) {
-    return '';
+  async hashValue({
+    value,
+    salt,
+  }: {
+    value: string;
+    salt: string;
+  }): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const iterations = 10000;
+      const keylen = 64;
+      const digest = 'sha512';
+
+      pbkdf2(value, salt, iterations, keylen, digest, (err, derivedKey) => {
+        if (err) reject(err);
+        else resolve(derivedKey.toString('hex'));
+      });
+    });
   }
 
   async hashedValueGate({
@@ -52,6 +71,13 @@ export class AuthService {
 
   async signRefreshToken(payload: { userId: string }): Promise<string> {
     return this.signToken(payload, process.env.RT_JWT_SECRET, '2d');
+  }
+
+  async signClaimAcctToken(payload: {
+    userId: string;
+    password: string;
+  }): Promise<string> {
+    return this.signToken(payload, process.env.ACCT_JWT_SECRET, '7d');
   }
 
   async signToken(
@@ -99,6 +125,21 @@ export class AuthService {
       });
 
     return { userId };
+  }
+
+  async verifyAcctToken(
+    token: string,
+  ): Promise<Omit<AccountJwtPayload, 'exp'>> {
+    const { userId, password } = await this.verifyToken<AccountJwtPayload>(
+      token,
+      process.env.ACCOUNT_JWT_SECRET,
+    );
+
+    if (!(typeof userId === 'string' && typeof password === 'string'))
+      throw new UnprocessableEntityException({
+        reason: VerifyJwtErrorMsg.INCORRECT_FORM,
+      });
+    return { userId, password };
   }
 
   async verifyToken<T>(token: string, secret: string | undefined): Promise<T> {

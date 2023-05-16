@@ -8,11 +8,11 @@ export class OrderInternalInterfaceService {
   async getOrder({
     orderId,
     accountId,
-    acctEnvVarPrefix,
+    ref,
   }: {
     orderId: string;
     accountId: string;
-    acctEnvVarPrefix: string;
+    ref: string;
   }) {
     /**
      * Confirm that order and user belong to the same account
@@ -25,7 +25,7 @@ export class OrderInternalInterfaceService {
      */
     const orderName = await this.orderService.getOrderName({
       orderId,
-      acctEnvVarPrefix,
+      ref,
     });
 
     return orderName;

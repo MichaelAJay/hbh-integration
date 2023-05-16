@@ -9,3 +9,7 @@ export type AccessJWTPayload = BaseJwtPayload & {
 };
 
 export type RefreshJWTPayload = BaseJwtPayload;
+
+export type AccountJwtPayload = BaseJwtPayload & {
+  password: string;
+};

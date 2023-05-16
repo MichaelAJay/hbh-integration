@@ -111,7 +111,7 @@ export class NutshellApiService {
     return `Basic ${Buffer.from(`${userName}:${apiKey}`).toString('base64')}`;
   }
 
-  private getUserNameAndApiKeyForAcct(acctEnvVarPrefix: string) {
+  private getUserNameAndApiKeyForAcct(ref: string) {
     const {
       NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
       NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
@@ -123,15 +123,15 @@ export class NutshellApiService {
       throw new InternalServerErrorException(msg);
     }
 
-    const userNameEnvVarName = `${acctEnvVarPrefix}_${userNamePostfix}`;
-    const apiKeyEnvVarName = `$${acctEnvVarPrefix}_${apiKeyPostfix}`;
+    const userNameEnvVarName = `${ref}_${userNamePostfix}`;
+    const apiKeyEnvVarName = `$${ref}_${apiKeyPostfix}`;
     const userName = process.env[userNameEnvVarName];
     const apiKey = process.env[apiKeyEnvVarName];
 
     if (!(userName && apiKey)) {
       const msg = 'Missing neccessary client configuration variables';
       this.logger.error(msg, {
-        ref: acctEnvVarPrefix,
+        ref: ref,
         userNameEnvVarName,
         apiKeyEnvVarName,
         userName,
@@ -153,9 +153,9 @@ export class NutshellApiService {
   /**
    * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
    */
-  async generateClient(acctEnvVarPrefix: string) {
+  async generateClient(ref: string) {
     const { userName, apiKey } =
-      this.getUserNameAndApiKeyForAcct(acctEnvVarPrefix);
+      this.getUserNameAndApiKeyForAcct(ref);
 
     const domain = await this.getApiForUsername(userName);
     return jayson.Client.https({
@@ -166,8 +166,8 @@ export class NutshellApiService {
     });
   }
 
-  async getLead(acctEnvVarPrefix: string) {
-    const client = await this.generateClient(acctEnvVarPrefix);
+  async getLead(ref: string) {
+    const client = await this.generateClient(ref);
     await client.request('getLead', { leadId: 1000 });
   }
 }

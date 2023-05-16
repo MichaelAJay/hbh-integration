@@ -17,7 +17,7 @@ export interface IUserRecordWithId extends IUserRecord {
 
 export type UserRecordInput = Omit<IUserRecord, 'hashedRt'>;
 
-export function isIUserRecord(record: any): record is IUserRecordWithId {
+export function isIUserRecordWithId(record: any): record is IUserRecordWithId {
   const {
     id,
     accountId,

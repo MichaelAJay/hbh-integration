@@ -26,7 +26,10 @@ export class AdminInternalInterfaceService {
     const { password, hashedPassword, salt } =
       await this.userService.generateSaltAndHashedPassword();
 
-    await this.userDbHandler.createOne({
+    /**
+     * Need userId
+     */
+    const { id: userId } = await this.userDbHandler.createOne({
       accountId,
       firstName,
       lastName,
@@ -38,6 +41,10 @@ export class AdminInternalInterfaceService {
     /**
      * @TODO Send email.  Use password
      */
-    return;
+    /**
+     * Encode password & userId
+     */
+
+    return { userId, password };
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { IClaimAccount } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
-import { UserInternalInterfaceService } from './user-internal-interface/user-internal-interface.service';
+import { UserInternalInterfaceService } from './user-internal-interface.service';
 
 @Injectable()
 export class UserService {
@@ -14,5 +15,10 @@ export class UserService {
 
   async refreshAuth({ userId, rt }: { userId: string; rt: string }) {
     return await this.userInternalInterface.refreshAuth({ userId, rt });
+  }
+
+  async claimAccount(input: IClaimAccount) {
+    await this.userInternalInterface.claimAccount(input);
+    return { msg: 'Account claimed.  You may log in with your new password' };
   }
 }

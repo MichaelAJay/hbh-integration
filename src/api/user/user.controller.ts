@@ -1,9 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Patch, Post, UseGuards } from '@nestjs/common';
 import { Public } from 'src/decorators';
 import { RefreshAuthenticationReq } from 'src/decorators/refresh-authentication-request.decorator';
 import { RefreshTokenGuard } from 'src/guards';
 import { IRefreshAuthenticationRequest } from '../interfaces';
-import { LoginBodyDto } from './dtos/body/login.dto';
+import { ClaimAccountBodyDto } from './dtos/body';
+import { LoginBodyDto } from './dtos/body/login.body-dto';
+import { IClaimAccount } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserService } from './user.service';
 
@@ -25,5 +27,11 @@ export class UserController {
   ) {
     const { userId, rt } = req;
     return this.userService.refreshAuth({ userId, rt });
+  }
+
+  @Public()
+  @Patch('claim-account')
+  async claimAccount(@Body() body: ClaimAccountBodyDto) {
+    return this.userService.claimAccount(body as IClaimAccount);
   }
 }

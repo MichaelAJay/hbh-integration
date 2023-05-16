@@ -9,6 +9,7 @@ export class AdminService {
   ) {}
 
   async createUser(body: AdminCreateUserBodyDto) {
-    return await this.adminInternalInterface.createUser(body);
+    const val = await this.adminInternalInterface.createUser(body);
+    return { msg: 'User created', ...val };
   }
 }

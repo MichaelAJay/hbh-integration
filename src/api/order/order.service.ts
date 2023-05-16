@@ -10,7 +10,7 @@ export class OrderService {
   async getOrder({
     orderId,
     accountId,
-    ref: acctEnvVarPrefix,
+    ref: ref,
   }: {
     orderId: string;
     accountId: string;
@@ -19,7 +19,7 @@ export class OrderService {
     return this.orderInternalInterface.getOrder({
       orderId,
       accountId,
-      acctEnvVarPrefix,
+      ref,
     });
   }
 }
