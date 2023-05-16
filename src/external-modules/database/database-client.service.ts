@@ -1,4 +1,4 @@
-import { Firestore, WhereFilterOp } from '@google-cloud/firestore';
+import { Filter, Firestore, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable } from '@nestjs/common';
 import { CollectionName } from './enum';
 
@@ -111,6 +111,25 @@ export class DatabaseClientService {
       const records = await this.firestore
         .collection(collectionName)
         .where(fieldPath, filterOp, value)
+        .get();
+      return records;
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  async getManyCompound({
+    collectionName,
+    filter,
+  }: {
+    collectionName: CollectionName;
+    filter: Filter;
+  }) {
+    try {
+      const records = await this.firestore
+        .collection(collectionName)
+        .where(filter)
         .get();
       return records;
     } catch (err) {

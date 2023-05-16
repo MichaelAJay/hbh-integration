@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { OrderStatus } from 'src/external-modules/database/enum';
-import { IOrderModel } from 'src/external-modules/database/models';
+import {
+  IOrderModel,
+  IOrderModelWithId,
+} from 'src/external-modules/database/models';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
@@ -69,13 +72,16 @@ export class OrderService {
   }
 
   async doesOrderBelongToAccount({
-    orderId,
+    input,
     accountId,
   }: {
-    orderId: string;
+    input: string | IOrderModelWithId;
     accountId: string;
   }) {
-    const order = await this.orderDbService.getOne(orderId);
+    const order =
+      typeof input === 'string'
+        ? await this.orderDbService.getOne(input)
+        : input;
 
     if (!order) throw new NotFoundException();
 

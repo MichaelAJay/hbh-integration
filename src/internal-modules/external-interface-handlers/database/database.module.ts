@@ -5,9 +5,10 @@ import { CatererDbHandlerService } from './caterer-db-handler/caterer-db-handler
 import { OrderDbHandlerService } from './order-db-handler/order-db-handler.service';
 import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
+import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 
 @Module({
-  imports: [ExternalDatabaseModule],
+  imports: [ExternalDatabaseModule, CustomLoggerModule],
   providers: [
     AccountDbHandlerService,
     UserDbHandlerService,

@@ -15,4 +15,13 @@ export class OrderController {
     const { accountId, ref } = req;
     return this.orderService.getOrder({ orderId, accountId, ref });
   }
+
+  @Get('by-name/:name')
+  async getOrderByName(
+    @Param('name') orderName: string,
+    @AuthenticatedReq() req: IAuthenticatedRequest,
+  ) {
+    const { accountId, ref } = req;
+    return this.orderService.getOrderByName({ orderName, accountId, ref });
+  }
 }

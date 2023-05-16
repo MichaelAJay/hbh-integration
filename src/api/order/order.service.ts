@@ -22,4 +22,20 @@ export class OrderService {
       ref,
     });
   }
+
+  async getOrderByName({
+    orderName,
+    accountId,
+    ref,
+  }: {
+    orderName: string;
+    accountId: string;
+    ref: string;
+  }) {
+    return await this.orderInternalInterface.getOrderByName({
+      orderName,
+      accountId,
+      ref,
+    });
+  }
 }
