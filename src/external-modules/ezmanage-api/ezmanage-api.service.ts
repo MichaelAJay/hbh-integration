@@ -10,18 +10,13 @@ export class EzmanageApiService {
     private readonly customLogger: CustomLoggerService,
   ) {}
 
-  /**
-   * @TODO
-   * Add type check
-   * @TODO
-   * pare down required data
-   */
   async getOrder(orderId: string, ref: string) {
     try {
-      const data = (await this.graphqlService.queryOrder(
-        orderId,
-        ref,
-      )) as IEzManageOrder;
+      // const data = (await this.graphqlService.queryOrder(
+      //   orderId,
+      //   ref,
+      // )) as IEzManageOrder;
+      const data = await this.graphqlService.queryOrder({ orderId, ref });
       return data;
     } catch (err) {
       console.error('err', err);
@@ -30,7 +25,7 @@ export class EzmanageApiService {
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
-    const data = await this.graphqlService.getOrderName({
+    return await this.graphqlService.queryOrderName({
       orderId,
       ref,
     });

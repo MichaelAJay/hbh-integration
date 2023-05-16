@@ -5,18 +5,15 @@ import { EzmanageApiService } from 'src/external-modules/ezmanage-api/ezmanage-a
 export class EzmanageApiHandlerService {
   constructor(private readonly ezManageApiService: EzmanageApiService) {}
 
-  async getOrder(orderId: string, ref: string) {
+  async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
     const order = await this.ezManageApiService.getOrder(orderId, ref);
-    if (!(order && order.orderNumber))
-      throw new UnprocessableEntityException('Bad data from graphql');
-    return { name: order.orderNumber };
+    return order;
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
-    const order = await this.ezManageApiService.getOrderName({
+    return await this.ezManageApiService.getOrderName({
       orderId,
       ref,
     });
-    return '';
   }
 }

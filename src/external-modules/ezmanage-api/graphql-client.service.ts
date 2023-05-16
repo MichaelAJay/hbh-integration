@@ -41,7 +41,9 @@ export class GraphqlClientService {
   /**
    * Specific queries
    */
-  async queryOrder(orderId: string, ref: string) {
+  async queryOrder({ orderId, ref }: { orderId: string; ref: string }) {
+    const client = this.setAuthHeaderOnClient(this.client, ref);
+
     try {
       /**
        * This format returns a good result:
@@ -55,8 +57,61 @@ export class GraphqlClientService {
       {
         order(id: "${orderId}") {
           orderNumber
-        }
+          event {
+              catererHandoffFoodTime
+              headcount
+              orderType
+              thirdPartyDeliveryPartner
+              timeZoneIdentifier
+              timeZoneOffset
+              timestamp
+              contact {
+                  name
+                  phone
+              }
+          }
+          orderCustomer {
+              firstName
+              fullName
+              lastName
+          }
+          catererCart {
+              orderItems {
+                  labelFor
+                  menuId
+                  menuItemSizeId
+                  name
+                  noteToCaterer
+                  posItemId
+                  quantity
+                  specialInstructions
+                  uuid
+                  constituentOrderItems {
+                      labelFor
+                      menuItemSizeId
+                      name
+                      noteToCaterer
+                      posItemId
+                      quantity
+                      specialInstructions
+                      uuid
+                  }
+                  customizations {
+                      customizationId
+                      customizationTypeId
+                      customizationTypeName
+                      name
+                      posCustomizationId
+                      quantity
+                  }
+                  totalInSubunits {
+                      currency
+                      subunitsV2
+                  }
+              }
+          }
       }
+    }
       `;
       const data = this.client.request(query);
       return data;
@@ -66,7 +121,7 @@ export class GraphqlClientService {
     }
   }
 
-  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+  async queryOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     try {
@@ -81,10 +136,10 @@ export class GraphqlClientService {
 
       if (!isGetOrderNameReturn(data)) {
         const msg = 'Returned data does not match expected data shape';
-        this.logger.error(msg, {});
+        this.logger.error(msg, { data });
         throw new UnprocessableEntityException({ reason: msg });
       }
-      return data.order.orderName;
+      return data.order.orderNumber;
     } catch (err) {
       console.error('err', err);
       throw err;
