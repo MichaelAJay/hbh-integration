@@ -23,7 +23,7 @@ export class OrderInternalInterfaceService {
     /**
      * Get order from EZManage
      */
-    const orderName = await this.orderService.getOrderName({
+    const orderName = await this.orderService.getOrder({
       orderId,
       ref,
     });
