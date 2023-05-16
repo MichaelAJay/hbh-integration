@@ -132,7 +132,7 @@ export class AuthService {
   ): Promise<Omit<AccountJwtPayload, 'exp'>> {
     const { userId, password } = await this.verifyToken<AccountJwtPayload>(
       token,
-      process.env.ACCOUNT_JWT_SECRET,
+      process.env.ACCT_JWT_SECRET,
     );
 
     if (!(typeof userId === 'string' && typeof password === 'string'))

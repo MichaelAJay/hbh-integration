@@ -26,12 +26,23 @@ export class UserDbHandlerService {
 
   async getOne(userId: string) {
     try {
-      const user = await this.dbClientService.getOne({
+      const record = await this.dbClientService.getOne({
         collectionName: this.collectionName,
         docId: userId,
       });
 
-      if (!user) throw new UnprocessableEntityException('Could not find user');
+      if (!record)
+        throw new UnprocessableEntityException('Could not find user');
+
+      if (!isIUserRecordWithId(record))
+        throw new UnprocessableEntityException(
+          'User does not match expected model',
+        );
+
+      const user: IUserModelWithId = {
+        ...record,
+        accountId: record.accountId.id,
+      };
 
       if (isIUserModelWithId(user)) {
         return user;

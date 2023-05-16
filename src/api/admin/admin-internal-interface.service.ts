@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
@@ -8,6 +9,7 @@ import { AdminCreateUserBodyDto } from './dtos/body';
 export class AdminInternalInterfaceService {
   constructor(
     private readonly accountDbHandler: AccountDbHandlerService,
+    private readonly authService: AuthService,
     private readonly userDbHandler: UserDbHandlerService,
     private readonly userService: UserService,
   ) {}
@@ -38,13 +40,14 @@ export class AdminInternalInterfaceService {
       salt,
     });
 
+    const token = await this.authService.signClaimAcctToken({
+      userId,
+      password,
+    });
+
     /**
      * @TODO Send email.  Use password
      */
-    /**
-     * Encode password & userId
-     */
-
-    return { userId, password };
+    return { token };
   }
 }
