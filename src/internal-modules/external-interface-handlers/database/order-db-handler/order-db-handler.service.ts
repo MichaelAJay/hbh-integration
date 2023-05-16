@@ -1,4 +1,4 @@
-import { Filter, WhereFilterOp } from '@google-cloud/firestore';
+import { WhereFilterOp } from '@google-cloud/firestore';
 import {
   Injectable,
   NotFoundException,
@@ -7,6 +7,7 @@ import {
 import { UUID } from 'src/common/types';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { CollectionName } from 'src/external-modules/database/enum';
+import { ICompositeAndFilter } from 'src/external-modules/database/interfaces';
 import {
   IOrderModel,
   IOrderModelWithId,
@@ -105,11 +106,14 @@ export class OrderDbHandlerService {
       collectionName: CollectionName.ACCOUNTS,
       docId: accountId,
     });
-    const filter: Filter = Filter.and(
-      { fieldPath: 'name', opStr: '==', value: orderName },
-      { fieldPath: 'accountId', opStr: '==', value: accountRef },
-    );
-    const records = await this.findManyCompound(filter);
+    const filter: ICompositeAndFilter = {
+      operator: 'AND',
+      filters: [
+        { fieldPath: 'name', opStr: '==', value: orderName },
+        { fieldPath: 'accountId', opStr: '==', value: accountRef },
+      ],
+    };
+    const records = await this.findManyIntersection(filter);
 
     if (records.length > 1) {
       this.logger.error('More than one order found matching specification', {
@@ -173,8 +177,8 @@ export class OrderDbHandlerService {
     return records;
   }
 
-  private async findManyCompound(filter: Filter) {
-    const querySnapshot = await this.dbClientService.getManyCompound({
+  private async findManyIntersection(filter: ICompositeAndFilter) {
+    const querySnapshot = await this.dbClientService.getManyIntersection({
       collectionName: this.collectionName,
       filter,
     });
@@ -190,6 +194,7 @@ export class OrderDbHandlerService {
           /**
            * FAIL
            */
+          console.error('FAIL');
         }
         return acc;
       },

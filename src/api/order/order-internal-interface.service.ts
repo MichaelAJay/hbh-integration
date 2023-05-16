@@ -50,6 +50,13 @@ export class OrderInternalInterfaceService {
       orderName,
       accountId,
     );
-    return order;
+
+    const ezManageOrder = await this.getOrder({
+      orderId: order.id,
+      accountId,
+      ref,
+    });
+
+    return ezManageOrder;
   }
 }
