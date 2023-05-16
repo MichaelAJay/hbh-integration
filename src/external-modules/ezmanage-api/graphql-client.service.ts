@@ -84,7 +84,7 @@ export class GraphqlClientService {
         this.logger.error(msg, { data });
         throw new UnprocessableEntityException({ reason: msg });
       }
-      return data.order.orderName;
+      return data.order.orderNumber;
     } catch (err) {
       console.error('err', err);
       throw err;
