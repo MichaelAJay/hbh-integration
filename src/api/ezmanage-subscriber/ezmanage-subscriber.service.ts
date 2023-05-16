@@ -14,12 +14,6 @@ export class EzmanageSubscriberService {
 
   async handleWebhook(payload: IEventNotificationPayload) {
     /**
-     * @TODO DELETE
-     * Getting an idea of how the data is sent
-     */
-    this.logger.log('webhook request received', payload);
-
-    /**
      * Custom validator with logging
      */
     try {
