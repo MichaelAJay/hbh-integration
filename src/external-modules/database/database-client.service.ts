@@ -1,6 +1,12 @@
-import { Firestore, WhereFilterOp } from '@google-cloud/firestore';
-import { Injectable } from '@nestjs/common';
+import {
+  Filter,
+  Firestore,
+  Query,
+  WhereFilterOp,
+} from '@google-cloud/firestore';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CollectionName } from './enum';
+import { ICompositeAndFilter } from './interfaces';
 
 @Injectable()
 export class DatabaseClientService {
@@ -112,6 +118,41 @@ export class DatabaseClientService {
         .collection(collectionName)
         .where(fieldPath, filterOp, value)
         .get();
+      return records;
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
+  /**
+   * This method has one use:
+   * An intersection of simple "==" filters ANDed together
+   */
+  async getManyIntersection({
+    collectionName,
+    filter,
+  }: {
+    collectionName: CollectionName;
+    filter: ICompositeAndFilter;
+  }) {
+    try {
+      if (!(filter.operator && filter.operator === 'AND')) {
+        /**
+         * log and throw
+         */
+        throw new InternalServerErrorException('Bad filter');
+      }
+      // const records = await this.firestore
+      //   .collection(collectionName)
+      //   .where(filter)
+      //   .get();
+      // return records;
+      let query: Query = this.firestore.collection(collectionName);
+      query = filter.filters.reduce((acc, cur) => {
+        return acc.where(cur.fieldPath, cur.opStr, cur.value);
+      }, query);
+      const records = await query.get();
       return records;
     } catch (err) {
       console.error('err', err);
