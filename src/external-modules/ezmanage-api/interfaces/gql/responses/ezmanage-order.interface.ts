@@ -7,11 +7,29 @@ export interface IEzManageOrder {
   orderCustomer: IEzManageOrderCustomer;
   totals: IEzManageOrderTotals;
   catererCart: ICatererCart;
+  orderSourceType: string;
 }
 
 interface IEzManageOrderEvent {
   timestamp: string;
   timeZoneOffset: string;
+  address: IEzManageOrderEventAddress;
+  contact: IEzManageOrderEventContact;
+}
+
+export interface IEzManageOrderEventAddress {
+  city: string | null;
+  name: string | null;
+  state: string | null;
+  street: string | null;
+  street2: string | null;
+  street3: string | null;
+  zip: string | null;
+}
+
+export interface IEzManageOrderEventContact {
+  name: string | null;
+  phone: string | null;
 }
 
 interface IEzManageOrderCustomer {

@@ -2,6 +2,7 @@ export function validateEzManageOrder(order) {
   if (!order) return false;
   if (typeof order.orderNumber !== 'string') return false;
   if (typeof order.uuid !== 'string') return false;
+  if (typeof order.orderSourceType !== 'string') return false;
   if (!validateEvent(order.event)) return false;
   if (!validateOrderCustomer(order.orderCustomer)) return false;
   if (!validateTotals(order.totals)) return false;
@@ -13,8 +14,60 @@ function validateEvent(event) {
   return (
     event &&
     typeof event.timestamp === 'string' &&
-    typeof event.timeZoneOffset === 'string'
+    typeof event.timeZoneOffset === 'string' &&
+    validateEventAddress(event.address) &&
+    validateEventContact(event.contact)
   );
+}
+
+function validateEventAddress(address) {
+  if (typeof address !== 'object' || address === null) {
+    throw new Error('Address must be an object');
+  }
+
+  const properties = [
+    'city',
+    'name',
+    'state',
+    'street',
+    'street2',
+    'street3',
+    'zip',
+  ];
+
+  for (const property of properties) {
+    if (!(property in address)) {
+      throw new Error(`Missing property: ${property}`);
+    }
+
+    if (address[property] !== null && typeof address[property] !== 'string') {
+      throw new Error(
+        `Invalid type for property ${property}: expected string or null`,
+      );
+    }
+  }
+  return true;
+}
+
+function validateEventContact(contact) {
+  if (typeof contact !== 'object' || contact === null) {
+    throw new Error('Address must be an object');
+  }
+
+  const properties = ['name', 'phone'];
+
+  for (const property of properties) {
+    if (!(property in contact)) {
+      throw new Error(`Missing property: ${property}`);
+    }
+
+    if (contact[property] !== null && typeof contact[property] !== 'string') {
+      throw new Error(
+        `Invalid type for property ${property}: expected string or null`,
+      );
+    }
+  }
+  return true;
 }
 
 function validateOrderCustomer(orderCustomer) {

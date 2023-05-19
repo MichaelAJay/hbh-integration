@@ -137,7 +137,12 @@ export class OrderService {
 
     return {
       orderNumber: order.orderNumber,
-      deliveryTime: new Date(order.event.timestamp),
+      sourceType: order.orderSourceType,
+      event: {
+        deliveryTime: new Date(order.event.timestamp),
+        address: order.event.address,
+        contact: order.event.contact,
+      },
       contact: {
         firstName: order.orderCustomer.firstName,
         lastName: order.orderCustomer.lastName,

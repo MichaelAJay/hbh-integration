@@ -1,7 +1,16 @@
+import {
+  IEzManageOrderEventAddress,
+  IEzManageOrderEventContact,
+} from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+
 export interface IGetOrderOutput {
   orderNumber: string;
   catererName: string;
-  deliveryTime: Date;
+  event: {
+    deliveryTime: Date;
+    address: IEzManageOrderEventAddress;
+    contact: IEzManageOrderEventContact;
+  };
   contact: {
     firstName: string | null;
     lastName: string | null;
@@ -18,4 +27,5 @@ export interface IGetOrderOutput {
     name: string;
     cost: number;
   }[];
+  sourceType: string;
 }
