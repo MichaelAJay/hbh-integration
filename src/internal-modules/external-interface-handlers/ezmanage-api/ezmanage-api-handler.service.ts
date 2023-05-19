@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EzmanageApiService } from 'src/external-modules/ezmanage-api/ezmanage-api.service';
 
 @Injectable()
@@ -6,8 +6,7 @@ export class EzmanageApiHandlerService {
   constructor(private readonly ezManageApiService: EzmanageApiService) {}
 
   async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
-    const order = await this.ezManageApiService.getOrder(orderId, ref);
-    return order;
+    return await this.ezManageApiService.getOrder(orderId, ref);
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {

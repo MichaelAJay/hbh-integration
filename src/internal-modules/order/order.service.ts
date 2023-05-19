@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { IGetOrderOutput } from 'src/api/order/interfaces/output';
 import { OrderStatus } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
+import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
@@ -89,10 +91,12 @@ export class OrderService {
   }
 
   async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
-    return this.ezManageApiHandler.getOrder({
+    const order = await this.ezManageApiHandler.getOrder({
       orderId,
       ref,
     });
+
+    return this.convertEzManageOrderForOutput(order);
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
@@ -100,5 +104,53 @@ export class OrderService {
       orderId,
       ref,
     });
+  }
+
+  private convertEzManageOrderForOutput(
+    order: IEzManageOrder,
+  ): IGetOrderOutput {
+    // Extract the delivery fee (in cents)
+    let deliveryFeeInCents = 0;
+    for (const fee of order.catererCart.feesAndDiscounts) {
+      if (fee.name === 'Delivery Fee') {
+        deliveryFeeInCents = fee.cost.subunits;
+        break;
+      }
+    }
+
+    const subTotalInCents = order.totals.subTotal.subunits;
+    const catererTotalDueInCents =
+      order.catererCart.totals.catererTotalDue * 100;
+    const tipInCents = order.totals.tip.subunits;
+
+    // Stubbed commission (in cents)
+    const commissionInCents =
+      catererTotalDueInCents -
+      (subTotalInCents + deliveryFeeInCents + tipInCents);
+
+    function centsToDollars(cents: number): number {
+      return Number((cents / 100).toFixed(2));
+    }
+
+    return {
+      orderNumber: order.orderNumber,
+      deliveryTime: new Date(order.event.timestamp),
+      contact: {
+        firstName: order.orderCustomer.firstName,
+        lastName: order.orderCustomer.lastName,
+      },
+      totals: {
+        subTotal: centsToDollars(subTotalInCents),
+        catererTotalDue: order.catererCart.totals.catererTotalDue,
+        tip: centsToDollars(tipInCents),
+        deliveryFee: centsToDollars(deliveryFeeInCents),
+        commission: centsToDollars(commissionInCents),
+      },
+      items: order.catererCart.orderItems.map((item) => ({
+        quantity: item.quantity,
+        name: item.name,
+        cost: centsToDollars(item.totalInSubunits.subunits),
+      })),
+    };
   }
 }

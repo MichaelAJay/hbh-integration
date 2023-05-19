@@ -6,6 +6,8 @@ import {
 import { GraphQLClient, gql } from 'graphql-request';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { isGetOrderNameReturn } from './interfaces/gql';
+import { IEzManageOrder } from './interfaces/gql/responses';
+import { validateEzManageOrder } from './validators';
 
 @Injectable()
 export class GraphqlClientService {
@@ -57,64 +59,53 @@ export class GraphqlClientService {
       {
         order(id: "${orderId}") {
           orderNumber
+          uuid
           event {
-              catererHandoffFoodTime
-              headcount
-              orderType
-              thirdPartyDeliveryPartner
-              timeZoneIdentifier
-              timeZoneOffset
               timestamp
-              contact {
-                  name
-                  phone
-              }
+              timeZoneOffset
           }
           orderCustomer {
               firstName
-              fullName
               lastName
           }
-          catererCart {
-              orderItems {
-                  labelFor
-                  menuId
-                  menuItemSizeId
-                  name
-                  noteToCaterer
-                  posItemId
-                  quantity
-                  specialInstructions
-                  uuid
-                  constituentOrderItems {
-                      labelFor
-                      menuItemSizeId
-                      name
-                      noteToCaterer
-                      posItemId
-                      quantity
-                      specialInstructions
-                      uuid
-                  }
-                  customizations {
-                      customizationId
-                      customizationTypeId
-                      customizationTypeName
-                      name
-                      posCustomizationId
-                      quantity
-                  }
-                  totalInSubunits {
-                      currency
-                      subunitsV2
-                  }
+          totals {
+              subTotal {
+                  subunits
+              }
+              tip {
+                  subunits
               }
           }
+          catererCart {
+              feesAndDiscounts(type: DELIVERY_FEE) {
+                  name
+                  cost {
+                      subunits
+                  }
+              }
+              orderItems {
+                  quantity
+                  name
+                  totalInSubunits {
+                      subunits
+                  }
+              }
+              totals {
+                  catererTotalDue
+              }
+          }
+        }
       }
-    }
       `;
-      const data = this.client.request(query);
-      return data;
+      const data: { order: any } = await this.client.request(query);
+
+      if (!validateEzManageOrder(data.order)) {
+        const msg = 'Malformed GQL order response';
+        this.logger.error(msg, {});
+        throw new UnprocessableEntityException(msg);
+      }
+
+      return data.order as IEzManageOrder;
     } catch (err) {
       console.error('err', err);
       throw err;
