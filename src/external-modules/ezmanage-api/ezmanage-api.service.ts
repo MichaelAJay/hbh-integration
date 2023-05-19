@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CustomLoggerService } from '../../support-modules/custom-logger/custom-logger.service';
 import { GraphqlClientService } from './graphql-client.service';
 
@@ -11,15 +11,13 @@ export class EzmanageApiService {
 
   async getOrder(orderId: string, ref: string) {
     try {
-      // const data = (await this.graphqlService.queryOrder(
-      //   orderId,
-      //   ref,
-      // )) as IEzManageOrder;
       const data = await this.graphqlService.queryOrder({ orderId, ref });
       return data;
     } catch (err) {
       console.error('err', err);
-      this.customLogger.error('EzmanageApiService failed', {});
+      const msg = 'EzmanageApiService failed';
+      this.customLogger.error(msg, {});
+      throw new InternalServerErrorException(msg);
     }
   }
 
