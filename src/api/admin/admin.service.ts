@@ -12,4 +12,8 @@ export class AdminService {
     const val = await this.adminInternalInterface.createUser(body);
     return { msg: 'User created', ...val };
   }
+
+  async getOrderNamesForAccount(accountId: string) {
+    return await this.adminInternalInterface.getOrderNamesForAccount(accountId);
+  }
 }

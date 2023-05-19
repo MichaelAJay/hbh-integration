@@ -2,7 +2,7 @@ import { UUID } from 'src/common/types';
 
 export interface ICatererModel {
   accountId: string;
-  city: string;
+  name: string;
   storeNumber: string;
 }
 
@@ -14,7 +14,7 @@ export function isICatererModelWithId(obj: any): obj is ICatererModelWithId {
   return (
     typeof obj.id === 'string' &&
     typeof obj.accountId === 'string' &&
-    typeof obj.city === 'string' &&
+    typeof obj.name === 'string' &&
     typeof obj.storeNumber === 'string'
   );
 }

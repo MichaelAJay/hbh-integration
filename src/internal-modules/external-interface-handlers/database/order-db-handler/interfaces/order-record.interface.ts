@@ -6,6 +6,7 @@ import { isInputDocumentReference } from '../../utility/methods';
 export interface IOrderRecord {
   accountId: DocumentReference;
   catererId: DocumentReference;
+  catererName: string;
   name: string;
   status: OrderStatus;
   acceptedAt: Timestamp;
@@ -25,11 +26,12 @@ export type OrderRecordInput = Overwrite<
 >;
 
 export function isIOrderRecord(record: any): record is IOrderRecordWithId {
-  const { id, accountId, catererId, name, status } = record;
+  const { id, accountId, catererId, catererName, name, status } = record;
   return (
     typeof id === 'string' &&
     isInputDocumentReference(accountId) &&
     isInputDocumentReference(catererId) &&
+    typeof catererName === 'string' &&
     typeof name === 'string' &&
     Object.values(OrderStatus).includes(status)
   );

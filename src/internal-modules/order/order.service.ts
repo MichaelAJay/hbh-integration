@@ -25,6 +25,7 @@ export class OrderService {
     status,
     occurredAt,
     ref,
+    catererName,
   }: {
     accountId: string;
     catererId: string;
@@ -32,6 +33,7 @@ export class OrderService {
     status: OrderStatus;
     occurredAt: string;
     ref: string;
+    catererName: string;
   }) {
     /**
      * Need order name for db
@@ -56,6 +58,7 @@ export class OrderService {
     const data: IOrderModel = {
       accountId,
       catererId,
+      catererName,
       name: ezManageOrderName || 'PLACEHOLDER NAME',
       status,
       acceptedAt: now,
@@ -108,7 +111,7 @@ export class OrderService {
 
   private convertEzManageOrderForOutput(
     order: IEzManageOrder,
-  ): IGetOrderOutput {
+  ): Omit<IGetOrderOutput, 'catererName'> {
     // Extract the delivery fee (in cents)
     let deliveryFeeInCents = 0;
     for (const fee of order.catererCart.feesAndDiscounts) {

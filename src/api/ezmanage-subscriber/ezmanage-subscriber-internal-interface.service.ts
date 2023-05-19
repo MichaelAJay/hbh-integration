@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderStatus } from 'src/external-modules/database/enum';
 import { AccountService } from 'src/internal-modules/account/account.service';
+import { CatererDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/caterer-db-handler/caterer-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
@@ -10,6 +11,7 @@ import { EventNotificationPayloadKey } from './enums';
 export class EzmanageSubscriberInternalInterfaceService {
   constructor(
     private readonly accountService: AccountService,
+    private readonly catererDbHandler: CatererDbHandlerService,
     private readonly orderService: OrderService,
     private readonly orderDbHandler: OrderDbHandlerService,
     private readonly logger: CustomLoggerService,
@@ -34,11 +36,13 @@ export class EzmanageSubscriberInternalInterfaceService {
     key: EventNotificationPayloadKey;
     occurred_at: string;
   }) {
-    const account = await this.accountService.findAccountByCatererId(catererId);
+    const { account, caterer } =
+      await this.accountService.findAccountByCatererId(catererId);
     if (key === EventNotificationPayloadKey.CANCELLED)
       return this.handleOrderCancelled({
         accountId: account.id,
         catererId,
+        catererName: caterer.name,
         orderId: orderId,
         occurredAt: occurred_at,
         ref: account.ref,
@@ -50,6 +54,7 @@ export class EzmanageSubscriberInternalInterfaceService {
     return this.handleOrderAccepted({
       accountId: account.id,
       catererId,
+      catererName: caterer.name,
       orderId: orderId,
       occurredAt: occurred_at,
       ref: account.ref,
@@ -62,12 +67,14 @@ export class EzmanageSubscriberInternalInterfaceService {
     orderId,
     occurredAt,
     ref,
+    catererName,
   }: {
     accountId: string;
     catererId: string;
     orderId: string;
     occurredAt: string;
     ref: string;
+    catererName: string;
   }) {
     /**
      * Business logic:
@@ -83,6 +90,7 @@ export class EzmanageSubscriberInternalInterfaceService {
       await this.orderService.createOrder({
         accountId,
         catererId,
+        catererName,
         orderId,
         status: OrderStatus.CANCELLED,
         occurredAt,
@@ -118,19 +126,18 @@ export class EzmanageSubscriberInternalInterfaceService {
   private async handleOrderAccepted({
     accountId,
     catererId,
+    catererName,
     orderId,
     occurredAt,
     ref,
   }: {
     accountId: string;
     catererId: string;
+    catererName: string;
     orderId: string;
     occurredAt: string;
     ref: string;
   }) {
-    /**
-     * Actually need to catch here
-     */
     const order = await this.orderDbHandler.getOne(orderId);
     console.log('looked for one');
     if (!order) {
@@ -144,6 +151,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         status: OrderStatus.ACCEPTED,
         occurredAt,
         ref,
+        catererName,
       });
       console.log('made one');
     } else {

@@ -1,4 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  IAccountModelWithId,
+  ICatererModelWithId,
+} from 'src/external-modules/database/models';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { CatererDbHandlerService } from '../external-interface-handlers/database/caterer-db-handler/caterer-db-handler.service';
@@ -11,7 +15,9 @@ export class AccountService {
     private readonly logger: CustomLoggerService,
   ) {}
 
-  async findAccountByCatererId(catererId: string) {
+  async findAccountByCatererId(
+    catererId: string,
+  ): Promise<{ caterer: ICatererModelWithId; account: IAccountModelWithId }> {
     const caterer = await this.catererDbService.getCaterer(catererId);
     if (!caterer) {
       const msg = `Caterer not found with id ${catererId}`;
@@ -29,13 +35,13 @@ export class AccountService {
       });
       throw new NotFoundException(msg);
     }
-    return account;
+    return { caterer, account };
   }
 
   async getEnvironmentVariablePrefixByCatererId(
     catererId: string,
   ): Promise<string> {
-    const account = await this.findAccountByCatererId(catererId);
+    const { account } = await this.findAccountByCatererId(catererId);
     return account.ref;
   }
 }

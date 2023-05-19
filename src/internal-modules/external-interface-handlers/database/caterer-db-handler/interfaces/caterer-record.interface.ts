@@ -4,7 +4,7 @@ import { UUID } from 'src/common/types';
 export interface ICatererRecord {
   id: UUID;
   accountId: DocumentReference;
-  city: string;
+  name: string;
   storeNumber: string;
 }
 
@@ -13,10 +13,10 @@ export interface ICatererRecord {
  * isICatererRecord subsumes isICatererModelWithId
  */
 export function isICatererRecord(record: any): record is ICatererRecord {
-  const { id, accountId, city, storeNumber } = record;
+  const { id, accountId, name, storeNumber } = record;
   return (
     typeof id === 'string' &&
-    typeof city === 'string' &&
+    typeof name === 'string' &&
     typeof storeNumber === 'string' &&
     accountId &&
     typeof accountId === 'object' &&
