@@ -63,6 +63,19 @@ export class GraphqlClientService {
           event {
               timestamp
               timeZoneOffset
+              address {
+                  city
+                  name
+                  state
+                  street
+                  street2
+                  street3
+                  zip
+              }
+              contact {
+                  name
+                  phone
+              }
           }
           orderCustomer {
               firstName
@@ -94,7 +107,8 @@ export class GraphqlClientService {
                   catererTotalDue
               }
           }
-        }
+          orderSourceType
+      }
       }
       `;
       const data: { order: any } = await this.client.request(query);
