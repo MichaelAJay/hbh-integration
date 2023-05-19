@@ -1,5 +1,6 @@
 export interface IGetOrderOutput {
   orderNumber: string;
+  catererName: string;
   deliveryTime: Date;
   contact: {
     firstName: string | null;

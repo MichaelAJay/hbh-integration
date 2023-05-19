@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
+import { IGetOrderOutput } from './interfaces/output';
 
 @Injectable()
 export class OrderInternalInterfaceService {
@@ -45,7 +46,7 @@ export class OrderInternalInterfaceService {
     orderName: string;
     accountId: string;
     ref: string;
-  }) {
+  }): Promise<IGetOrderOutput> {
     const order = await this.orderDbHandler.findByNameForAccount(
       orderName,
       accountId,
@@ -57,6 +58,6 @@ export class OrderInternalInterfaceService {
       ref,
     });
 
-    return ezManageOrder;
+    return { catererName: order.catererName, ...ezManageOrder };
   }
 }

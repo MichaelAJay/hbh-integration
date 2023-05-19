@@ -101,6 +101,20 @@ export class OrderDbHandlerService {
     }
   }
 
+  async getManyForAccount(accountId: string) {
+    const accountRef = this.dbClientService.getDocRef({
+      collectionName: CollectionName.ACCOUNTS,
+      docId: accountId,
+    });
+
+    const orders = await this.findMany({
+      fieldPath: 'accountId',
+      filterOp: '==',
+      value: accountRef,
+    });
+    return orders;
+  }
+
   async findByNameForAccount(orderName: string, accountId: string) {
     const accountRef = this.dbClientService.getDocRef({
       collectionName: CollectionName.ACCOUNTS,
@@ -210,6 +224,7 @@ export class OrderDbHandlerService {
       id: record.id,
       accountId: record.accountId.id,
       catererId: record.catererId.id,
+      catererName: record.catererName,
       name: record.name,
       status: record.status,
       acceptedAt: record.acceptedAt.toDate(),
