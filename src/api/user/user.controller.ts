@@ -10,7 +10,7 @@ import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -30,7 +30,7 @@ export class UserController {
       path: '/',
     });
 
-    return res.send({ success: true });
+    return res.send({ at, rt });
   }
 
   @Public()
@@ -57,7 +57,7 @@ export class UserController {
       path: '/',
     });
 
-    return res.send({ success: true });
+    return res.send({ at, rt: rtOut });
   }
 
   @Public()
