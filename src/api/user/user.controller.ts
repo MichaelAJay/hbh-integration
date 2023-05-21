@@ -1,4 +1,5 @@
-import { Body, Controller, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import { Public } from 'src/decorators';
 import { RefreshAuthenticationReq } from 'src/decorators/refresh-authentication-request.decorator';
 import { RefreshTokenGuard } from 'src/guards';
@@ -9,14 +10,27 @@ import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Public()
   @Post('login')
-  async login(@Body() body: LoginBodyDto) {
-    return this.userService.login(body as ILogin);
+  async login(@Body() body: LoginBodyDto, @Res() res: Response) {
+    const { at, rt } = await this.userService.login(body as ILogin);
+
+    res.cookie('accessToken', at, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.cookie('refreshToken', rt, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return res.send({ at, rt });
   }
 
   @Public()
@@ -24,9 +38,26 @@ export class UserController {
   @Post('refresh-auth')
   async refreshAuth(
     @RefreshAuthenticationReq() req: IRefreshAuthenticationRequest,
+    @Res() res,
   ) {
     const { userId, rt } = req;
-    return this.userService.refreshAuth({ userId, rt });
+    const { at, rt: rtOut } = await this.userService.refreshAuth({
+      userId,
+      rt,
+    });
+
+    res.cookie('accessToken', at, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.cookie('refreshToken', rtOut, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return res.send({ at, rt: rtOut });
   }
 
   @Public()
