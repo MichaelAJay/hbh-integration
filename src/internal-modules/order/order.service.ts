@@ -90,6 +90,7 @@ export class OrderService {
 
     if (!order) throw new NotFoundException();
 
+    // console.log('Order ID: ', order.id);
     return order.accountId === accountId;
   }
 
