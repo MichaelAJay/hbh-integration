@@ -9,6 +9,10 @@ export class OrderService {
     private readonly logger: CustomLoggerService,
   ) {}
 
+  async getOrdersByAccount({ accountId }: { accountId: string }) {
+    return await this.orderInternalInterface.getOrdersByAccount({ accountId });
+  }
+
   async getOrder({
     orderId,
     accountId,

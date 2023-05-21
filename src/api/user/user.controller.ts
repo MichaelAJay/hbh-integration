@@ -30,7 +30,7 @@ export class UserController {
       path: '/',
     });
 
-    return res.send({ success: true });
+    return res.send({ at, rt });
   }
 
   @Public()
@@ -57,7 +57,7 @@ export class UserController {
       path: '/',
     });
 
-    return res.send({ success: true });
+    return res.send({ at, rt: rtOut });
   }
 
   @Public()

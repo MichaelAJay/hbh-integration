@@ -7,6 +7,12 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Get()
+  async getOrdersByAccount(@AuthenticatedReq() req: IAuthenticatedRequest) {
+    const { accountId } = req;
+    return this.orderService.getOrdersByAccount({ accountId });
+  }
+
   @Get('by-name/:name')
   async getOrderByName(
     @Param('name') orderName: string,

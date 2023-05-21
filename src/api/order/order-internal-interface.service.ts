@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IGetOrderOutput } from './interfaces/output';
+import { GetOrdersByAccount } from './types/output/get-orders-by-account.type';
 
 @Injectable()
 export class OrderInternalInterfaceService {
@@ -9,6 +10,23 @@ export class OrderInternalInterfaceService {
     private readonly orderService: OrderService,
     private readonly orderDbHandler: OrderDbHandlerService,
   ) {}
+
+  /**
+   * @TODO need to think about pagination
+   */
+  async getOrdersByAccount({
+    accountId,
+  }: {
+    accountId: string;
+  }): Promise<GetOrdersByAccount> {
+    const orders = await this.orderDbHandler.getManyForAccount(accountId);
+    return orders.map((order) => ({
+      id: order.id,
+      name: order.name,
+      status: order.status,
+      caterer: order.catererName,
+    }));
+  }
 
   async getOrder({
     orderId,
