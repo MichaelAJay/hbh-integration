@@ -10,7 +10,7 @@ import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
 import { UserService } from './user.service';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

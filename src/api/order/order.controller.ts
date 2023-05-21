@@ -3,11 +3,10 @@ import { AuthenticatedReq } from 'src/decorators/authenticated-request.decorator
 import { IAuthenticatedRequest } from '../interfaces';
 import { OrderService } from './order.service';
 
-@Controller('order')
+@Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  // @Get('')
   @Get('by-name/:name')
   async getOrderByName(
     @Param('name') orderName: string,
