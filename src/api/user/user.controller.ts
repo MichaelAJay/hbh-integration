@@ -19,8 +19,16 @@ export class UserController {
   async login(@Body() body: LoginBodyDto, @Res() res: Response) {
     const { at, rt } = await this.userService.login(body as ILogin);
 
-    res.cookie('accessToken', at, { httpOnly: true, sameSite: 'lax' });
-    res.cookie('refreshToken', rt, { httpOnly: true, sameSite: 'lax' });
+    res.cookie('accessToken', at, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.cookie('refreshToken', rt, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
 
     return res.send({ success: true });
   }
@@ -38,8 +46,16 @@ export class UserController {
       rt,
     });
 
-    res.cookie('accessToken', at, { httpOnly: true, sameSite: 'lax' });
-    res.cookie('refreshToken', rtOut, { httpOnly: true, sameSite: 'lax' });
+    res.cookie('accessToken', at, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.cookie('refreshToken', rtOut, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+    });
 
     return res.send({ success: true });
   }
