@@ -7,6 +7,7 @@ import { OrderService } from './order.service';
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  // @Get('')
   @Get('by-name/:name')
   async getOrderByName(
     @Param('name') orderName: string,
