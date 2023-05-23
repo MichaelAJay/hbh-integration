@@ -1,5 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IGetOrderOutput } from 'src/api/order/interfaces/output';
+import {
+  IGetOrderOutput,
+  IGetOrderOutputItem,
+} from 'src/api/order/interfaces/output';
 import { OrderStatus } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
@@ -136,6 +139,12 @@ export class OrderService {
       return Number((cents / 100).toFixed(2));
     }
 
+    const items = order.catererCart.orderItems.map((item) => ({
+      quantity: item.quantity,
+      name: item.name,
+      cost: centsToDollars(item.totalInSubunits.subunits),
+    }));
+
     return {
       orderNumber: order.orderNumber,
       sourceType: order.orderSourceType,
@@ -155,11 +164,20 @@ export class OrderService {
         deliveryFee: centsToDollars(deliveryFeeInCents),
         commission: centsToDollars(commissionInCents),
       },
-      items: order.catererCart.orderItems.map((item) => ({
-        quantity: item.quantity,
-        name: item.name,
-        cost: centsToDollars(item.totalInSubunits.subunits),
-      })),
+      items,
+      itemsAggregate: this.aggregateOrder(items),
     };
+  }
+
+  private aggregateOrder(items: IGetOrderOutputItem[]) {
+    const itemsAggregate: { [key: string]: number } = {};
+    for (const item of items) {
+      if (itemsAggregate[item.name]) {
+        itemsAggregate[item.name] += item.quantity;
+      } else {
+        itemsAggregate[item.name] = item.quantity;
+      }
+    }
+    return itemsAggregate;
   }
 }

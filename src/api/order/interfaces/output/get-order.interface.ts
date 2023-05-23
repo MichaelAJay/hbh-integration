@@ -22,10 +22,13 @@ export interface IGetOrderOutput {
     deliveryFee: number;
     commission: number;
   };
-  items: {
-    quantity: number;
-    name: string;
-    cost: number;
-  }[];
+  items: IGetOrderOutputItem[];
   sourceType: string;
+  itemsAggregate: { [key: string]: number };
+}
+
+export interface IGetOrderOutputItem {
+  quantity: number;
+  name: string;
+  cost: number;
 }
