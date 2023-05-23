@@ -21,8 +21,8 @@ function validateEvent(event) {
 }
 
 function validateEventAddress(address) {
-  if (typeof address !== 'object' || address === null) {
-    throw new Error('Address must be an object');
+  if (typeof address !== 'object' && address !== null) {
+    throw new Error('Address must be an object or null');
   }
 
   const properties = [
@@ -51,7 +51,7 @@ function validateEventAddress(address) {
 
 function validateEventContact(contact) {
   if (typeof contact !== 'object' || contact === null) {
-    throw new Error('Address must be an object');
+    throw new Error('Contact must be an object');
   }
 
   const properties = ['name', 'phone'];
