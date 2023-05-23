@@ -57,7 +57,7 @@ interface IFeeAndDiscount {
   cost: ISubunits;
 }
 
-interface IEzManageOrderItem {
+export interface IEzManageOrderItem {
   quantity: number;
   name: string;
   totalInSubunits: ISubunits;
