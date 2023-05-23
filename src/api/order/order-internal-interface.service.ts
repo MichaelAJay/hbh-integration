@@ -48,12 +48,12 @@ export class OrderInternalInterfaceService {
     /**
      * Get order from EZManage
      */
-    const orderName = await this.orderService.getOrder({
+    const order = await this.orderService.getOrder({
       orderId,
       ref,
     });
 
-    return orderName;
+    return order;
   }
 
   async getOrderByName({
