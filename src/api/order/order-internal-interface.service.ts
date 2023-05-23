@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IGetOrderOutput } from './interfaces/output';
@@ -37,23 +41,26 @@ export class OrderInternalInterfaceService {
     accountId: string;
     ref: string;
   }) {
-    /**
-     * Confirm that order and user belong to the same account
-     */
+    const order = await this.orderDbHandler.getOne(orderId);
+    if (!order) throw new BadRequestException('Order not found');
+
     if (
-      !this.orderService.doesOrderBelongToAccount({ input: orderId, accountId })
+      !this.orderService.doesOrderBelongToAccount({
+        input: order,
+        accountId,
+      })
     )
       throw new ForbiddenException({ reason: 'WRONG_ACCT' });
 
     /**
      * Get order from EZManage
      */
-    const order = await this.orderService.getOrder({
+    const ezManageOrder = await this.orderService.getOrder({
       orderId,
       ref,
     });
 
-    return order;
+    return { catererName: order.catererName, ...ezManageOrder };
   }
 
   async getOrderByName({
@@ -76,6 +83,6 @@ export class OrderInternalInterfaceService {
       ref,
     });
 
-    return { catererName: order.catererName, ...ezManageOrder };
+    return ezManageOrder;
   }
 }
