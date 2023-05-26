@@ -4,6 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { GraphQLClient, gql } from 'graphql-request';
+import { CustomErrorObject } from 'src/common/types';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { isGetOrderNameReturn } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
@@ -100,16 +101,34 @@ export class GraphqlClientService {
       if (!validateEzManageOrder(data.order)) {
         const msg = 'Malformed GQL order response';
         this.logger.error(msg, { id: orderId });
-        throw new UnprocessableEntityException(msg);
+        throw new UnprocessableEntityException({
+          msg,
+          isLogged: true,
+        } as CustomErrorObject);
       }
 
       return data.order as IEzManageOrder;
-    } catch (err) {
+    } catch (err: any) {
       console.error('err', err);
-      throw err;
+      if (
+        typeof err.msg === 'string' &&
+        typeof err.isLogged === 'boolean' &&
+        err.isLogged
+      ) {
+        throw err;
+      }
+      const msg = err.msg || 'GraphQL queryOrder error';
+      this.logger.error(msg, { id: orderId });
+      throw new InternalServerErrorException({
+        msg,
+        isLogged: true,
+      } as CustomErrorObject);
     }
   }
 
+  /**
+   * This is testable by sending a bogus UUID
+   */
   async queryOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
@@ -126,12 +145,27 @@ export class GraphqlClientService {
       if (!isGetOrderNameReturn(data)) {
         const msg = 'Returned data does not match expected data shape';
         this.logger.error(msg, { data });
-        throw new UnprocessableEntityException({ reason: msg });
+        throw new UnprocessableEntityException({
+          msg,
+          isLogged: true,
+        } as CustomErrorObject);
       }
       return data.order.orderNumber;
-    } catch (err) {
+    } catch (err: any) {
       console.error('err', err);
-      throw err;
+      if (
+        typeof err.msg === 'string' &&
+        typeof err.isLogged === 'boolean' &&
+        err.isLogged
+      ) {
+        throw err;
+      }
+      const msg = err.msg || 'GraphQL queryOrderName error';
+      this.logger.error(msg, { id: orderId });
+      throw new InternalServerErrorException({
+        msg,
+        isLogged: true,
+      } as CustomErrorObject);
     }
   }
 }
