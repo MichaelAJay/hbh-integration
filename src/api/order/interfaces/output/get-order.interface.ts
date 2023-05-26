@@ -9,7 +9,7 @@ export interface IGetOrderOutput {
   event: {
     deliveryTime: Date;
     address: IEzManageOrderEventAddress | null;
-    contact: IEzManageOrderEventContact;
+    contact: IEzManageOrderEventContact | null;
   };
   contact: {
     firstName: string | null;
