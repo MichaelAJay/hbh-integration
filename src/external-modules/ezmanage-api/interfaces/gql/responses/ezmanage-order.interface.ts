@@ -13,7 +13,7 @@ export interface IEzManageOrder {
 interface IEzManageOrderEvent {
   timestamp: string;
   timeZoneOffset: string;
-  address: IEzManageOrderEventAddress;
+  address: IEzManageOrderEventAddress | null;
   contact: IEzManageOrderEventContact;
 }
 
