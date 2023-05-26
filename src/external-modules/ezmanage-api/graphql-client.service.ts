@@ -4,6 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { GraphQLClient, gql } from 'graphql-request';
+import { CustomErrorObject } from 'src/common/types';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { isGetOrderNameReturn } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
@@ -33,28 +34,12 @@ export class GraphqlClientService {
   }
 
   /**
-   * @TODO
-   * Make it fail
-   *
-   * @TODO
-   * determine what happens when the orderId is bad
-   */
-
-  /**
    * Specific queries
    */
   async queryOrder({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     try {
-      /**
-       * This format returns a good result:
-       * data = {
-       *  order: {
-       *    orderNumber
-       *  }
-       * }
-       */
       const query = gql`
       {
         order(id: "${orderId}") {
@@ -111,21 +96,39 @@ export class GraphqlClientService {
       }
       }
       `;
-      const data: { order: any } = await this.client.request(query);
+      const data: { order: any } = await client.request(query);
 
       if (!validateEzManageOrder(data.order)) {
         const msg = 'Malformed GQL order response';
-        this.logger.error(msg, {});
-        throw new UnprocessableEntityException(msg);
+        this.logger.error(msg, { id: orderId });
+        throw new UnprocessableEntityException({
+          msg,
+          isLogged: true,
+        } as CustomErrorObject);
       }
 
       return data.order as IEzManageOrder;
-    } catch (err) {
+    } catch (err: any) {
       console.error('err', err);
-      throw err;
+      if (
+        typeof err.msg === 'string' &&
+        typeof err.isLogged === 'boolean' &&
+        err.isLogged
+      ) {
+        throw err;
+      }
+      const msg = err.msg || 'GraphQL queryOrder error';
+      this.logger.error(msg, { id: orderId });
+      throw new InternalServerErrorException({
+        msg,
+        isLogged: true,
+      } as CustomErrorObject);
     }
   }
 
+  /**
+   * This is testable by sending a bogus UUID
+   */
   async queryOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
@@ -142,12 +145,27 @@ export class GraphqlClientService {
       if (!isGetOrderNameReturn(data)) {
         const msg = 'Returned data does not match expected data shape';
         this.logger.error(msg, { data });
-        throw new UnprocessableEntityException({ reason: msg });
+        throw new UnprocessableEntityException({
+          msg,
+          isLogged: true,
+        } as CustomErrorObject);
       }
       return data.order.orderNumber;
-    } catch (err) {
+    } catch (err: any) {
       console.error('err', err);
-      throw err;
+      if (
+        typeof err.msg === 'string' &&
+        typeof err.isLogged === 'boolean' &&
+        err.isLogged
+      ) {
+        throw err;
+      }
+      const msg = err.msg || 'GraphQL queryOrderName error';
+      this.logger.error(msg, { id: orderId });
+      throw new InternalServerErrorException({
+        msg,
+        isLogged: true,
+      } as CustomErrorObject);
     }
   }
 }
