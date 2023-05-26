@@ -33,28 +33,12 @@ export class GraphqlClientService {
   }
 
   /**
-   * @TODO
-   * Make it fail
-   *
-   * @TODO
-   * determine what happens when the orderId is bad
-   */
-
-  /**
    * Specific queries
    */
   async queryOrder({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     try {
-      /**
-       * This format returns a good result:
-       * data = {
-       *  order: {
-       *    orderNumber
-       *  }
-       * }
-       */
       const query = gql`
       {
         order(id: "${orderId}") {
@@ -111,11 +95,11 @@ export class GraphqlClientService {
       }
       }
       `;
-      const data: { order: any } = await this.client.request(query);
+      const data: { order: any } = await client.request(query);
 
       if (!validateEzManageOrder(data.order)) {
         const msg = 'Malformed GQL order response';
-        this.logger.error(msg, {});
+        this.logger.error(msg, { id: orderId });
         throw new UnprocessableEntityException(msg);
       }
 
