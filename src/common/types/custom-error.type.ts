@@ -1,4 +1,4 @@
 export type CustomErrorObject = {
-  msg: string;
+  message: string;
   isLogged: boolean;
 };
