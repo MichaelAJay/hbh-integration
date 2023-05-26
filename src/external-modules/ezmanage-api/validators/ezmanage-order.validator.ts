@@ -25,6 +25,8 @@ function validateEventAddress(address) {
     throw new Error('Address must be an object or null');
   }
 
+  if (address === null) return true;
+
   const properties = [
     'city',
     'name',
