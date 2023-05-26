@@ -8,7 +8,7 @@ export interface IGetOrderOutput {
   catererName: string;
   event: {
     deliveryTime: Date;
-    address: IEzManageOrderEventAddress;
+    address: IEzManageOrderEventAddress | null;
     contact: IEzManageOrderEventContact;
   };
   contact: {
