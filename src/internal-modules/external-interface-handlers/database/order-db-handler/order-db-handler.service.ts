@@ -149,7 +149,9 @@ export class OrderDbHandlerService {
     updates,
   }: {
     orderId: UUID;
-    updates: Partial<IOrderModel>;
+    updates: Partial<
+      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
+    >;
   }) {
     try {
       await this.dbClientService.update({
@@ -157,6 +159,8 @@ export class OrderDbHandlerService {
         docId,
         data: updates,
       });
+
+      return { updated: true };
     } catch (err) {
       throw err;
     }

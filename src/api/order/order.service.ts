@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { IUpdateStatus } from './interfaces';
 import { OrderInternalInterfaceService } from './order-internal-interface.service';
 
 @Injectable()
@@ -43,6 +44,22 @@ export class OrderService {
         .split('')
         .filter((char) => /[a-zA-Z0-9]/.test(char))
         .join(''),
+      accountId,
+      ref,
+    });
+  }
+
+  async updateStatuses({
+    updates,
+    accountId,
+    ref,
+  }: {
+    updates: IUpdateStatus[];
+    accountId: string;
+    ref: string;
+  }) {
+    return await this.orderInternalInterface.updateStatuses({
+      updates,
       accountId,
       ref,
     });
