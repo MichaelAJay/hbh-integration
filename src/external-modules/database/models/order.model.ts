@@ -1,12 +1,12 @@
 import { UUID } from '../../../common/types';
-import { OrderStatus } from '../enum';
+import { DbOrderStatus } from '../enum';
 
 export interface IOrderModel {
   accountId: string;
   catererId: UUID;
   catererName: string;
   name: string;
-  status: OrderStatus;
+  status: DbOrderStatus;
   acceptedAt: Date; // Firestore calls this the "timestamp" field type
   lastUpdatedAt: Date;
 }
@@ -22,6 +22,6 @@ export function isIOrderModelWithId(obj: any): obj is IOrderModelWithId {
     typeof obj.catererId === 'string' &&
     typeof obj.caterername === 'string' &&
     typeof obj.name === 'string' &&
-    Object.values(OrderStatus).includes(obj.status)
+    Object.values(DbOrderStatus).includes(obj.status)
   );
 }

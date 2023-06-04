@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OrderStatus } from 'src/external-modules/database/enum';
+import { DbOrderStatus } from 'src/external-modules/database/enum';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { CatererDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/caterer-db-handler/caterer-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
@@ -92,16 +92,16 @@ export class EzmanageSubscriberInternalInterfaceService {
         catererId,
         catererName,
         orderId,
-        status: OrderStatus.CANCELLED,
+        status: DbOrderStatus.CANCELLED,
         occurredAt,
         ref,
       });
     }
 
-    if (order && order.status === OrderStatus.ACCEPTED) {
+    if (order && order.status === DbOrderStatus.ACCEPTED) {
       await this.orderDbHandler.updateOne({
         orderId,
-        updates: { status: OrderStatus.CANCELLED },
+        updates: { status: DbOrderStatus.CANCELLED },
       });
     }
 
@@ -148,7 +148,7 @@ export class EzmanageSubscriberInternalInterfaceService {
         accountId,
         catererId,
         orderId,
-        status: OrderStatus.ACCEPTED,
+        status: DbOrderStatus.ACCEPTED,
         occurredAt,
         ref,
         catererName,

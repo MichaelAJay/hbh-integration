@@ -1,6 +1,6 @@
 import { DocumentReference, Timestamp } from '@google-cloud/firestore';
 import { Overwrite, UUID } from 'src/common/types';
-import { OrderStatus } from 'src/external-modules/database/enum';
+import { DbOrderStatus } from 'src/external-modules/database/enum';
 import { isInputDocumentReference } from '../../utility/methods';
 
 export interface IOrderRecord {
@@ -8,7 +8,7 @@ export interface IOrderRecord {
   catererId: DocumentReference;
   catererName: string;
   name: string;
-  status: OrderStatus;
+  status: DbOrderStatus;
   acceptedAt: Timestamp;
   lastUpdatedAt: Timestamp;
 }
@@ -33,6 +33,6 @@ export function isIOrderRecord(record: any): record is IOrderRecordWithId {
     isInputDocumentReference(catererId) &&
     typeof catererName === 'string' &&
     typeof name === 'string' &&
-    Object.values(OrderStatus).includes(status)
+    Object.values(DbOrderStatus).includes(status)
   );
 }

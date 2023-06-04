@@ -57,7 +57,7 @@ export class OrderInternalInterfaceService {
      * Get order from EZManage
      */
     const ezManageOrder = await this.orderService.getOrder({
-      orderId,
+      order,
       ref,
     });
 
