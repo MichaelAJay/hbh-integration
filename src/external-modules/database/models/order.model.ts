@@ -7,6 +7,7 @@ export interface IOrderModel {
   catererName: string;
   name: string;
   status: DbOrderStatus;
+  crmId: string | null;
   acceptedAt: Date; // Firestore calls this the "timestamp" field type
   lastUpdatedAt: Date;
 }

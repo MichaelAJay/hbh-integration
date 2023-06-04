@@ -43,7 +43,7 @@ export class OrderService {
      * Need order name for db
      */
     /**
-     * @TODO add request to check for order name
+     * We should actually get the whole order and add it to Nutshell here.
      */
     const ezManageOrderName = await this.ezManageApiHandler
       .getOrderName({
@@ -56,6 +56,10 @@ export class OrderService {
       });
 
     /**
+     * Create Nutshell Lead
+     */
+
+    /**
      * @TODO fix the date issue
      */
     const now = new Date();
@@ -65,6 +69,10 @@ export class OrderService {
       catererName,
       name: ezManageOrderName || 'PLACEHOLDER NAME',
       status,
+      /**
+       * @TODO fix
+       */
+      crmId: null,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
