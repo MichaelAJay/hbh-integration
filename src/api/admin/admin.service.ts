@@ -16,4 +16,20 @@ export class AdminService {
   async getOrderNamesForAccount(accountId: string) {
     return await this.adminInternalInterface.getOrderNamesForAccount(accountId);
   }
+
+  async testNutshellIntegration({
+    ref,
+    a,
+    b,
+  }: {
+    ref: string;
+    a: number;
+    b: number;
+  }) {
+    return await this.adminInternalInterface.testNutshellIntegration({
+      ref,
+      a,
+      b,
+    });
+  }
 }

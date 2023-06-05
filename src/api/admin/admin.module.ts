@@ -5,9 +5,15 @@ import { AdminInternalInterfaceService } from './admin-internal-interface.servic
 import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
 import { UserModule } from 'src/internal-modules/user/user.module';
 import { AuthModule } from 'src/internal-modules/auth/auth.module';
+import { NutshellApiHandlerModule } from 'src/internal-modules/external-interface-handlers/nutshell/nutshell-api-handler.module';
 
 @Module({
-  imports: [InternalDatabaseModule, UserModule, AuthModule],
+  imports: [
+    InternalDatabaseModule,
+    UserModule,
+    AuthModule,
+    NutshellApiHandlerModule,
+  ],
   providers: [AdminService, AdminInternalInterfaceService],
   controllers: [AdminController],
 })

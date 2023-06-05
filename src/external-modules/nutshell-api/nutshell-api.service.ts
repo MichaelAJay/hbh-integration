@@ -26,33 +26,58 @@ export class NutshellApiService {
    * Configuration & setup
    */
 
-  async getApiForUsername(userName: string) {
+  async getApiForUsername({
+    userName,
+    apiKey,
+  }: {
+    userName: string;
+    apiKey: string;
+  }) {
     const userCachedDomain = await this.cacheManager.get(userName);
     if (typeof userCachedDomain === 'string') return userCachedDomain;
 
-    const client = jayson.Client.http({ host: 'api.nutshell.com' });
-    const response = await client.request('getApiForUsername', {
-      username: userName,
+    const client = jayson.Client.https({
+      host: 'api.nutshell.com',
+      path: '/v1/json',
+      headers: { Authorization: this.getBasicAuthValue({ userName, apiKey }) },
     });
-    const selectedDomain = this.selectDomain(response.result);
-    await this.cacheManager.set(userName, selectedDomain, this.cacheTTL_in_MS);
+    const response = await client
+      .request('getApiForUsername', {
+        username: userName,
+      })
+      .catch((reason) => {
+        console.error('Request failed', reason);
+        throw reason;
+      });
+    const selectedDomain = this.selectDomain(response);
+    await this.cacheManager
+      .set(userName, selectedDomain, this.cacheTTL_in_MS)
+      .catch((reason) => {
+        console.error('Cache manager set failed', reason);
+        throw reason;
+      });
     return selectedDomain;
   }
 
   private selectDomain(response: any) {
-    // /**
-    //  * Selection criteria: (subject to change)
-    //  */
-    if (this.isResponseValid(response)) {
-      return (response as { result: { api: string } }).result.api;
-    } else {
-      const msg = 'Api domain not successfully found';
-      this.logger.error(msg, {});
-      throw new UnprocessableEntityException(msg);
+    try {
+      // /**
+      //  * Selection criteria: (subject to change)
+      //  */
+      if (this.isGetApiForUsernameResponseValid(response)) {
+        return (response as { result: { api: string } }).result.api;
+      } else {
+        const msg = 'Api domain not successfully found';
+        this.logger.error(msg, {});
+        throw new UnprocessableEntityException(msg);
+      }
+    } catch (err) {
+      console.error('Select domain failed', err);
+      err;
     }
   }
 
-  private isResponseValid(response: any) {
+  private isGetApiForUsernameResponseValid(response: any) {
     /**
      * This could have logs that tell a better story
      */
@@ -82,6 +107,13 @@ export class NutshellApiService {
     return true;
   }
 
+  private getResult(response: any): any {
+    if (!response.result) {
+      throw new Error('Bad response');
+    }
+    return response.result;
+  }
+
   private getBasicAuthValue({
     userName,
     apiKey,
@@ -89,6 +121,7 @@ export class NutshellApiService {
     userName: string;
     apiKey: string;
   }) {
+    console.log('userName and apiKey in auth token creator', userName, apiKey);
     /**
      * Return Base64-encoded string <username>:<apikey>
      */
@@ -126,19 +159,17 @@ export class NutshellApiService {
     return { userName, apiKey };
   }
 
-  private getUrlPrefix(domain: string) {
-    return `https://${domain}/api/v1/json`;
-  }
-
   /**
    * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
    */
   private async generateClient(ref: string) {
     const { userName, apiKey } = this.getUserNameAndApiKeyForAcct(ref);
 
-    const domain = await this.getApiForUsername(userName);
+    const domain = await this.getApiForUsername({ userName, apiKey });
+
     return jayson.Client.https({
       host: domain,
+      path: '/v1/json',
       headers: {
         Authorization: this.getBasicAuthValue({ userName, apiKey }),
       },
@@ -156,6 +187,34 @@ export class NutshellApiService {
   async getLead(ref: string) {
     const client = await this.generateClient(ref);
     await client.request('getLead', { leadId: 1000 });
+  }
+
+  async createLead({ ref, lead }: { ref: string; lead }) {
+    const client = await this.generateClient(ref);
+    await client.request('newLead', { lead: lead });
+  }
+
+  /**
+   * Test process
+   */
+  async add({ ref, a, b }: { ref: string; a: number; b: number }) {
+    try {
+      const client = await this.generateClient(ref);
+      console.log('client', client);
+
+      client.on('request', function (req) {
+        console.log(req);
+      });
+      const response = await client.request('add', [a, b]).catch((reason) => {
+        console.error('Client request failed', reason);
+        throw reason;
+      });
+      const result = this.getResult(response);
+      console.log('result', result);
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 }
 

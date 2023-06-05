@@ -3,6 +3,7 @@ import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
+import { NutshellApiHandlerService } from 'src/internal-modules/external-interface-handlers/nutshell/nutshell-api-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
 
@@ -14,6 +15,7 @@ export class AdminInternalInterfaceService {
     private readonly orderDbHandler: OrderDbHandlerService,
     private readonly userDbHandler: UserDbHandlerService,
     private readonly userService: UserService,
+    private readonly nutshellApiHandler: NutshellApiHandlerService,
   ) {}
 
   async createUser(body: AdminCreateUserBodyDto) {
@@ -56,5 +58,17 @@ export class AdminInternalInterfaceService {
   async getOrderNamesForAccount(accountId: string) {
     const orders = await this.orderDbHandler.getManyForAccount(accountId);
     return orders.map((order) => order.name);
+  }
+
+  async testNutshellIntegration({
+    ref,
+    a,
+    b,
+  }: {
+    ref: string;
+    a: number;
+    b: number;
+  }) {
+    return this.nutshellApiHandler.testNutshellIntegration({ ref, a, b });
   }
 }
