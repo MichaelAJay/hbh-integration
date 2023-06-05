@@ -40,25 +40,9 @@ export class NutshellApiService {
   }
 
   private selectDomain(response: any) {
-    // if (!(Array.isArray(domains) && domains.length > 0)) {
-    //   const msg = 'Expected domains to be non-empty array';
-    //   const logInput: { type: string; isArray: boolean; arrayLength?: number } =
-    //     {
-    //       type: typeof domains,
-    //       isArray: Array.isArray(domains),
-    //     };
-    //   if (logInput.isArray) {
-    //     logInput.arrayLength = domains.length;
-    //   }
-    //   this.logger.error(msg, logInput);
-    //   throw new UnprocessableEntityException(msg);
-    // }
     // /**
     //  * Selection criteria: (subject to change)
     //  */
-    // const targetDomain = domains.find(
-    //   (domain) => typeof domain === 'string' && domain.includes('api'),
-    // );
     if (this.isResponseValid(response)) {
       return (response as { result: { api: string } }).result.api;
     } else {
@@ -124,7 +108,7 @@ export class NutshellApiService {
     }
 
     const userNameEnvVarName = `${ref}_${userNamePostfix}`;
-    const apiKeyEnvVarName = `$${ref}_${apiKeyPostfix}`;
+    const apiKeyEnvVarName = `${ref}_${apiKeyPostfix}`;
     const userName = process.env[userNameEnvVarName];
     const apiKey = process.env[apiKeyEnvVarName];
 
@@ -142,20 +126,15 @@ export class NutshellApiService {
     return { userName, apiKey };
   }
 
-  /**
-   * Specific route implementations below
-   * Steps:
-   * 1) GetApiForUserName
-   * 2) GetBasicAuth by acct prefix
-   * 3) Send request to URL from step 1 w/ Basic auth from step 2
-   */
+  private getUrlPrefix(domain: string) {
+    return `https://${domain}/api/v1/json`;
+  }
 
   /**
    * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
    */
-  async generateClient(ref: string) {
-    const { userName, apiKey } =
-      this.getUserNameAndApiKeyForAcct(ref);
+  private async generateClient(ref: string) {
+    const { userName, apiKey } = this.getUserNameAndApiKeyForAcct(ref);
 
     const domain = await this.getApiForUsername(userName);
     return jayson.Client.https({
@@ -165,6 +144,14 @@ export class NutshellApiService {
       },
     });
   }
+
+  /**
+   * Specific route implementations below
+   * Steps:
+   * 1) GetApiForUserName
+   * 2) GetBasicAuth by acct prefix
+   * 3) Send request to URL from step 1 w/ Basic auth from step 2
+   */
 
   async getLead(ref: string) {
     const client = await this.generateClient(ref);
