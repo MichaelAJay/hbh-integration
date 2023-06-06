@@ -39,4 +39,9 @@ export class AdminController {
   async getNutshellProducts(@Body() { ref }: { ref: string }) {
     return this.adminService.getNutshellProducts({ ref });
   }
+
+  @Get('caterer-menu/:catererId')
+  async getCatererMenu(@Param('catererId') catererId: string) {
+    return this.adminService.getCatererMenu({ catererId });
+  }
 }

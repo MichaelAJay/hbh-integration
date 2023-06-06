@@ -36,4 +36,8 @@ export class AdminService {
   async getNutshellProducts({ ref }: { ref: string }) {
     return await this.adminInternalInterface.getNutshellProducts({ ref });
   }
+
+  async getCatererMenu({ catererId }: { catererId: string }) {
+    return await this.adminInternalInterface.getCatererMenu({ catererId });
+  }
 }

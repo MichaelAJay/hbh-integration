@@ -6,7 +6,7 @@ import {
 import { GraphQLClient, gql } from 'graphql-request';
 import { CustomErrorObject } from 'src/common/types';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
-import { isGetOrderNameReturn } from './interfaces/gql';
+import { isGetOrderNameReturn, isIGetH4HCatererMenu } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
 import { validateEzManageOrder } from './validators';
 
@@ -160,6 +160,66 @@ export class GraphqlClientService {
       }
       const message = err.message || 'GraphQL queryOrderName error';
       this.logger.error(message, { id: orderId });
+      throw new InternalServerErrorException({
+        message,
+        isLogged: true,
+      } as CustomErrorObject);
+    }
+  }
+
+  async getCatererMenu({ catererId, ref }: { catererId: string; ref: string }) {
+    const client = this.setAuthHeaderOnClient(this.client, ref);
+
+    try {
+      const query = gql`
+      {
+        menu(catererId: ${catererId}) {
+            endDate
+            id
+            name
+            startDate
+            categories {
+                id
+                name
+                items {
+                    id
+                    name
+                    originalItemId
+                    status
+                    comboComponents {
+                        name
+                        constituentItems {
+                            id
+                            name
+                            status
+                        }
+                    }
+                }
+            }
+        }
+    }
+      `;
+      const data = await client.request(query);
+
+      if (!isIGetH4HCatererMenu(data)) {
+        const message = 'Returned data does not match expected data shape';
+        this.logger.error(message, { data });
+        throw new UnprocessableEntityException({
+          message,
+          isLogged: true,
+        } as CustomErrorObject);
+      }
+      return data;
+    } catch (err: any) {
+      if (
+        typeof err.message === 'string' &&
+        typeof err.isLogged === 'boolean' &&
+        err.isLogged
+      ) {
+        throw err;
+      }
+      const message = err.message || 'GraphQL getCatererMenu error';
+      this.logger.error(message, { id: catererId });
       throw new InternalServerErrorException({
         message,
         isLogged: true,

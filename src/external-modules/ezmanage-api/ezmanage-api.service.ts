@@ -15,4 +15,8 @@ export class EzmanageApiService {
       ref,
     });
   }
+
+  async getCatererMenu({ catererId, ref }: { catererId: string; ref }) {
+    return await this.graphqlService.getCatererMenu({ catererId, ref });
+  }
 }
