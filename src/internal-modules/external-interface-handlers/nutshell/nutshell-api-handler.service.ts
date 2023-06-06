@@ -20,4 +20,12 @@ export class NutshellApiHandlerService {
       throw err;
     }
   }
+
+  async getProducts({ ref }: { ref: any }) {
+    try {
+      return await this.nutshellApiService.getProducts({ ref });
+    } catch (err) {
+      throw err;
+    }
+  }
 }

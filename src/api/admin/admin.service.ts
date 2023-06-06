@@ -32,4 +32,8 @@ export class AdminService {
       b,
     });
   }
+
+  async getNutshellProducts({ ref }: { ref: string }) {
+    return await this.adminInternalInterface.getNutshellProducts({ ref });
+  }
 }

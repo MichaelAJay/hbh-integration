@@ -169,7 +169,7 @@ export class NutshellApiService {
 
     return jayson.Client.https({
       host: domain,
-      path: '/v1/json',
+      path: '/api/v1/json',
       headers: {
         Authorization: this.getBasicAuthValue({ userName, apiKey }),
       },
@@ -192,6 +192,17 @@ export class NutshellApiService {
   async createLead({ ref, lead }: { ref: string; lead }) {
     const client = await this.generateClient(ref);
     await client.request('newLead', { lead: lead });
+  }
+
+  async getProducts({ ref }: { ref: any }) {
+    const client = await this.generateClient(ref);
+    const response = await client
+      .request('findProducts', { limit: 100 })
+      .catch((reason) => {
+        console.error('Get products failed', reason);
+        throw reason;
+      });
+    return response.result.map((product) => product.name);
   }
 
   /**

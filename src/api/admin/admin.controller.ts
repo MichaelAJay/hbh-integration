@@ -34,4 +34,9 @@ export class AdminController {
       throw new BadRequestException('Both parameters must be integers');
     return this.adminService.testNutshellIntegration({ ref, a, b });
   }
+
+  @Get('get-nutshell-products')
+  async getNutshellProducts(@Body() { ref }: { ref: string }) {
+    return this.adminService.getNutshellProducts({ ref });
+  }
 }

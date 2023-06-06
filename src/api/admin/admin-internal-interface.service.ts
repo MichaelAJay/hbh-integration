@@ -71,4 +71,8 @@ export class AdminInternalInterfaceService {
   }) {
     return this.nutshellApiHandler.testNutshellIntegration({ ref, a, b });
   }
+
+  async getNutshellProducts({ ref }: { ref: any }) {
+    return this.nutshellApiHandler.getProducts({ ref });
+  }
 }
