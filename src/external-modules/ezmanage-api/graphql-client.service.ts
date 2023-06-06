@@ -173,7 +173,7 @@ export class GraphqlClientService {
     try {
       const query = gql`
       {
-        menu(catererId: ${catererId}) {
+        menu(catererId: "${catererId}") {
             endDate
             id
             name
