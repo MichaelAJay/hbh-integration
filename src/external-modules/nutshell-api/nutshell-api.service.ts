@@ -203,7 +203,10 @@ export class NutshellApiService {
         throw reason;
       });
     // return response.result.map((product) => product.name);
-    return response.result;
+    return response.result.map((product) => ({
+      name: product.name,
+      id: product.id,
+    }));
   }
 
   /**
