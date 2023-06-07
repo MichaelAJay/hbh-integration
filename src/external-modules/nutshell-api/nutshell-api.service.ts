@@ -202,7 +202,8 @@ export class NutshellApiService {
         console.error('Get products failed', reason);
         throw reason;
       });
-    return response.result.map((product) => product.name);
+    // return response.result.map((product) => product.name);
+    return response.result;
   }
 
   /**

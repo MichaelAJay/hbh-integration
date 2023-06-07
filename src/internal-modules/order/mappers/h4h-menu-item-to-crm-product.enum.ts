@@ -97,3 +97,9 @@ export enum ProductMap {
   WholeFrozenTurkey = 'Whole Frozen Turkey',
   YogurtParfait = 'Yogurt Parfait',
 }
+
+export function mapH4HMenuItemToCrmProduct(
+  menuItem: keyof typeof ProductMap,
+): string | undefined {
+  return ProductMap[menuItem];
+}

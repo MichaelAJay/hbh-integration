@@ -129,6 +129,14 @@ export class OrderService {
     });
   }
 
+  outputOrderToCRM({
+    ref,
+    order,
+  }: {
+    ref: string;
+    order: Omit<IGetOrderOutput, 'catererName'>;
+  }) {}
+
   /**
    * Should use order status
    * 1) Should put OrderStatus "Accepted" or "Canceled" directly on the Order.
