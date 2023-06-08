@@ -87,6 +87,11 @@ export class GraphqlClientService {
                   totalInSubunits {
                       subunits
                   }
+                  customizations {
+                    customizationTypeName
+                    name
+                    quantity
+                  }
               }
               totals {
                   catererTotalDue

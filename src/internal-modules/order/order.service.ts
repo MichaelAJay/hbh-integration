@@ -179,6 +179,7 @@ export class OrderService {
       quantity: item.quantity,
       name: item.name,
       cost: centsToDollars(item.totalInSubunits.subunits),
+      customizations: item.customizations,
     }));
 
     return {

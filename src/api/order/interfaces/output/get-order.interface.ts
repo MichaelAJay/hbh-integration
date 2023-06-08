@@ -1,6 +1,7 @@
 import {
   IEzManageOrderEventAddress,
   IEzManageOrderEventContact,
+  IEzManageOrderItemCustomization,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { UiOrderStatus } from '../../enums/output';
 
@@ -36,4 +37,5 @@ export interface IGetOrderOutputItem {
   quantity: number;
   name: string;
   cost: number;
+  customizations: IEzManageOrderItemCustomization[];
 }

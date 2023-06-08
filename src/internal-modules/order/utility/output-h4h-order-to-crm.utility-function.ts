@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   IGetOrderOutput,
   IGetOrderOutputItem,
@@ -50,18 +51,32 @@ export function outputH4HOrderToCrm(
   }
 }
 
+interface ResultObject {
+  [key: number]: number;
+}
+
 function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
   leadProducts: LeadProduct[];
   invalidKeys: string[];
 } {
-  interface ResultObject {
-    [key: number]: number;
-  }
-
   const aggregator: ResultObject = {};
   const invalidKeys: string[] = [];
 
   for (const item of items) {
+    if (item.name === 'Salad Boxed Lunches') {
+      const {
+        aggregator: saladAggregator,
+        invalidKeys: customizationInvalidKeys,
+      } = handleSaladBoxedLunch(item);
+
+      for (const property in saladAggregator) {
+        aggregator[property] = saladAggregator[property];
+      }
+
+      invalidKeys.push(...customizationInvalidKeys);
+      continue;
+    }
+
     const id = mapH4HMenuItemToCrmProductId(
       item.name as keyof typeof ProductMap,
     );
@@ -77,4 +92,44 @@ function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
     leadProducts.push({ id: property, quantity: aggregator[property] });
   }
   return { leadProducts, invalidKeys };
+}
+
+function handleSaladBoxedLunch(item: IGetOrderOutputItem) {
+  const aggregator: ResultObject = {};
+  const invalidKeys: string[] = [];
+  const saladKeys: string[] = [];
+
+  for (const customization of item.customizations) {
+    if (customization.customizationTypeName === 'Salad') {
+      const menuItem = `${customization.name} - Boxed Lunch`;
+      const id = mapH4HMenuItemToCrmProductId(
+        menuItem as keyof typeof ProductMap,
+      );
+
+      if (id !== undefined) {
+        aggregator[id] = (aggregator[id] || 0) + customization.quantity;
+      } else {
+        invalidKeys.push();
+      }
+      /**
+       * Used in exception handling
+       */
+      saladKeys.push(menuItem);
+    }
+  }
+
+  let customizationAggregateQuantity = 0;
+  for (const property in aggregator) {
+    customizationAggregateQuantity += aggregator[property];
+  }
+
+  if (item.quantity !== customizationAggregateQuantity) {
+    /**
+     * @TODO this shouldn't trash the whole process.
+     * Should log probably
+     */
+    return { aggregator: {}, invalidKeys: saladKeys };
+  }
+
+  return { aggregator, invalidKeys };
 }
