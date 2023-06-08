@@ -64,4 +64,20 @@ export class OrderService {
       ref,
     });
   }
+
+  async generateLeadFromOrder({
+    orderName,
+    accountId,
+    ref,
+  }: {
+    orderName: string;
+    accountId: string;
+    ref: string;
+  }) {
+    return await this.orderInternalInterface.generateLeadFromOrder({
+      orderName,
+      accountId,
+      ref,
+    });
+  }
 }

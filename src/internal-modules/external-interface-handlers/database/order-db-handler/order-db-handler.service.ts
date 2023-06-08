@@ -129,6 +129,10 @@ export class OrderDbHandlerService {
     };
     const records = await this.findManyIntersection(filter);
 
+    if (records.length === 0) {
+      throw new NotFoundException('No records found matching criteria');
+    }
+
     if (records.length > 1) {
       this.logger.error('More than one order found matching specification', {
         orderName,

@@ -40,4 +40,17 @@ export class OrderController {
     const { accountId, ref } = req;
     return this.orderService.updateStatuses({ updates, accountId, ref });
   }
+
+  @Get('lead-from-order/:name')
+  async generateLeadFromOrder(
+    @Param('name') orderName: string,
+    @AuthenticatedReq() req: IAuthenticatedRequest,
+  ) {
+    const { accountId, ref } = req;
+    return this.orderService.generateLeadFromOrder({
+      orderName,
+      accountId,
+      ref,
+    });
+  }
 }

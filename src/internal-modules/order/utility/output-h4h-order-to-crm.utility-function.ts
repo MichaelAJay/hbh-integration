@@ -38,7 +38,17 @@ export interface LeadProduct {
  */
 export function outputH4HOrderToCrm(
   order: Omit<IGetOrderOutput, 'catererName'>,
-) {}
+) {
+  try {
+    const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
+      order.items,
+    );
+    return { lead: { products }, invalidKeys };
+  } catch (err) {
+    console.error('Order to CRM Lead failed', err);
+    throw err;
+  }
+}
 
 function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
   leadProducts: LeadProduct[];

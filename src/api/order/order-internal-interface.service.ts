@@ -121,4 +121,25 @@ export class OrderInternalInterfaceService {
       return acc;
     }, [] as { orderId: string; didUpdate: boolean }[]);
   }
+
+  async generateLeadFromOrder({
+    orderName,
+    accountId,
+    ref,
+  }: {
+    orderName: string;
+    accountId: string;
+    ref: string;
+  }) {
+    const ezManageOrder = await this.getOrderByName({
+      orderName,
+      accountId,
+      ref,
+    });
+
+    const { lead, invalidKeys } = await this.orderService.generateLeadFromOrder(
+      ezManageOrder,
+    );
+    return { lead, invalidKeys };
+  }
 }

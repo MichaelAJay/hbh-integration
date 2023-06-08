@@ -12,10 +12,13 @@ export function ConvertOrderStatusDbToUi({
 }): UiOrderStatus {
   switch (status) {
     case DbOrderStatus.CANCELLED:
+    case DbOrderStatus.cancelled:
       return UiOrderStatus.CANCELLED;
     case DbOrderStatus.ARCHIVED:
+    case DbOrderStatus.archived:
       return UiOrderStatus.ARCHIVED;
     case DbOrderStatus.ACCEPTED:
+    case DbOrderStatus.accepted:
       /**
        * May be ACCEPTED or PENDING
        */

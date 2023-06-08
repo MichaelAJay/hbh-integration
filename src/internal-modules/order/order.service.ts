@@ -13,6 +13,7 @@ import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-lo
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import { ConvertOrderStatusDbToUi } from './converters';
+import { outputH4HOrderToCrm } from './utility';
 
 @Injectable()
 export class OrderService {
@@ -127,6 +128,11 @@ export class OrderService {
       orderId,
       ref,
     });
+  }
+
+  async generateLeadFromOrder(ezManageOrder: IGetOrderOutput) {
+    const { lead, invalidKeys } = outputH4HOrderToCrm(ezManageOrder);
+    return { lead, invalidKeys };
   }
 
   outputOrderToCRM({
