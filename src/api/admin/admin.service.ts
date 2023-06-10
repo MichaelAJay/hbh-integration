@@ -16,4 +16,28 @@ export class AdminService {
   async getOrderNamesForAccount(accountId: string) {
     return await this.adminInternalInterface.getOrderNamesForAccount(accountId);
   }
+
+  async testNutshellIntegration({
+    ref,
+    a,
+    b,
+  }: {
+    ref: string;
+    a: number;
+    b: number;
+  }) {
+    return await this.adminInternalInterface.testNutshellIntegration({
+      ref,
+      a,
+      b,
+    });
+  }
+
+  async getNutshellProducts({ ref }: { ref: string }) {
+    return await this.adminInternalInterface.getNutshellProducts({ ref });
+  }
+
+  async getCatererMenu({ catererId }: { catererId: string }) {
+    return await this.adminInternalInterface.getCatererMenu({ catererId });
+  }
 }

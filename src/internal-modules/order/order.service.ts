@@ -3,7 +3,7 @@ import {
   IGetOrderOutput,
   IGetOrderOutputItem,
 } from 'src/api/order/interfaces/output';
-import { OrderStatus } from 'src/external-modules/database/enum';
+import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
   IOrderModelWithId,
@@ -12,6 +12,8 @@ import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
+import { ConvertOrderStatusDbToUi } from './converters';
+import { outputH4HOrderToCrm } from './utility';
 
 @Injectable()
 export class OrderService {
@@ -33,7 +35,7 @@ export class OrderService {
     accountId: string;
     catererId: string;
     orderId: string;
-    status: OrderStatus;
+    status: DbOrderStatus;
     occurredAt: string;
     ref: string;
     catererName: string;
@@ -42,7 +44,7 @@ export class OrderService {
      * Need order name for db
      */
     /**
-     * @TODO add request to check for order name
+     * We should actually get the whole order and add it to Nutshell here.
      */
     const ezManageOrderName = await this.ezManageApiHandler
       .getOrderName({
@@ -55,6 +57,10 @@ export class OrderService {
       });
 
     /**
+     * Create Nutshell Lead
+     */
+
+    /**
      * @TODO fix the date issue
      */
     const now = new Date();
@@ -64,6 +70,10 @@ export class OrderService {
       catererName,
       name: ezManageOrderName || 'PLACEHOLDER NAME',
       status,
+      /**
+       * @TODO fix
+       */
+      crmId: null,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
@@ -97,13 +107,20 @@ export class OrderService {
     return order.accountId === accountId;
   }
 
-  async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
-    const order = await this.ezManageApiHandler.getOrder({
-      orderId,
+  /**
+   * Implementation note:
+   * It would be good if whatever called this had access to the whole order - is that possible?
+   */
+  async getOrder({ order, ref }: { order: IOrderModelWithId; ref: string }) {
+    const ezManageOrder = await this.ezManageApiHandler.getOrder({
+      orderId: order.id,
       ref,
     });
 
-    return this.convertEzManageOrderForOutput(order);
+    return this.convertEzManageOrderForOutput({
+      ...ezManageOrder,
+      status: order.status,
+    });
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
@@ -113,8 +130,27 @@ export class OrderService {
     });
   }
 
+  async generateLeadFromOrder(ezManageOrder: IGetOrderOutput) {
+    const { lead, invalidKeys } = outputH4HOrderToCrm(ezManageOrder);
+    return { lead, invalidKeys };
+  }
+
+  outputOrderToCRM({
+    ref,
+    order,
+  }: {
+    ref: string;
+    order: Omit<IGetOrderOutput, 'catererName'>;
+  }) {}
+
+  /**
+   * Should use order status
+   * 1) Should put OrderStatus "Accepted" or "Canceled" directly on the Order.
+   * 2) Should check all "Accepted" orders for this condition:
+   * If the delivery date has passed, then change to "Pending Review" - which is an EXTERNAL status
+   */
   private convertEzManageOrderForOutput(
-    order: IEzManageOrder,
+    order: IEzManageOrder & { status: DbOrderStatus },
   ): Omit<IGetOrderOutput, 'catererName'> {
     // Extract the delivery fee (in cents)
     let deliveryFeeInCents = 0;
@@ -143,9 +179,14 @@ export class OrderService {
       quantity: item.quantity,
       name: item.name,
       cost: centsToDollars(item.totalInSubunits.subunits),
+      customizations: item.customizations,
     }));
 
     return {
+      status: ConvertOrderStatusDbToUi({
+        status: order.status,
+        dueTime: order.event.timestamp,
+      }),
       orderNumber: order.orderNumber,
       sourceType: order.orderSourceType,
       event: {

@@ -1,9 +1,15 @@
 import {
   IEzManageOrderEventAddress,
   IEzManageOrderEventContact,
+  IEzManageOrderItemCustomization,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { UiOrderStatus } from '../../enums/output';
 
+/**
+ * @TODO should have OrderStatus
+ */
 export interface IGetOrderOutput {
+  status: UiOrderStatus;
   orderNumber: string;
   catererName: string;
   event: {
@@ -31,4 +37,5 @@ export interface IGetOrderOutputItem {
   quantity: number;
   name: string;
   cost: number;
+  customizations: IEzManageOrderItemCustomization[];
 }

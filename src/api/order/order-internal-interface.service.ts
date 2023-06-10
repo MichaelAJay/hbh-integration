@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
+import { IUpdateStatus } from './interfaces';
 import { IGetOrderOutput } from './interfaces/output';
 import { GetOrdersByAccount } from './types/output/get-orders-by-account.type';
 
@@ -56,7 +57,7 @@ export class OrderInternalInterfaceService {
      * Get order from EZManage
      */
     const ezManageOrder = await this.orderService.getOrder({
-      orderId,
+      order,
       ref,
     });
 
@@ -84,5 +85,61 @@ export class OrderInternalInterfaceService {
     });
 
     return ezManageOrder;
+  }
+
+  async updateStatuses({
+    updates,
+    accountId,
+    ref,
+  }: {
+    updates: IUpdateStatus[];
+    accountId: string;
+    ref: string;
+  }) {
+    const results = await Promise.allSettled(
+      updates.map(async ({ id: orderId, status }) => {
+        const order = await this.orderDbHandler.getOne(orderId);
+
+        if (!order) return { orderId, didUpdate: false };
+
+        if (order.id !== accountId) return { orderId, didUpdate: false };
+
+        if (order.status === status) return { orderId, didUpdate: false };
+        const { updated } = await this.orderDbHandler.updateOne({
+          orderId,
+          updates: { status },
+        });
+
+        return { orderId, didUpdate: updated };
+      }),
+    );
+
+    return results.reduce((acc, result) => {
+      if (result.status === 'fulfilled') {
+        acc.push(result.value);
+      }
+      return acc;
+    }, [] as { orderId: string; didUpdate: boolean }[]);
+  }
+
+  async generateLeadFromOrder({
+    orderName,
+    accountId,
+    ref,
+  }: {
+    orderName: string;
+    accountId: string;
+    ref: string;
+  }) {
+    const ezManageOrder = await this.getOrderByName({
+      orderName,
+      accountId,
+      ref,
+    });
+
+    const { lead, invalidKeys } = await this.orderService.generateLeadFromOrder(
+      ezManageOrder,
+    );
+    return { lead, invalidKeys };
   }
 }

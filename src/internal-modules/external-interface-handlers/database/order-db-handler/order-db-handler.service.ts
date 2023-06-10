@@ -129,6 +129,10 @@ export class OrderDbHandlerService {
     };
     const records = await this.findManyIntersection(filter);
 
+    if (records.length === 0) {
+      throw new NotFoundException('No records found matching criteria');
+    }
+
     if (records.length > 1) {
       this.logger.error('More than one order found matching specification', {
         orderName,
@@ -149,7 +153,9 @@ export class OrderDbHandlerService {
     updates,
   }: {
     orderId: UUID;
-    updates: Partial<IOrderModel>;
+    updates: Partial<
+      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
+    >;
   }) {
     try {
       await this.dbClientService.update({
@@ -157,6 +163,8 @@ export class OrderDbHandlerService {
         docId,
         data: updates,
       });
+
+      return { updated: true };
     } catch (err) {
       throw err;
     }
@@ -227,6 +235,7 @@ export class OrderDbHandlerService {
       catererName: record.catererName,
       name: record.name,
       status: record.status,
+      crmId: record.crmId,
       acceptedAt: record.acceptedAt.toDate(),
       lastUpdatedAt: record.lastUpdatedAt.toDate(),
     };

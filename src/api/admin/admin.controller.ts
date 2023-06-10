@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminService } from './admin.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
@@ -16,5 +24,24 @@ export class AdminController {
   @Get('order-names-for-account/:id')
   async getOrderNamesForAccount(@Param('id') accountId: string) {
     return this.adminService.getOrderNamesForAccount(accountId);
+  }
+
+  @Post('test-nutshell-integration')
+  async testNutshellIntegration(
+    @Body() { ref, a, b }: { ref: string; a: number; b: number },
+  ) {
+    if (!(Number.isInteger(a) && Number.isInteger(b)))
+      throw new BadRequestException('Both parameters must be integers');
+    return this.adminService.testNutshellIntegration({ ref, a, b });
+  }
+
+  @Get('get-nutshell-products')
+  async getNutshellProducts(@Body() { ref }: { ref: string }) {
+    return this.adminService.getNutshellProducts({ ref });
+  }
+
+  @Get('caterer-menu/:catererId')
+  async getCatererMenu(@Param('catererId') catererId: string) {
+    return this.adminService.getCatererMenu({ catererId });
   }
 }

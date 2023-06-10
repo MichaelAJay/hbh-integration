@@ -61,6 +61,13 @@ export interface IEzManageOrderItem {
   quantity: number;
   name: string;
   totalInSubunits: ISubunits;
+  customizations: IEzManageOrderItemCustomization[];
+}
+
+export interface IEzManageOrderItemCustomization {
+  customizationTypeName: string;
+  name: string;
+  quantity: number;
 }
 
 interface IEzManageOrderCatererTotals {

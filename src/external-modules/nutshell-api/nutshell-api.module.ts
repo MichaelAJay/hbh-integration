@@ -6,5 +6,6 @@ import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-log
 @Module({
   imports: [CacheModule.register({}), CustomLoggerModule],
   providers: [NutshellApiService],
+  exports: [NutshellApiService],
 })
 export class NutshellApiModule {}

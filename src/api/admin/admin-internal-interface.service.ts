@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { AccountService } from 'src/internal-modules/account/account.service';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
+import { EzmanageApiHandlerService } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
+import { NutshellApiHandlerService } from 'src/internal-modules/external-interface-handlers/nutshell/nutshell-api-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
 
@@ -10,10 +13,13 @@ import { AdminCreateUserBodyDto } from './dtos/body';
 export class AdminInternalInterfaceService {
   constructor(
     private readonly accountDbHandler: AccountDbHandlerService,
+    private readonly accountService: AccountService,
     private readonly authService: AuthService,
     private readonly orderDbHandler: OrderDbHandlerService,
     private readonly userDbHandler: UserDbHandlerService,
     private readonly userService: UserService,
+    private readonly nutshellApiHandler: NutshellApiHandlerService,
+    private readonly ezManagerApiHandler: EzmanageApiHandlerService,
   ) {}
 
   async createUser(body: AdminCreateUserBodyDto) {
@@ -56,5 +62,29 @@ export class AdminInternalInterfaceService {
   async getOrderNamesForAccount(accountId: string) {
     const orders = await this.orderDbHandler.getManyForAccount(accountId);
     return orders.map((order) => order.name);
+  }
+
+  async testNutshellIntegration({
+    ref,
+    a,
+    b,
+  }: {
+    ref: string;
+    a: number;
+    b: number;
+  }) {
+    return this.nutshellApiHandler.testNutshellIntegration({ ref, a, b });
+  }
+
+  async getNutshellProducts({ ref }: { ref: any }) {
+    return this.nutshellApiHandler.getProducts({ ref });
+  }
+
+  async getCatererMenu({ catererId }: { catererId: string }) {
+    const ref =
+      await this.accountService.getEnvironmentVariablePrefixByCatererId(
+        catererId,
+      );
+    return this.ezManagerApiHandler.getCatererMenu({ catererId, ref });
   }
 }

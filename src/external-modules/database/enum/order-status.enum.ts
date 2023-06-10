@@ -1,6 +1,10 @@
-export enum OrderStatus {
-  ACCEPTED = 'accepted',
-  CANCELLED = 'cancelled',
+export enum DbOrderStatus {
+  ACCEPTED = 'ACCEPTED',
+  CANCELLED = 'CANCELLED',
+  ARCHIVED = 'ARCHIVED',
+  accepted = 'accepted',
+  cancelled = 'cancelled',
+  archived = 'archived',
 }
 
 /**

@@ -1,0 +1,6 @@
+export enum UiOrderStatus {
+  ACCEPTED = 'ACCEPTED',
+  CANCELLED = 'CANCELLED',
+  PENDING = 'PENDING',
+  ARCHIVED = 'ARCHIVED',
+}
