@@ -193,7 +193,7 @@ export class NutshellApiService {
   async createLead({ ref, lead }: { ref: string; lead: ICreateLead }) {
     try {
       const client = await this.generateClient(ref);
-      await client.request('newLead', lead);
+      return await client.request('newLead', lead);
     } catch (err) {
       console.error('Create lead failed', err);
       throw err;

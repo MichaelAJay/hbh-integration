@@ -89,7 +89,25 @@ export class AdminInternalInterfaceService {
     return this.ezManagerApiHandler.getCatererMenu({ catererId, ref });
   }
 
-  async sendOrderToCrm(input: SentOrderToCrmQueryDto) {
-    throw new Error('Method not implemented.');
+  async sendOrderToCrm({
+    'order-id': orderId,
+    accountId,
+    ref,
+  }: SentOrderToCrmQueryDto) {
+    const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
+    return this.nutshellApiHandler.createLead({ ref, order: ezManageOrder });
+  }
+
+  /**
+   * Helpers
+   */
+  private async getEzManageOrder({
+    orderId,
+    ref,
+  }: {
+    orderId: string;
+    ref: string;
+  }) {
+    return this.ezManagerApiHandler.getOrder({ orderId, ref });
   }
 }

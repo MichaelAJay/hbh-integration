@@ -7,9 +7,9 @@ import { outputH4HOrderToCrm } from './utility';
 export class NutshellApiHandlerService {
   constructor(private readonly nutshellApiService: NutshellApiService) {}
 
-  async createLead(order: IEzManageOrder) {
+  async createLead({ ref, order }: { ref: string; order: IEzManageOrder }) {
     const { lead, invalidKeys } = outputH4HOrderToCrm(order);
-    // return await this.nutshellApiService.createLead();
+    return await this.nutshellApiService.createLead({ ref, lead: { lead } });
   }
 
   async testNutshellIntegration({
