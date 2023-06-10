@@ -8,6 +8,7 @@ import {
 import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { ICreateLead } from './interfaces/requests';
 
 @Injectable()
 export class NutshellApiService {
@@ -189,9 +190,14 @@ export class NutshellApiService {
     await client.request('getLead', { leadId: 1000 });
   }
 
-  async createLead({ ref, lead }: { ref: string; lead }) {
-    const client = await this.generateClient(ref);
-    await client.request('newLead', { lead: lead });
+  async createLead({ ref, lead }: { ref: string; lead: ICreateLead }) {
+    try {
+      const client = await this.generateClient(ref);
+      await client.request('newLead', lead);
+    } catch (err) {
+      console.error('Create lead failed', err);
+      throw err;
+    }
   }
 
   async getProducts({ ref }: { ref: any }) {

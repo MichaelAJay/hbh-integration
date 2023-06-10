@@ -1,9 +1,12 @@
-import { InternalServerErrorException } from '@nestjs/common';
 import {
   IGetOrderOutput,
   IGetOrderOutputItem,
 } from 'src/api/order/interfaces/output';
-import { mapH4HMenuItemToCrmProductId, ProductMap } from '../mappers';
+import {
+  IEzManageOrder,
+  IEzManageOrderItem,
+} from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 
 /**
  * @TODO move this
@@ -37,12 +40,10 @@ export interface LeadProduct {
  * 6 June 2023
  * Outputs to a Nutshell Lead
  */
-export function outputH4HOrderToCrm(
-  order: Omit<IGetOrderOutput, 'catererName'>,
-) {
+export function outputH4HOrderToCrm(order: IEzManageOrder) {
   try {
     const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
-      order.items,
+      order.catererCart.orderItems,
     );
     return { lead: { products }, invalidKeys };
   } catch (err) {
@@ -55,7 +56,7 @@ interface ResultObject {
   [key: number]: number;
 }
 
-function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
+function aggregateLeadProducts(items: IEzManageOrderItem[]): {
   leadProducts: LeadProduct[];
   invalidKeys: string[];
 } {
@@ -94,7 +95,7 @@ function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
   return { leadProducts, invalidKeys };
 }
 
-function handleSaladBoxedLunch(item: IGetOrderOutputItem) {
+function handleSaladBoxedLunch(item: IEzManageOrderItem) {
   const aggregator: ResultObject = {};
   const invalidKeys: string[] = [];
   const saladKeys: string[] = [];

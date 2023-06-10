@@ -12,14 +12,16 @@ import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
+import { NutshellApiHandlerService } from '../external-interface-handlers/nutshell/nutshell-api-handler.service';
+import { outputH4HOrderToCrm } from '../external-interface-handlers/nutshell/utility';
 import { ConvertOrderStatusDbToUi } from './converters';
-import { outputH4HOrderToCrm } from './utility';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
+    private readonly nutshellApiHandler: NutshellApiHandlerService,
     private readonly logger: CustomLoggerService,
   ) {}
 
@@ -111,15 +113,16 @@ export class OrderService {
    * Implementation note:
    * It would be good if whatever called this had access to the whole order - is that possible?
    */
-  async getOrder({ order, ref }: { order: IOrderModelWithId; ref: string }) {
-    const ezManageOrder = await this.ezManageApiHandler.getOrder({
+  async getEzManageOrder({
+    order,
+    ref,
+  }: {
+    order: IOrderModelWithId;
+    ref: string;
+  }) {
+    return await this.ezManageApiHandler.getOrder({
       orderId: order.id,
       ref,
-    });
-
-    return this.convertEzManageOrderForOutput({
-      ...ezManageOrder,
-      status: order.status,
     });
   }
 
@@ -130,7 +133,7 @@ export class OrderService {
     });
   }
 
-  async generateLeadFromOrder(ezManageOrder: IGetOrderOutput) {
+  async generateLeadFromOrder(ezManageOrder: IEzManageOrder) {
     const { lead, invalidKeys } = outputH4HOrderToCrm(ezManageOrder);
     return { lead, invalidKeys };
   }
