@@ -5,11 +5,13 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminService } from './admin.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
+import { SentOrderToCrmQueryDto } from './dtos/query';
 
 @UseGuards(AdminGuard)
 @Controller('admin')
@@ -43,5 +45,17 @@ export class AdminController {
   @Get('caterer-menu/:catererId')
   async getCatererMenu(@Param('catererId') catererId: string) {
     return this.adminService.getCatererMenu({ catererId });
+  }
+
+  /**
+   * Thoughts:  While writing this route, always be mindful that there may be configurable
+   * CRM options
+   *
+   * Also, note that whatever is available in the authenticated user's JWT should be sent
+   * as query parameters, along with the order-id
+   */
+  @Post('send-order-to-crm')
+  async sendOrderToCrm(@Query() query: SentOrderToCrmQueryDto) {
+    return this.adminService.sendOrderToCrm(query);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
+import { SentOrderToCrmQueryDto } from './dtos/query';
 
 @Injectable()
 export class AdminService {
@@ -39,5 +40,9 @@ export class AdminService {
 
   async getCatererMenu({ catererId }: { catererId: string }) {
     return await this.adminInternalInterface.getCatererMenu({ catererId });
+  }
+
+  async sendOrderToCrm(input: SentOrderToCrmQueryDto) {
+    return await this.adminInternalInterface.sendOrderToCrm(input);
   }
 }

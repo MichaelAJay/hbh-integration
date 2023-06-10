@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
+import { outputH4HOrderToCrm } from './utility';
 
 @Injectable()
 export class NutshellApiHandlerService {
   constructor(private readonly nutshellApiService: NutshellApiService) {}
 
   async createLead(order: IEzManageOrder) {
+    const { lead, invalidKeys } = outputH4HOrderToCrm(order);
     // return await this.nutshellApiService.createLead();
   }
 

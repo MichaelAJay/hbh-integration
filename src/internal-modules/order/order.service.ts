@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  IGetOrderOutput,
-  IGetOrderOutputItem,
-} from 'src/api/order/interfaces/output';
+import { IGetOrderOutput } from 'src/api/order/interfaces/output';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
@@ -14,7 +11,6 @@ import { OrderDbHandlerService } from '../external-interface-handlers/database/o
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import { NutshellApiHandlerService } from '../external-interface-handlers/nutshell/nutshell-api-handler.service';
 import { outputH4HOrderToCrm } from '../external-interface-handlers/nutshell/utility';
-import { ConvertOrderStatusDbToUi } from './converters';
 
 @Injectable()
 export class OrderService {
@@ -145,83 +141,4 @@ export class OrderService {
     ref: string;
     order: Omit<IGetOrderOutput, 'catererName'>;
   }) {}
-
-  /**
-   * Should use order status
-   * 1) Should put OrderStatus "Accepted" or "Canceled" directly on the Order.
-   * 2) Should check all "Accepted" orders for this condition:
-   * If the delivery date has passed, then change to "Pending Review" - which is an EXTERNAL status
-   */
-  private convertEzManageOrderForOutput(
-    order: IEzManageOrder & { status: DbOrderStatus },
-  ): Omit<IGetOrderOutput, 'catererName'> {
-    // Extract the delivery fee (in cents)
-    let deliveryFeeInCents = 0;
-    for (const fee of order.catererCart.feesAndDiscounts) {
-      if (fee.name === 'Delivery Fee') {
-        deliveryFeeInCents = fee.cost.subunits;
-        break;
-      }
-    }
-
-    const subTotalInCents = order.totals.subTotal.subunits;
-    const catererTotalDueInCents =
-      order.catererCart.totals.catererTotalDue * 100;
-    const tipInCents = order.totals.tip.subunits;
-
-    // Stubbed commission (in cents)
-    const commissionInCents =
-      catererTotalDueInCents -
-      (subTotalInCents + deliveryFeeInCents + tipInCents);
-
-    function centsToDollars(cents: number): number {
-      return Number((cents / 100).toFixed(2));
-    }
-
-    const items = order.catererCart.orderItems.map((item) => ({
-      quantity: item.quantity,
-      name: item.name,
-      cost: centsToDollars(item.totalInSubunits.subunits),
-      customizations: item.customizations,
-    }));
-
-    return {
-      status: ConvertOrderStatusDbToUi({
-        status: order.status,
-        dueTime: order.event.timestamp,
-      }),
-      orderNumber: order.orderNumber,
-      sourceType: order.orderSourceType,
-      event: {
-        deliveryTime: new Date(order.event.timestamp),
-        address: order.event.address,
-        contact: order.event.contact,
-      },
-      contact: {
-        firstName: order.orderCustomer.firstName,
-        lastName: order.orderCustomer.lastName,
-      },
-      totals: {
-        subTotal: centsToDollars(subTotalInCents),
-        catererTotalDue: order.catererCart.totals.catererTotalDue,
-        tip: centsToDollars(tipInCents),
-        deliveryFee: centsToDollars(deliveryFeeInCents),
-        commission: centsToDollars(commissionInCents),
-      },
-      items,
-      itemsAggregate: this.aggregateOrder(items),
-    };
-  }
-
-  private aggregateOrder(items: IGetOrderOutputItem[]) {
-    const itemsAggregate: { [key: string]: number } = {};
-    for (const item of items) {
-      if (itemsAggregate[item.name]) {
-        itemsAggregate[item.name] += item.quantity;
-      } else {
-        itemsAggregate[item.name] = item.quantity;
-      }
-    }
-    return itemsAggregate;
-  }
 }

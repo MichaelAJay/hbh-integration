@@ -8,6 +8,7 @@ import { EzmanageApiHandlerService } from 'src/internal-modules/external-interfa
 import { NutshellApiHandlerService } from 'src/internal-modules/external-interface-handlers/nutshell/nutshell-api-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
+import { SentOrderToCrmQueryDto } from './dtos/query';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -86,5 +87,9 @@ export class AdminInternalInterfaceService {
         catererId,
       );
     return this.ezManagerApiHandler.getCatererMenu({ catererId, ref });
+  }
+
+  async sendOrderToCrm(input: SentOrderToCrmQueryDto) {
+    throw new Error('Method not implemented.');
   }
 }
