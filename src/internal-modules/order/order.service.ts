@@ -9,15 +9,12 @@ import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
-import { NutshellApiHandlerService } from '../external-interface-handlers/nutshell/nutshell-api-handler.service';
-import { outputH4HOrderToCrm } from '../external-interface-handlers/nutshell/utility';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
-    private readonly nutshellApiHandler: NutshellApiHandlerService,
     private readonly logger: CustomLoggerService,
   ) {}
 
@@ -129,10 +126,7 @@ export class OrderService {
     });
   }
 
-  async generateLeadFromOrder(ezManageOrder: IEzManageOrder) {
-    const { lead, invalidKeys } = outputH4HOrderToCrm(ezManageOrder);
-    return { lead, invalidKeys };
-  }
+  async generateLeadFromOrder(ezManageOrder: IEzManageOrder) {}
 
   outputOrderToCRM({
     ref,

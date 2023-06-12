@@ -1,30 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
+import { ACCOUNT_REF } from '../database/account-db-handler/types';
 import { outputH4HOrderToCrm } from './utility';
 
 @Injectable()
 export class NutshellApiHandlerService {
   constructor(private readonly nutshellApiService: NutshellApiService) {}
 
-  async createLead({ ref, order }: { ref: string; order: IEzManageOrder }) {
-    const { lead, invalidKeys } = outputH4HOrderToCrm(order);
-    return await this.nutshellApiService.createLead({ ref, lead: { lead } });
-  }
-
-  async testNutshellIntegration({
+  async createLead({
     ref,
-    a,
-    b,
+    order,
   }: {
-    ref: string;
-    a: number;
-    b: number;
+    ref: ACCOUNT_REF;
+    order: IEzManageOrder;
   }) {
-    try {
-      return await this.nutshellApiService.add({ ref, a, b });
-    } catch (err) {
-      throw err;
+    switch (ref) {
+      case 'H4H':
+        const { lead, invalidKeys } = outputH4HOrderToCrm(order);
+        return await this.nutshellApiService.createLead({
+          ref,
+          lead: { lead },
+        });
+      case 'ADMIN':
+      default:
+        /** LOG */
+        throw new InternalServerErrorException(`Invalid ref ${ref}`);
     }
   }
 

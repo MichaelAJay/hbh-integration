@@ -46,6 +46,7 @@ export class OrderService {
   }) {
     return await this.orderInternalInterface.getOrderByName({
       orderName: orderName
+        .toUpperCase()
         .split('')
         .filter((char) => /[a-zA-Z0-9]/.test(char))
         .join(''),

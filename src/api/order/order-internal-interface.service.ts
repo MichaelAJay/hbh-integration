@@ -175,10 +175,11 @@ export class OrderInternalInterfaceService {
       ref,
     });
 
-    const { lead, invalidKeys } = await this.orderService.generateLeadFromOrder(
+    const VOID_RETURN = await this.orderService.generateLeadFromOrder(
       ezManageOrder,
     );
-    return { lead, invalidKeys };
+    // return { lead, invalidKeys };
+    return VOID_RETURN;
   }
 
   private async getInternalOrderByName({

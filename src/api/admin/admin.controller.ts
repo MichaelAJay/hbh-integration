@@ -28,15 +28,6 @@ export class AdminController {
     return this.adminService.getOrderNamesForAccount(accountId);
   }
 
-  @Post('test-nutshell-integration')
-  async testNutshellIntegration(
-    @Body() { ref, a, b }: { ref: string; a: number; b: number },
-  ) {
-    if (!(Number.isInteger(a) && Number.isInteger(b)))
-      throw new BadRequestException('Both parameters must be integers');
-    return this.adminService.testNutshellIntegration({ ref, a, b });
-  }
-
   @Get('get-nutshell-products')
   async getNutshellProducts(@Body() { ref }: { ref: string }) {
     return this.adminService.getNutshellProducts({ ref });
