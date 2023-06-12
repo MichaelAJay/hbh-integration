@@ -17,7 +17,7 @@ export class CrmHandlerService {
   }: {
     account: AccountRecordWithId;
     order: any;
-  }) {
+  }): Promise<string | undefined> {
     switch (account.crm) {
       case 'NUTSHELL':
         return await this.generateNutshellPrimaryEntity({
@@ -30,13 +30,13 @@ export class CrmHandlerService {
     }
   }
 
-  async generateNutshellPrimaryEntity({
+  private async generateNutshellPrimaryEntity({
     account,
     order,
   }: {
     account: AccountRecordWithId;
     order: any;
-  }) {
+  }): Promise<string | undefined> {
     switch (account.crmPrimaryType) {
       case 'LEAD':
         if (!validateEzManageOrder(order)) {
@@ -57,5 +57,15 @@ export class CrmHandlerService {
     }
   }
 
-  async getProducts({ ref }: { ref: string }) {}
+  async getProducts({ account }: { account: AccountRecordWithId }) {
+    switch (account.crm) {
+      case 'NUTSHELL':
+        return await this.nutshellApiHandler.getProducts({ ref: account.ref });
+      default:
+        /** LOG */
+        throw new InternalServerErrorException(
+          `Get products method not defined for CRM ${account.crm}`,
+        );
+    }
+  }
 }

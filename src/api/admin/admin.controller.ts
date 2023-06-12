@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminService } from './admin.service';
-import { AdminCreateUserBodyDto } from './dtos/body';
+import { AdminCreateUserBodyDto, GetCrmProductsBodyDto } from './dtos/body';
 import { SentOrderToCrmQueryDto } from './dtos/query';
 
 @UseGuards(AdminGuard)
@@ -28,9 +28,11 @@ export class AdminController {
     return this.adminService.getOrderNamesForAccount(accountId);
   }
 
-  @Get('get-nutshell-products')
-  async getNutshellProducts(@Body() { ref }: { ref: string }) {
-    return this.adminService.getNutshellProducts({ ref });
+  @Get('get-crm-products')
+  async getCrmProducts(
+    @Body() { 'account-id': accountId }: GetCrmProductsBodyDto,
+  ) {
+    return this.adminService.getCrmProducts({ accountId });
   }
 
   @Get('caterer-menu/:catererId')
@@ -47,6 +49,6 @@ export class AdminController {
    */
   @Post('send-order-to-crm')
   async sendOrderToCrm(@Query() query: SentOrderToCrmQueryDto) {
-    return this.adminService.sendOrderToCrm(query);
+    return this.adminService.sendEzManageOrderToCrm(query);
   }
 }

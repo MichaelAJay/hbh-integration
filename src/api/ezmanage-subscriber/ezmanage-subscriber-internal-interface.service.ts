@@ -1,20 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import { AccountService } from 'src/internal-modules/account/account.service';
-import { CatererDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/caterer-db-handler/caterer-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { EventNotificationPayloadKey } from './enums';
 
 @Injectable()
 export class EzmanageSubscriberInternalInterfaceService {
   constructor(
     private readonly accountService: AccountService,
-    private readonly catererDbHandler: CatererDbHandlerService,
     private readonly orderService: OrderService,
     private readonly orderDbHandler: OrderDbHandlerService,
-    private readonly logger: CustomLoggerService,
   ) {}
 
   /**
@@ -157,6 +153,7 @@ export class EzmanageSubscriberInternalInterfaceService {
     } else {
       /**
        * Is not new
+       * @TODO handle checking for a CRM entity and updating if necessary
        */
       console.log('found one', order);
     }

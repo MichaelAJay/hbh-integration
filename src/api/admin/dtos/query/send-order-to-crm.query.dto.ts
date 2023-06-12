@@ -5,7 +5,7 @@ export class SentOrderToCrmQueryDto {
   'order-id': string;
 
   @IsString()
-  accountId: string;
+  'account-id': string;
 
   @IsString()
   ref: string;

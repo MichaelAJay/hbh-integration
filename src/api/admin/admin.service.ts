@@ -18,15 +18,15 @@ export class AdminService {
     return await this.adminInternalInterface.getOrderNamesForAccount(accountId);
   }
 
-  async getNutshellProducts({ ref }: { ref: string }) {
-    return await this.adminInternalInterface.getCrmProducts({ ref });
+  async getCrmProducts({ accountId }: { accountId: string }) {
+    return await this.adminInternalInterface.getCrmProducts({ accountId });
   }
 
   async getCatererMenu({ catererId }: { catererId: string }) {
     return await this.adminInternalInterface.getCatererMenu({ catererId });
   }
 
-  async sendOrderToCrm(input: SentOrderToCrmQueryDto) {
+  async sendEzManageOrderToCrm(input: SentOrderToCrmQueryDto) {
     return await this.adminInternalInterface.sendEzManageOrderToCrm(input);
   }
 }

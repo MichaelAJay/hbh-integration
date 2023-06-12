@@ -14,7 +14,7 @@ export class NutshellApiHandlerService {
   }: {
     ref: ACCOUNT_REF;
     order: IEzManageOrder;
-  }) {
+  }): Promise<string> {
     switch (ref) {
       case 'H4H':
         const { lead, invalidKeys } = outputH4HOrderToCrm(order);
@@ -29,7 +29,7 @@ export class NutshellApiHandlerService {
     }
   }
 
-  async getProducts({ ref }: { ref: any }) {
+  async getProducts({ ref }: { ref: ACCOUNT_REF }) {
     try {
       return await this.nutshellApiService.getProducts({ ref });
     } catch (err) {

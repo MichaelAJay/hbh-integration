@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { CrmHandlerService } from 'src/internal-modules/external-interface-handlers/crm/crm-handler.service';
@@ -65,8 +69,12 @@ export class AdminInternalInterfaceService {
     return orders.map((order) => order.name);
   }
 
-  async getCrmProducts({ ref }: { ref: string }) {
-    return this.crmHandler.getProducts({ ref });
+  async getCrmProducts({ accountId }: { accountId: string }) {
+    const account = await this.accountDbHandler.getAccount(accountId);
+    if (!account) {
+      throw new BadRequestException('Account not found with specified id');
+    }
+    return this.crmHandler.getProducts({ account });
   }
 
   async getCatererMenu({ catererId }: { catererId: string }) {
@@ -79,7 +87,7 @@ export class AdminInternalInterfaceService {
 
   async sendEzManageOrderToCrm({
     'order-id': orderId,
-    accountId,
+    'account-id': accountId,
     ref,
   }: SentOrderToCrmQueryDto) {
     const ezManageOrder = await this.getEzManageOrder({ orderId, ref });

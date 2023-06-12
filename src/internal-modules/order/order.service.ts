@@ -7,14 +7,18 @@ import {
 } from 'src/external-modules/database/models';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
+import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 
 @Injectable()
 export class OrderService {
   constructor(
+    private readonly accountDbService: AccountDbHandlerService,
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
+    private readonly crmHandler: CrmHandlerService,
     private readonly logger: CustomLoggerService,
   ) {}
 
@@ -51,9 +55,26 @@ export class OrderService {
         this.logger.error(msg, reason);
       });
 
-    /**
-     * Create Nutshell Lead
-     */
+    const ezManageOrder = await this.ezManageApiHandler
+      .getOrder({ orderId, ref })
+      .catch((reason) => {
+        const msg = `Failed to retrieve order ${orderId}`;
+        this.logger.error(msg, reason);
+        throw reason;
+      });
+
+    const account = await this.accountDbService.getAccount(accountId);
+    /** null account should not necessarily throw  */
+    let crmEntityId: string | undefined;
+    if (account) {
+      /**
+       * Create Nutshell Lead
+       */
+      crmEntityId = await this.crmHandler.generateCRMEntity({
+        account,
+        order: ezManageOrder,
+      });
+    }
 
     /**
      * @TODO fix the date issue
@@ -65,13 +86,12 @@ export class OrderService {
       catererName,
       name: ezManageOrderName || 'PLACEHOLDER NAME',
       status,
-      /**
-       * @TODO fix
-       */
       crmId: null,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
+
+    if (crmEntityId) data.crmId = crmEntityId;
 
     await this.orderDbService.create({ orderId, data });
     return;

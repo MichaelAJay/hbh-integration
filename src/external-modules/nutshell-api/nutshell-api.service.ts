@@ -9,6 +9,7 @@ import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { ICreateLead } from './interfaces/requests';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 
 @Injectable()
 export class NutshellApiService {
@@ -129,7 +130,7 @@ export class NutshellApiService {
     return `Basic ${Buffer.from(`${userName}:${apiKey}`).toString('base64')}`;
   }
 
-  private getUserNameAndApiKeyForAcct(ref: string) {
+  private getUserNameAndApiKeyForAcct(ref: ACCOUNT_REF) {
     const {
       NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
       NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
@@ -163,7 +164,7 @@ export class NutshellApiService {
   /**
    * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
    */
-  private async generateClient(ref: string) {
+  private async generateClient(ref: ACCOUNT_REF) {
     const { userName, apiKey } = this.getUserNameAndApiKeyForAcct(ref);
 
     const domain = await this.getApiForUsername({ userName, apiKey });
@@ -185,12 +186,22 @@ export class NutshellApiService {
    * 3) Send request to URL from step 1 w/ Basic auth from step 2
    */
 
-  async getLead(ref: string) {
+  async getLead(ref: ACCOUNT_REF) {
     const client = await this.generateClient(ref);
     await client.request('getLead', { leadId: 1000 });
   }
 
-  async createLead({ ref, lead }: { ref: string; lead: ICreateLead }) {
+  /**
+   * @TODO return lead id if possible
+   * @TODO validation
+   */
+  async createLead({
+    ref,
+    lead,
+  }: {
+    ref: ACCOUNT_REF;
+    lead: ICreateLead;
+  }): Promise<string> {
     try {
       const client = await this.generateClient(ref);
       return await client.request('newLead', lead);
@@ -200,7 +211,7 @@ export class NutshellApiService {
     }
   }
 
-  async getProducts({ ref }: { ref: any }) {
+  async getProducts({ ref }: { ref: ACCOUNT_REF }) {
     const client = await this.generateClient(ref);
     const response = await client
       .request('findProducts', { limit: 100 })
@@ -213,29 +224,6 @@ export class NutshellApiService {
       name: product.name,
       id: product.id,
     }));
-  }
-
-  /**
-   * Test process
-   */
-  async add({ ref, a, b }: { ref: string; a: number; b: number }) {
-    try {
-      const client = await this.generateClient(ref);
-      console.log('client', client);
-
-      client.on('request', function (req) {
-        console.log(req);
-      });
-      const response = await client.request('add', [a, b]).catch((reason) => {
-        console.error('Client request failed', reason);
-        throw reason;
-      });
-      const result = this.getResult(response);
-      console.log('result', result);
-      return result;
-    } catch (err) {
-      throw err;
-    }
   }
 }
 
