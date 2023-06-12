@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IGetOrderOutput } from 'src/api/order/interfaces/output';
+import {
+  checkErrorAsCustomErrorObject,
+  CustomErrorObject,
+} from 'src/common/types';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IOrderModel,
@@ -70,10 +74,25 @@ export class OrderService {
       /**
        * Create Nutshell Lead
        */
-      crmEntityId = await this.crmHandler.generateCRMEntity({
-        account,
-        order: ezManageOrder,
-      });
+      crmEntityId = await this.crmHandler
+        .generateCRMEntity({
+          account,
+          order: ezManageOrder,
+        })
+        .catch((reason) => {
+          /** DON'T THROW */
+          if (checkErrorAsCustomErrorObject(reason)) {
+            if (reason.isLogged === false) {
+              /** Log */
+            }
+          } else {
+            const message = 'Crm entity not generated';
+            /**
+             * @TODO log
+             */
+          }
+          return undefined;
+        });
     }
 
     /**
