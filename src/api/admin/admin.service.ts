@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
-import { SentOrderToCrmQueryDto } from './dtos/query';
+import {
+  AdminOrderNameWithAccountScopeQueryDto,
+  SentOrderToCrmQueryDto,
+} from './dtos/query';
 
 @Injectable()
 export class AdminService {
@@ -28,5 +31,11 @@ export class AdminService {
 
   async sendEzManageOrderToCrm(input: SentOrderToCrmQueryDto) {
     return await this.adminInternalInterface.sendEzManageOrderToCrm(input);
+  }
+
+  async getCrmEntityFromOrderName(
+    input: AdminOrderNameWithAccountScopeQueryDto,
+  ) {
+    return await this.adminInternalInterface.getCrmEntityFromOrderName(input);
   }
 }

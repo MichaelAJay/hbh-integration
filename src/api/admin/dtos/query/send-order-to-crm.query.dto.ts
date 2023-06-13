@@ -1,12 +1,3 @@
-import { IsString } from 'class-validator';
+import { AdminOrderIdWithAccountScopeQueryDto } from './order-with-account-scope.query.dto';
 
-export class SentOrderToCrmQueryDto {
-  @IsString()
-  'order-id': string;
-
-  @IsString()
-  'account-id': string;
-
-  @IsString()
-  ref: string;
-}
+export class SentOrderToCrmQueryDto extends AdminOrderIdWithAccountScopeQueryDto {}

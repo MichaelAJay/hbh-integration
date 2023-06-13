@@ -10,6 +10,8 @@ import { Cache } from 'cache-manager';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { ICreateLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+import * as Sentry from '@sentry/node';
+import { CrmError } from 'src/common/classes';
 
 @Injectable()
 export class NutshellApiService {
@@ -191,10 +193,6 @@ export class NutshellApiService {
     await client.request('getLead', { leadId: 1000 });
   }
 
-  /**
-   * @TODO return lead id if possible
-   * @TODO validation
-   */
   async createLead({
     ref,
     lead,
@@ -204,10 +202,17 @@ export class NutshellApiService {
   }): Promise<string> {
     try {
       const client = await this.generateClient(ref);
-      return await client.request('newLead', lead);
-    } catch (err) {
-      console.error('Create lead failed', err);
-      throw err;
+      const resp = client.request('newLead', lead);
+      return resp;
+    } catch (err: any) {
+      Sentry.withScope((scope) => {
+        scope.setExtra('ref', ref);
+        scope.setExtra('lead', lead);
+        scope.setExtra('message', 'Nutshell newLead failed');
+        Sentry.captureException(err);
+      });
+
+      throw new CrmError(err.message || 'Lead insert failed', true);
     }
   }
 

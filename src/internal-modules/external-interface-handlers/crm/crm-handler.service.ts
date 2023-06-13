@@ -1,8 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { validateEzManageOrder } from 'src/external-modules/ezmanage-api/validators';
 import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class CrmHandlerService {
@@ -25,8 +27,10 @@ export class CrmHandlerService {
           order,
         });
       default:
-        /** LOG */
-        throw new InternalServerErrorException('Account CRM unspecified');
+        const err = new CrmError('CRM not found for generateCRMEntity');
+        Sentry.captureException(err);
+        err.isLogged = true;
+        throw err;
     }
   }
 
@@ -40,10 +44,10 @@ export class CrmHandlerService {
     switch (account.crmPrimaryType) {
       case 'LEAD':
         if (!validateEzManageOrder(order)) {
-          /** LOG */
-          throw new InternalServerErrorException(
-            'Order does not match expected shape at CrmHandler generateNutshellPrimaryEntity',
-          );
+          const err = new OrderManagerError('Invalid order');
+          Sentry.captureException(err);
+          err.isLogged = true;
+          throw err;
         }
         return await this.nutshellApiHandler.createLead({
           ref: account.ref,
@@ -51,9 +55,12 @@ export class CrmHandlerService {
         });
       default:
         /** LOG */
-        throw new InternalServerErrorException(
-          'Account CRM primary entity unspecified',
+        const err = new InternalError(
+          `Invalid account crmPrimaryType ${account.crmPrimaryType}`,
         );
+        Sentry.captureException(err);
+        err.isLogged = true;
+        throw err;
     }
   }
 

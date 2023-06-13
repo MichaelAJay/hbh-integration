@@ -6,6 +6,7 @@ export interface IEzManageOrder {
   event: IEzManageOrderEvent;
   orderCustomer: IEzManageOrderCustomer;
   totals: IEzManageOrderTotals;
+  caterer: ICaterer /** @TODO add to validator */;
   catererCart: ICatererCart;
   orderSourceType: string;
 }
@@ -44,6 +45,12 @@ interface IEzManageOrderTotals {
 
 interface ISubunits {
   subunits: number;
+}
+
+interface ICaterer {
+  address: {
+    city: string;
+  };
 }
 
 interface ICatererCart {

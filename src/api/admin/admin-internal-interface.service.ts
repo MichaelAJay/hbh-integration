@@ -3,16 +3,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InternalError } from 'src/common/classes';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { CrmHandlerService } from 'src/internal-modules/external-interface-handlers/crm/crm-handler.service';
+import { outputH4HOrderToCrm } from 'src/internal-modules/external-interface-handlers/crm/utility';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
 import { EzmanageApiHandlerService } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
-import { SentOrderToCrmQueryDto } from './dtos/query';
+import {
+  AdminOrderNameWithAccountScopeQueryDto,
+  SentOrderToCrmQueryDto,
+} from './dtos/query';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -107,5 +112,55 @@ export class AdminInternalInterfaceService {
     ref: string;
   }) {
     return this.ezManagerApiHandler.getOrder({ orderId, ref });
+  }
+
+  async getCrmEntityFromOrderName({
+    'order-name': orderName,
+    'account-id': accountId,
+    ref,
+  }: AdminOrderNameWithAccountScopeQueryDto) {
+    const [internalOrder, account] = await Promise.all([
+      this.orderDbHandler.findByNameForAccount(orderName, accountId),
+      this.accountDbHandler.getAccount(accountId),
+    ]);
+
+    if (!account) {
+      const message = `No account found matching ${accountId}`;
+      console.error(message);
+      throw new InternalError(message);
+    }
+
+    const order = await this.getEzManageOrder({
+      orderId: internalOrder.id,
+      ref,
+    });
+
+    const { lead, invalidKeys } = outputH4HOrderToCrm(order);
+    return { lead, invalidKeys };
+  }
+
+  async generateCrmEntityFromOrderName({
+    'order-name': orderName,
+    'account-id': accountId,
+    ref,
+  }: AdminOrderNameWithAccountScopeQueryDto) {
+    const [internalOrder, account] = await Promise.all([
+      this.orderDbHandler.findByNameForAccount(orderName, accountId),
+      this.accountDbHandler.getAccount(accountId),
+    ]);
+
+    if (!account) {
+      const message = `No account found matching ${accountId}`;
+      console.error(message);
+      throw new InternalError(message);
+    }
+
+    const order = await this.getEzManageOrder({
+      orderId: internalOrder.id,
+      ref,
+    });
+
+    const leadId = await this.crmHandler.generateCRMEntity({ account, order });
+    return leadId;
   }
 }

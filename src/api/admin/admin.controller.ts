@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -10,8 +9,12 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminService } from './admin.service';
-import { AdminCreateUserBodyDto, GetCrmProductsBodyDto } from './dtos/body';
-import { SentOrderToCrmQueryDto } from './dtos/query';
+import { AdminCreateUserBodyDto } from './dtos/body';
+import {
+  AdminOrderNameWithAccountScopeQueryDto,
+  GetCrmProductsQueryDto,
+  SentOrderToCrmQueryDto,
+} from './dtos/query';
 
 @UseGuards(AdminGuard)
 @Controller('admin')
@@ -30,7 +33,7 @@ export class AdminController {
 
   @Get('get-crm-products')
   async getCrmProducts(
-    @Body() { 'account-id': accountId }: GetCrmProductsBodyDto,
+    @Query() { 'account-id': accountId }: GetCrmProductsQueryDto,
   ) {
     return this.adminService.getCrmProducts({ accountId });
   }
@@ -38,6 +41,13 @@ export class AdminController {
   @Get('caterer-menu/:catererId')
   async getCatererMenu(@Param('catererId') catererId: string) {
     return this.adminService.getCatererMenu({ catererId });
+  }
+
+  @Get('crm-entity-from-order-name')
+  async getCrmEntityFromOrderName(
+    @Query() query: AdminOrderNameWithAccountScopeQueryDto,
+  ) {
+    return this.adminService.getCrmEntityFromOrderName(query);
   }
 
   /**
