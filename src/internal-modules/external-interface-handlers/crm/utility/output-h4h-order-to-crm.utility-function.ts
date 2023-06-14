@@ -31,15 +31,6 @@ export interface LeadProduct {
   };
 }
 
-/**
- * 6 June 2023
- * Outputs to a Nutshell Lead
- *
- * @TODO
- * lead.name
- * if (marketplace) 'EZCater MM/DD/YY (Gville/Athens)' date is delivery date
- * if (ez ordering) 'EZOrder MM/DD/YY (Gville/Athens)'
- */
 export function outputH4HOrderToCrm(order: IEzManageOrder) {
   try {
     const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
@@ -57,11 +48,8 @@ export function outputH4HOrderToCrm(order: IEzManageOrder) {
       });
     }
 
-    const name = getLeadName(order);
-
     const lead = {
       products,
-      name: name || 'REPLACE',
     };
 
     return { lead, invalidKeys };
@@ -158,12 +146,17 @@ function getLeadName(order: IEzManageOrder): string | undefined {
   const { event, caterer, orderSourceType } = order;
   const { timestamp } = event;
   const { address } = caterer;
-  const { city } = address;
-  if (!(city === 'Athens' || city === 'Gainesville')) return undefined;
+  const { city: addressCity } = address;
+  let city = 'CITY';
+  switch (addressCity) {
+    case 'Athens':
+      city = 'Athens';
+      break;
+    case 'Gainesville':
+      city = 'Gville';
+      break;
+  }
 
-  /**
-   * TRYING
-   */
   const date = new Date(timestamp);
   if (isNaN(date.getTime())) return undefined;
 
@@ -172,7 +165,5 @@ function getLeadName(order: IEzManageOrder): string | undefined {
   const year = String(date.getFullYear()).slice(-2); // Get the last 2 digits of the year
 
   /** Convert orderSourceType */
-  return `${orderSourceType} ${day}/${month}/${year} ${
-    city === 'Athens' ? city : 'Gville'
-  }`;
+  return `${orderSourceType} ${month}/${day}/${year} ${city}`;
 }

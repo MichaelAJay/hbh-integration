@@ -1,6 +1,5 @@
 export interface ICreateLead {
   lead: {
-    name: string;
     products: ICreateLeadProduct[];
     dueTime?: string; // ISO 8601 e.g. "2010-11-13T15:23:19-05:00"
   };

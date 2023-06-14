@@ -1,7 +1,7 @@
 import { UUID } from 'src/common/types';
 
 export interface IEzManageOrder {
-  orderNumber: string;
+  orderNumber: string; // EX: 45HGZ3
   uuid: UUID;
   event: IEzManageOrderEvent;
   orderCustomer: IEzManageOrderCustomer;

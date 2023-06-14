@@ -31,6 +31,7 @@ export class NutshellApiHandlerService {
         return await this.nutshellApiService.createLead({
           ref,
           lead: { lead },
+          orderName: order.orderNumber,
         });
       case 'ADMIN':
       default:

@@ -6,6 +6,7 @@ import {
 } from 'src/common/types';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
+  IAccountModelWithId,
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
@@ -27,7 +28,7 @@ export class OrderService {
   ) {}
 
   async createOrder({
-    accountId,
+    account,
     catererId,
     orderId,
     status,
@@ -35,7 +36,7 @@ export class OrderService {
     ref,
     catererName,
   }: {
-    accountId: string;
+    account: IAccountModelWithId;
     catererId: string;
     orderId: string;
     status: DbOrderStatus;
@@ -43,22 +44,6 @@ export class OrderService {
     ref: string;
     catererName: string;
   }) {
-    /**
-     * Need order name for db
-     */
-    /**
-     * We should actually get the whole order and add it to Nutshell here.
-     */
-    const ezManageOrderName = await this.ezManageApiHandler
-      .getOrderName({
-        orderId,
-        ref,
-      })
-      .catch((reason) => {
-        const msg = 'Failed to retrieve order name';
-        this.logger.error(msg, reason);
-      });
-
     const ezManageOrder = await this.ezManageApiHandler
       .getOrder({ orderId, ref })
       .catch((reason) => {
@@ -67,43 +52,38 @@ export class OrderService {
         throw reason;
       });
 
-    const account = await this.accountDbService.getAccount(accountId);
-    /** null account should not necessarily throw  */
-    let crmEntityId: string | undefined;
-    if (account) {
-      /**
-       * Create Nutshell Lead
-       */
-      crmEntityId = await this.crmHandler
-        .generateCRMEntity({
-          account,
-          order: ezManageOrder,
-        })
-        .catch((reason) => {
-          /** DON'T THROW */
-          if (checkErrorAsCustomErrorObject(reason)) {
-            if (reason.isLogged === false) {
-              /** Log */
-            }
-          } else {
-            const message = 'Crm entity not generated';
-            /**
-             * @TODO log
-             */
+    /**
+     * Create Nutshell Lead
+     */
+    const crmEntityId = await this.crmHandler
+      .generateCRMEntity({
+        account,
+        order: ezManageOrder,
+      })
+      .catch((reason) => {
+        /** DON'T THROW */
+        if (checkErrorAsCustomErrorObject(reason)) {
+          if (reason.isLogged === false) {
+            /** Log */
           }
-          return undefined;
-        });
-    }
+        } else {
+          const message = 'Crm entity not generated';
+          /**
+           * @TODO log
+           */
+        }
+        return undefined;
+      });
 
     /**
      * @TODO fix the date issue
      */
     const now = new Date();
     const data: IOrderModel = {
-      accountId,
+      accountId: account.id,
       catererId,
       catererName,
-      name: ezManageOrderName || 'PLACEHOLDER NAME',
+      name: ezManageOrder.orderNumber || 'PLACEHOLDER NAME',
       status,
       crmId: null,
       acceptedAt: now,

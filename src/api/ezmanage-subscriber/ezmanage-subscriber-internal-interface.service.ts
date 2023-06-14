@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
+import { IAccountModelWithId } from 'src/external-modules/database/models';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
@@ -36,7 +37,7 @@ export class EzmanageSubscriberInternalInterfaceService {
       await this.accountService.findAccountByCatererId(catererId);
     if (key === EventNotificationPayloadKey.CANCELLED)
       return this.handleOrderCancelled({
-        accountId: account.id,
+        account,
         catererId,
         catererName: caterer.name,
         orderId: orderId,
@@ -48,7 +49,7 @@ export class EzmanageSubscriberInternalInterfaceService {
      * If not cancelled, is accepted
      */
     return this.handleOrderAccepted({
-      accountId: account.id,
+      account,
       catererId,
       catererName: caterer.name,
       orderId: orderId,
@@ -58,14 +59,14 @@ export class EzmanageSubscriberInternalInterfaceService {
   }
 
   private async handleOrderCancelled({
-    accountId,
+    account,
     catererId,
     orderId,
     occurredAt,
     ref,
     catererName,
   }: {
-    accountId: string;
+    account: IAccountModelWithId;
     catererId: string;
     orderId: string;
     occurredAt: string;
@@ -84,7 +85,7 @@ export class EzmanageSubscriberInternalInterfaceService {
      */
     if (!order) {
       await this.orderService.createOrder({
-        accountId,
+        account,
         catererId,
         catererName,
         orderId,
@@ -120,14 +121,14 @@ export class EzmanageSubscriberInternalInterfaceService {
    * @TODO need to think through process of "Accepted" after "Cancelled" - is that possible?
    */
   private async handleOrderAccepted({
-    accountId,
+    account,
     catererId,
     catererName,
     orderId,
     occurredAt,
     ref,
   }: {
-    accountId: string;
+    account: IAccountModelWithId;
     catererId: string;
     catererName: string;
     orderId: string;
@@ -141,7 +142,7 @@ export class EzmanageSubscriberInternalInterfaceService {
        * Is new
        */
       await this.orderService.createOrder({
-        accountId,
+        account,
         catererId,
         orderId,
         status: DbOrderStatus.ACCEPTED,

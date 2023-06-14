@@ -12,6 +12,7 @@ import { ICreateLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import * as Sentry from '@sentry/node';
 import { CrmError } from 'src/common/classes';
+import { validateCreateLeadResponse } from './interfaces/responses';
 
 @Injectable()
 export class NutshellApiService {
@@ -196,16 +197,26 @@ export class NutshellApiService {
   async createLead({
     ref,
     lead,
+    orderName,
   }: {
     ref: ACCOUNT_REF;
     lead: ICreateLead;
+    orderName: string;
   }): Promise<string> {
     try {
       const client = await this.generateClient(ref);
-      const resp = client.request('newLead', lead);
-      return resp;
+      const resp = await client.request('newLead', {
+        lead: { products: lead.lead.products },
+      });
+
+      if (!validateCreateLeadResponse(resp)) {
+        throw new CrmError('Create lead response failed validation', false);
+      }
+
+      return resp.result.id.toString();
     } catch (err: any) {
       Sentry.withScope((scope) => {
+        scope.setExtra('order name', orderName);
         scope.setExtra('ref', ref);
         scope.setExtra('lead', lead);
         scope.setExtra('message', 'Nutshell newLead failed');
