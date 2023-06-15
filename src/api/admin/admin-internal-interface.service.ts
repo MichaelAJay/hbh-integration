@@ -98,7 +98,18 @@ export class AdminInternalInterfaceService {
     const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
     const account = await this.accountDbHandler.getAccount(accountId);
     if (!account) throw new NotFoundException('Account not found');
-    return this.crmHandler.generateCRMEntity({ account, order: ezManageOrder });
+    const crmId = await this.crmHandler.generateCRMEntity({
+      account,
+      order: ezManageOrder,
+    });
+
+    if (crmId) {
+      await this.orderDbHandler.updateOne({
+        orderId,
+        updates: { crmId },
+      });
+    }
+    return crmId;
   }
 
   /**
@@ -135,7 +146,7 @@ export class AdminInternalInterfaceService {
       ref,
     });
 
-    const { lead, invalidKeys } = outputH4HOrderToCrm(order);
+    const { lead, invalidKeys } = outputH4HOrderToCrm({ order });
     return { lead, invalidKeys };
   }
 

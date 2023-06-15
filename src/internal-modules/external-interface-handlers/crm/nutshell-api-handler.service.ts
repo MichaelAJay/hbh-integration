@@ -5,21 +5,25 @@ import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-a
 import { ACCOUNT_REF } from '../database/account-db-handler/types';
 import { outputH4HOrderToCrm } from './utility';
 import * as Sentry from '@sentry/node';
+import { IAccountModelWithId } from 'src/external-modules/database/models';
 
 @Injectable()
 export class NutshellApiHandlerService {
   constructor(private readonly nutshellApiService: NutshellApiService) {}
 
   async createLead({
-    ref,
+    account,
     order,
   }: {
-    ref: ACCOUNT_REF;
+    account: IAccountModelWithId;
     order: IEzManageOrder;
   }): Promise<string> {
+    const { ref } = account;
     switch (ref) {
       case 'H4H':
-        const { lead, invalidKeys } = outputH4HOrderToCrm(order);
+        const { lead, invalidKeys } = outputH4HOrderToCrm({
+          order,
+        });
 
         if (invalidKeys.length > 0) {
           Sentry.captureMessage(
@@ -28,11 +32,37 @@ export class NutshellApiHandlerService {
           );
         }
 
-        return await this.nutshellApiService.createLead({
+        if (account.newLeadTags) {
+          lead.tags = account.newLeadTags;
+        }
+
+        const leadId = await this.nutshellApiService.createLead({
           ref,
           lead: { lead },
           orderName: order.orderNumber,
         });
+
+        // if (account.newLeadTasks) {
+        //   await Promise.all(
+        //     account.newLeadTasks.map(async (t) =>
+        //       this.nutshellApiService.addTaskToEntity({
+        //         ref,
+        //         task: {
+        //           task: {
+        //             title: t,
+        //             entity: { entityType: 'Lead', id: leadId },
+        //           },
+        //         },
+        //       }),
+        //     ),
+        //   ).catch((reason) => {
+        //     Sentry.withScope((scope) => {
+        //       scope.setExtra('message', `Tasks not added for lead ${leadId}`);
+        //       Sentry.captureException(reason);
+        //     });
+        //   });
+        // }
+        return leadId;
       case 'ADMIN':
       default:
         const err = new InternalError(`Invalid ref ${ref}`);

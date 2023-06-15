@@ -50,7 +50,7 @@ export class CrmHandlerService {
           throw err;
         }
         return await this.nutshellApiHandler.createLead({
-          ref: account.ref,
+          account,
           order: order as IEzManageOrder,
         });
       default:

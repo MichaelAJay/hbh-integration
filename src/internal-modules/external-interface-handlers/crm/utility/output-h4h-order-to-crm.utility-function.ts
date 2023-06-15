@@ -4,6 +4,10 @@ import {
   IEzManageOrder,
   IEzManageOrderItem,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import {
+  ICreateLead,
+  ICreateLeadEntity,
+} from 'src/external-modules/nutshell-api/interfaces/requests';
 import { mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 
 /**
@@ -31,16 +35,16 @@ export interface LeadProduct {
   };
 }
 
-export function outputH4HOrderToCrm(order: IEzManageOrder) {
+export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
   try {
     const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
       order.catererCart.orderItems,
     );
 
-    const commissionInCents = getH4HCommissionInCents(order);
-    const commission = ConvertCentsToDollarsAndCents(commissionInCents);
     const id = mapH4HMenuItemToCrmProductId('EZCater/EZOrder Commission');
     if (id) {
+      const commissionInCents = getH4HCommissionInCents(order);
+      const commission = ConvertCentsToDollarsAndCents(commissionInCents);
       products.push({
         id,
         quantity: 1,
@@ -48,8 +52,9 @@ export function outputH4HOrderToCrm(order: IEzManageOrder) {
       });
     }
 
-    const lead = {
+    const lead: ICreateLeadEntity = {
       products,
+      description: getLeadName(order),
     };
 
     return { lead, invalidKeys };
@@ -160,8 +165,8 @@ function getLeadName(order: IEzManageOrder): string | undefined {
   const date = new Date(timestamp);
   if (isNaN(date.getTime())) return undefined;
 
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based in JavaScript
+  const day = String(date.getDate());
+  const month = String(date.getMonth() + 1); // Months are 0-based in JavaScript
   const year = String(date.getFullYear()).slice(-2); // Get the last 2 digits of the year
 
   /** Convert orderSourceType */

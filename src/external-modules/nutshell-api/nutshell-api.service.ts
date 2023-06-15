@@ -8,7 +8,7 @@ import {
 import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
-import { ICreateLead } from './interfaces/requests';
+import { IAddTaskToEntity, ICreateLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import * as Sentry from '@sentry/node';
 import { CrmError } from 'src/common/classes';
@@ -205,9 +205,7 @@ export class NutshellApiService {
   }): Promise<string> {
     try {
       const client = await this.generateClient(ref);
-      const resp = await client.request('newLead', {
-        lead: { products: lead.lead.products },
-      });
+      const resp = await client.request('newLead', lead);
 
       if (!validateCreateLeadResponse(resp)) {
         throw new CrmError('Create lead response failed validation', false);
@@ -220,6 +218,33 @@ export class NutshellApiService {
         scope.setExtra('ref', ref);
         scope.setExtra('lead', lead);
         scope.setExtra('message', 'Nutshell newLead failed');
+        Sentry.captureException(err);
+      });
+
+      throw new CrmError(err.message || 'Lead insert failed', true);
+    }
+  }
+
+  async updateLead() {}
+
+  async addTaskToEntity({
+    ref,
+    task,
+  }: {
+    ref: ACCOUNT_REF;
+    task: IAddTaskToEntity;
+  }) {
+    try {
+      const client = await this.generateClient(ref);
+      const resp = await client.request('newTask', {
+        task,
+      });
+      return resp;
+    } catch (err: any) {
+      Sentry.withScope((scope) => {
+        scope.setExtra('entity', task.task.entity);
+        scope.setExtra('ref', ref);
+        scope.setExtra('message', 'Nutshell newTask failed');
         Sentry.captureException(err);
       });
 
