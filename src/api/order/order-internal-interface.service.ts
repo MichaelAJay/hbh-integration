@@ -2,12 +2,14 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IUpdateStatus } from './interfaces';
 import { IGetOrderOutput } from './interfaces/output';
 import { GetOrdersByAccount } from './types/output/get-orders-by-account.type';
+import { convertEzManageOrderForOutput } from './utility';
 
 @Injectable()
 export class OrderInternalInterfaceService {
@@ -41,6 +43,37 @@ export class OrderInternalInterfaceService {
     orderId: string;
     accountId: string;
     ref: string;
+  }): Promise<IGetOrderOutput> {
+    const internalOrder = await this.orderDbHandler.getOne(orderId);
+    if (!internalOrder) {
+      /**
+       * @TODO log
+       */
+      throw new NotFoundException('Order was not found');
+    }
+
+    const ezManageOrder = await this.getEzManageOrder({
+      orderId,
+      accountId,
+      ref,
+    });
+
+    const convertedOrder = convertEzManageOrderForOutput({
+      ...ezManageOrder,
+      status: internalOrder.status,
+    });
+
+    return { ...convertedOrder, catererName: internalOrder.catererName };
+  }
+
+  async getEzManageOrder({
+    orderId,
+    accountId,
+    ref,
+  }: {
+    orderId: string;
+    accountId: string;
+    ref: string;
   }) {
     const order = await this.orderDbHandler.getOne(orderId);
     if (!order) throw new BadRequestException('Order not found');
@@ -56,12 +89,10 @@ export class OrderInternalInterfaceService {
     /**
      * Get order from EZManage
      */
-    const ezManageOrder = await this.orderService.getOrder({
+    return await this.orderService.getEzManageOrder({
       order,
       ref,
     });
-
-    return { catererName: order.catererName, ...ezManageOrder };
   }
 
   async getOrderByName({
@@ -73,18 +104,20 @@ export class OrderInternalInterfaceService {
     accountId: string;
     ref: string;
   }): Promise<IGetOrderOutput> {
-    const order = await this.orderDbHandler.findByNameForAccount(
-      orderName,
-      accountId,
-    );
+    const order = await this.getInternalOrderByName({ orderName, accountId });
 
-    const ezManageOrder = await this.getOrder({
+    const ezManageOrder = await this.getEzManageOrder({
       orderId: order.id,
       accountId,
       ref,
     });
 
-    return ezManageOrder;
+    const convertedOrder = convertEzManageOrderForOutput({
+      ...ezManageOrder,
+      status: order.status,
+    });
+
+    return { ...convertedOrder, catererName: 'TODO' };
   }
 
   async updateStatuses({
@@ -131,15 +164,31 @@ export class OrderInternalInterfaceService {
     accountId: string;
     ref: string;
   }) {
-    const ezManageOrder = await this.getOrderByName({
+    const internalOrder = await this.getInternalOrderByName({
       orderName,
+      accountId,
+    });
+
+    const ezManageOrder = await this.getEzManageOrder({
+      orderId: internalOrder.id,
       accountId,
       ref,
     });
 
-    const { lead, invalidKeys } = await this.orderService.generateLeadFromOrder(
+    const VOID_RETURN = await this.orderService.generateLeadFromOrder(
       ezManageOrder,
     );
-    return { lead, invalidKeys };
+    // return { lead, invalidKeys };
+    return VOID_RETURN;
+  }
+
+  private async getInternalOrderByName({
+    orderName,
+    accountId,
+  }: {
+    orderName: string;
+    accountId: string;
+  }) {
+    return await this.orderDbHandler.findByNameForAccount(orderName, accountId);
   }
 }

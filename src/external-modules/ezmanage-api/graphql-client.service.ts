@@ -74,6 +74,11 @@ export class GraphqlClientService {
                   subunits
               }
           }
+          caterer {
+            address {
+              city
+            }
+          }
           catererCart {
               feesAndDiscounts(type: DELIVERY_FEE) {
                   name

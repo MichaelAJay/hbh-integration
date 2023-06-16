@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
+import {
+  AdminOrderNameWithAccountScopeQueryDto,
+  SentOrderToCrmQueryDto,
+} from './dtos/query';
 
 @Injectable()
 export class AdminService {
@@ -17,27 +21,21 @@ export class AdminService {
     return await this.adminInternalInterface.getOrderNamesForAccount(accountId);
   }
 
-  async testNutshellIntegration({
-    ref,
-    a,
-    b,
-  }: {
-    ref: string;
-    a: number;
-    b: number;
-  }) {
-    return await this.adminInternalInterface.testNutshellIntegration({
-      ref,
-      a,
-      b,
-    });
-  }
-
-  async getNutshellProducts({ ref }: { ref: string }) {
-    return await this.adminInternalInterface.getNutshellProducts({ ref });
+  async getCrmProducts({ accountId }: { accountId: string }) {
+    return await this.adminInternalInterface.getCrmProducts({ accountId });
   }
 
   async getCatererMenu({ catererId }: { catererId: string }) {
     return await this.adminInternalInterface.getCatererMenu({ catererId });
+  }
+
+  async sendEzManageOrderToCrm(input: SentOrderToCrmQueryDto) {
+    return await this.adminInternalInterface.sendEzManageOrderToCrm(input);
+  }
+
+  async getCrmEntityFromOrderName(
+    input: AdminOrderNameWithAccountScopeQueryDto,
+  ) {
+    return await this.adminInternalInterface.getCrmEntityFromOrderName(input);
   }
 }

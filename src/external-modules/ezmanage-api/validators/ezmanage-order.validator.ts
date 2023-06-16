@@ -6,6 +6,7 @@ export function validateEzManageOrder(order) {
   if (!validateEvent(order.event)) return false;
   if (!validateOrderCustomer(order.orderCustomer)) return false;
   if (!validateTotals(order.totals)) return false;
+  if (!validateCaterer(order.caterer)) return false;
   if (!validateCatererCart(order.catererCart)) return false;
   return true;
 }
@@ -92,6 +93,17 @@ function validateTotals(totals) {
 
 function validateSubunits(subunits) {
   return subunits && typeof subunits.subunits === 'number';
+}
+
+function validateCaterer(caterer) {
+  return (
+    caterer &&
+    typeof caterer === 'object' &&
+    'address' in caterer &&
+    typeof caterer.address === 'object' &&
+    'city' in caterer.address &&
+    typeof caterer.address.city === 'string'
+  );
 }
 
 function validateCatererCart(catererCart) {

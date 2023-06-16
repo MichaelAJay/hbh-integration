@@ -1,8 +1,11 @@
-import { IAccountModel } from 'src/external-modules/database/models';
+import {
+  IAccountModel,
+  IAccountModelWithId,
+} from 'src/external-modules/database/models';
 
 export type AccountRecord = IAccountModel;
 
-export type AccountRecordWithId = AccountRecord & { id: string };
+export type AccountRecordWithId = IAccountModelWithId;
 
 export function isAccountRecordWithId(
   record: any,

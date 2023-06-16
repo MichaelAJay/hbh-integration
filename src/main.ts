@@ -6,9 +6,11 @@ import {
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import * as Sentry from '@sentry/node';
+
 async function bootstrap() {
-  const { ENV, FRONTEND_BASE_URL } = process.env;
-  if (!(ENV && FRONTEND_BASE_URL))
+  const { ENV, FRONTEND_BASE_URL, SENTRY_DSN } = process.env;
+  if (!(ENV && FRONTEND_BASE_URL && SENTRY_DSN))
     throw new InternalServerErrorException(
       'Server missing required environment variables',
     );
@@ -32,6 +34,8 @@ async function bootstrap() {
   };
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  Sentry.init({ dsn: SENTRY_DSN });
 
   app.enableCors(corsOptions);
 

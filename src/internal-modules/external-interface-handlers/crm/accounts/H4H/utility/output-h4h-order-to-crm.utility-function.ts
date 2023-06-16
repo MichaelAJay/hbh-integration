@@ -1,9 +1,16 @@
-import { InternalServerErrorException } from '@nestjs/common';
+import { getH4HCommissionInCents } from 'src/api/order/utility';
+import { ConvertCentsToDollarsAndCents } from 'src/common/utility';
 import {
-  IGetOrderOutput,
-  IGetOrderOutputItem,
-} from 'src/api/order/interfaces/output';
-import { mapH4HMenuItemToCrmProductId, ProductMap } from '../mappers';
+  IEzManageOrder,
+  IEzManageOrderItem,
+} from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { ICreateLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
+import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
+import {
+  retrieveCrmNameFromOrderSourceType,
+  retrievePipelineIdFromOrderSourceType,
+} from '../constants';
+import { IH4HCreateLeadCustomFields } from '../interfaces';
 
 /**
  * @TODO move this
@@ -24,27 +31,47 @@ export interface LeadOutput {
 export interface LeadProduct {
   id: string; // note: is string in email correspondence, but is number in return from Nutshell product list
   quantity: number;
-  /**
-   * Trying without adding price first, hoping Nutshell does it automatically
-   */
-  //   price: {
-  //     currency_shortname: 'USD';
-  //     amount: string; // e.g. '49.99'
-  //   };
+  price?: {
+    currency_shortname: 'USD';
+    amount: string; // e.g. '49.99'
+  };
 }
 
-/**
- * 6 June 2023
- * Outputs to a Nutshell Lead
- */
-export function outputH4HOrderToCrm(
-  order: Omit<IGetOrderOutput, 'catererName'>,
-) {
+export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
   try {
     const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
-      order.items,
+      order.catererCart.orderItems,
     );
-    return { lead: { products }, invalidKeys };
+
+    const id = mapH4HMenuItemToCrmProductId('EZCater/EZOrder Commission');
+    if (id) {
+      const commissionInCents = getH4HCommissionInCents(order);
+      const commission = ConvertCentsToDollarsAndCents(commissionInCents);
+      products.push({
+        id,
+        quantity: 1,
+        price: { currency_shortname: 'USD', amount: commission.toString() },
+      });
+    }
+
+    const lead: ICreateLeadEntity<IH4HCreateLeadCustomFields> = {
+      products,
+      description: getLeadName(order),
+      customFields: {
+        'Lead description': `This lead was generated from the EzManage order ${FormatOrderName(
+          order.orderNumber,
+        )}`,
+      },
+    };
+
+    const stagesetId = retrievePipelineIdFromOrderSourceType(
+      order.orderSourceType,
+    );
+    if (stagesetId) {
+      lead.stagesetId = stagesetId;
+    }
+
+    return { lead, invalidKeys };
   } catch (err) {
     console.error('Order to CRM Lead failed', err);
     throw err;
@@ -55,7 +82,7 @@ interface ResultObject {
   [key: number]: number;
 }
 
-function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
+function aggregateLeadProducts(items: IEzManageOrderItem[]): {
   leadProducts: LeadProduct[];
   invalidKeys: string[];
 } {
@@ -94,7 +121,7 @@ function aggregateLeadProducts(items: IGetOrderOutputItem[]): {
   return { leadProducts, invalidKeys };
 }
 
-function handleSaladBoxedLunch(item: IGetOrderOutputItem) {
+function handleSaladBoxedLunch(item: IEzManageOrderItem) {
   const aggregator: ResultObject = {};
   const invalidKeys: string[] = [];
   const saladKeys: string[] = [];
@@ -132,4 +159,33 @@ function handleSaladBoxedLunch(item: IGetOrderOutputItem) {
   }
 
   return { aggregator, invalidKeys };
+}
+
+function getLeadName(order: IEzManageOrder): string | undefined {
+  const { event, caterer, orderSourceType } = order;
+  const { timestamp } = event;
+  const { address } = caterer;
+  const { city: addressCity } = address;
+  let city = 'CITY';
+  switch (addressCity) {
+    case 'Athens':
+      city = 'Athens';
+      break;
+    case 'Gainesville':
+      city = 'Gville';
+      break;
+  }
+  return `${retrieveCrmNameFromOrderSourceType(
+    orderSourceType,
+  )} ${getDateForLeadName(timestamp)} ${city}`;
+}
+
+function getDateForLeadName(timestamp: string): string {
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return '<DATE N/A>';
+
+  const day = String(date.getDate());
+  const month = String(date.getMonth() + 1); // Months are 0-based in JavaScript
+  const year = String(date.getFullYear()).slice(-2); // Get the last 2 digits of the year
+  return `${month}/${day}/${year}`;
 }
