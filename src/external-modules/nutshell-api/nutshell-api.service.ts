@@ -126,7 +126,6 @@ export class NutshellApiService {
     userName: string;
     apiKey: string;
   }) {
-    console.log('userName and apiKey in auth token creator', userName, apiKey);
     /**
      * Return Base64-encoded string <username>:<apikey>
      */
