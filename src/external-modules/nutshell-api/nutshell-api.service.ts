@@ -194,13 +194,13 @@ export class NutshellApiService {
     await client.request('getLead', { leadId: 1000 });
   }
 
-  async createLead({
+  async createLead<CustomFields>({
     ref,
     lead,
     orderName,
   }: {
     ref: ACCOUNT_REF;
-    lead: ICreateLead;
+    lead: ICreateLead<CustomFields>;
     orderName: string;
   }): Promise<string> {
     try {

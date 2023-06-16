@@ -3,7 +3,7 @@ import { InternalError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
 import { ACCOUNT_REF } from '../database/account-db-handler/types';
-import { outputH4HOrderToCrm } from './utility';
+import { outputH4HOrderToCrm } from './accounts/H4H/utility';
 import * as Sentry from '@sentry/node';
 import { IAccountModelWithId } from 'src/external-modules/database/models';
 

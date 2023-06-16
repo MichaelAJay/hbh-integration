@@ -4,11 +4,13 @@ import {
   IEzManageOrder,
   IEzManageOrderItem,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { ICreateLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
+import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 import {
-  ICreateLead,
-  ICreateLeadEntity,
-} from 'src/external-modules/nutshell-api/interfaces/requests';
-import { mapH4HMenuItemToCrmProductId, ProductMap } from '.';
+  retrieveCrmNameFromOrderSourceType,
+  retrievePipelineIdFromOrderSourceType,
+} from '../constants';
+import { IH4HCreateLeadCustomFields } from '../interfaces';
 
 /**
  * @TODO move this
@@ -52,10 +54,22 @@ export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
       });
     }
 
-    const lead: ICreateLeadEntity = {
+    const lead: ICreateLeadEntity<IH4HCreateLeadCustomFields> = {
       products,
       description: getLeadName(order),
+      customFields: {
+        'Lead description': `This lead was generated from the EzManage order ${FormatOrderName(
+          order.orderNumber,
+        )}`,
+      },
     };
+
+    const stagesetId = retrievePipelineIdFromOrderSourceType(
+      order.orderSourceType,
+    );
+    if (stagesetId) {
+      lead.stagesetId = stagesetId;
+    }
 
     return { lead, invalidKeys };
   } catch (err) {
@@ -161,14 +175,17 @@ function getLeadName(order: IEzManageOrder): string | undefined {
       city = 'Gville';
       break;
   }
+  return `${retrieveCrmNameFromOrderSourceType(
+    orderSourceType,
+  )} ${getDateForLeadName(timestamp)} ${city}`;
+}
 
+function getDateForLeadName(timestamp: string): string {
   const date = new Date(timestamp);
-  if (isNaN(date.getTime())) return undefined;
+  if (isNaN(date.getTime())) return '<DATE N/A>';
 
   const day = String(date.getDate());
   const month = String(date.getMonth() + 1); // Months are 0-based in JavaScript
   const year = String(date.getFullYear()).slice(-2); // Get the last 2 digits of the year
-
-  /** Convert orderSourceType */
-  return `${orderSourceType} ${month}/${day}/${year} ${city}`;
+  return `${month}/${day}/${year}`;
 }

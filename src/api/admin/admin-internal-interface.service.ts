@@ -7,7 +7,7 @@ import { InternalError } from 'src/common/classes';
 import { AccountService } from 'src/internal-modules/account/account.service';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { CrmHandlerService } from 'src/internal-modules/external-interface-handlers/crm/crm-handler.service';
-import { outputH4HOrderToCrm } from 'src/internal-modules/external-interface-handlers/crm/utility';
+import { outputH4HOrderToCrm } from 'src/internal-modules/external-interface-handlers/crm/accounts/H4H/utility';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
