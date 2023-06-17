@@ -4,6 +4,7 @@ import {
   IEzManageOrder,
   IEzManageOrderItem,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { IProductEntity } from 'src/external-modules/nutshell-api/interfaces/entities';
 import { ICreateLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
 import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 import {
@@ -23,17 +24,8 @@ import { IH4HCreateLeadCustomFields } from '../interfaces';
 export interface LeadOutput {
   lead: {
     // assignee: { entityType: 'Users'; id: number };
-    products: LeadProduct[];
+    products: IProductEntity[];
     // sources: { id: number }[];
-  };
-}
-
-export interface LeadProduct {
-  id: string; // note: is string in email correspondence, but is number in return from Nutshell product list
-  quantity: number;
-  price?: {
-    currency_shortname: 'USD';
-    amount: string; // e.g. '49.99'
   };
 }
 
@@ -83,7 +75,7 @@ interface ResultObject {
 }
 
 function aggregateLeadProducts(items: IEzManageOrderItem[]): {
-  leadProducts: LeadProduct[];
+  leadProducts: IProductEntity[];
   invalidKeys: string[];
 } {
   const aggregator: ResultObject = {};
@@ -114,7 +106,7 @@ function aggregateLeadProducts(items: IEzManageOrderItem[]): {
     }
   }
 
-  const leadProducts: LeadProduct[] = [];
+  const leadProducts: IProductEntity[] = [];
   for (const property in aggregator) {
     leadProducts.push({ id: property, quantity: aggregator[property] });
   }

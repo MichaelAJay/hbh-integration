@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { IGetOrderOutput } from 'src/api/order/interfaces/output';
 import {
-  checkErrorAsCustomErrorObject,
-  CustomErrorObject,
-} from 'src/common/types';
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { IGetOrderOutput } from 'src/api/order/interfaces/output';
+import { checkErrorAsCustomErrorObject } from 'src/common/types';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -94,6 +95,38 @@ export class OrderService {
 
     await this.orderDbService.create({ orderId, data });
     return;
+  }
+
+  async updateOrder({
+    account,
+    internalOrder,
+  }: {
+    account: IAccountModelWithId;
+    internalOrder: IOrderModelWithId;
+  }) {
+    const { id: orderId, crmId } = internalOrder;
+    const { ref } = account;
+    if (!crmId) {
+      throw new InternalServerErrorException('No CRM ID found to update');
+    }
+
+    const ezManageOrder = await this.ezManageApiHandler
+      .getOrder({ orderId, ref })
+      .catch((reason) => {
+        const msg = `Failed to retrieve order ${orderId}`;
+        this.logger.error(msg, reason);
+        throw reason;
+      });
+
+    await this.crmHandler.updateCRMEntity({
+      account,
+      order: ezManageOrder,
+      crmEntityId: internalOrder.id,
+    });
+    await this.orderDbService.updateOne({
+      orderId,
+      updates: { lastUpdatedAt: new Date() },
+    });
   }
 
   async handleCancelledOrder(orderId: string) {

@@ -152,11 +152,10 @@ export class EzmanageSubscriberInternalInterfaceService {
       });
       console.log('made one');
     } else {
-      /**
-       * Is not new
-       * @TODO handle checking for a CRM entity and updating if necessary
-       */
-      console.log('found one', order);
+      await this.orderService.updateOrder({
+        account,
+        internalOrder: order,
+      });
     }
   }
 }

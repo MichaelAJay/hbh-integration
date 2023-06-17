@@ -12,7 +12,14 @@ import { IAddTaskToEntity, ICreateLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import * as Sentry from '@sentry/node';
 import { CrmError } from 'src/common/classes';
-import { validateCreateLeadResponse } from './interfaces/responses';
+import {
+  validateCreateLeadResponse,
+  validateGetLeadResponse,
+  ValidateUpdateLeadResponse,
+} from './interfaces/responses';
+import { IAbbreviatedLead } from './interfaces';
+
+const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class NutshellApiService {
@@ -112,13 +119,6 @@ export class NutshellApiService {
     return true;
   }
 
-  private getResult(response: any): any {
-    if (!response.result) {
-      throw new Error('Bad response');
-    }
-    return response.result;
-  }
-
   private getBasicAuthValue({
     userName,
     apiKey,
@@ -180,17 +180,121 @@ export class NutshellApiService {
     });
   }
 
-  /**
-   * Specific route implementations below
-   * Steps:
-   * 1) GetApiForUserName
-   * 2) GetBasicAuth by acct prefix
-   * 3) Send request to URL from step 1 w/ Basic auth from step 2
-   */
+  private async retrieveLeadFromCache({ leadId }: { leadId: string }) {
+    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(leadId);
+    if (
+      cachedLead !== null &&
+      typeof cachedLead === 'object' &&
+      typeof cachedLead.rev === 'string' &&
+      typeof cachedLead.description === 'string'
+    )
+      return cachedLead;
+    return null;
+  }
 
-  async getLead(ref: ACCOUNT_REF) {
+  private async cacheLead({
+    leadId,
+    rev,
+    description,
+  }: {
+    leadId: string;
+    rev: string;
+    description: string;
+  }) {
+    return await this.cacheManager.set(
+      leadId,
+      { description, rev },
+      TEN_MINUTES_IN_MS,
+    );
+  }
+
+  private async refreshLead({
+    leadId,
+    ref,
+  }: {
+    leadId: string;
+    ref: ACCOUNT_REF;
+  }) {
     const client = await this.generateClient(ref);
-    await client.request('getLead', { leadId: 1000 });
+    const response = await client.request('getLead', { leadId });
+
+    if (!validateGetLeadResponse(response)) {
+      throw new CrmError('Refresh lead response failed validation', false);
+    }
+    const { description, rev } = response.result;
+
+    await this.cacheLead({ leadId, rev, description });
+    return { description, rev };
+  }
+
+  async getLead({ leadId, ref }: { leadId: string; ref: ACCOUNT_REF }) {
+    const cachedLead = await this.retrieveLeadFromCache({ leadId });
+    if (cachedLead !== null) return cachedLead;
+
+    const { description, rev } = await this.refreshLead({ leadId, ref });
+
+    return { description, rev };
+  }
+
+  async updateLead({
+    leadId,
+    ref,
+    updates,
+  }: {
+    leadId: string;
+    ref: ACCOUNT_REF;
+    updates: any;
+  }): Promise<{ description: string; rev: string }> {
+    const validateUpdateLeadResponseAndCache = async (response: any) => {
+      if (!ValidateUpdateLeadResponse(response)) {
+        throw new InternalServerErrorException(
+          'Lead did not update as expected',
+        );
+      }
+
+      const { description, rev: updatedRev } = response.result;
+      await this.cacheLead({ leadId, rev: updatedRev, description });
+      return { description, rev: updatedRev };
+    };
+
+    try {
+      const { rev } = await this.getLead({ leadId, ref });
+      const client = await this.generateClient(ref);
+      const response = await client
+        .request('editLead', {
+          leadId,
+          rev,
+          updates,
+        })
+        .catch(async (reason) => {
+          Sentry.withScope((scope) => {
+            scope.setExtra('leadId', leadId);
+            Sentry.captureException(reason);
+          });
+          if (reason.error) {
+            const { code, message } = reason.error;
+            if (code === 409 && message === 'rev key is out-of-date') {
+              const { rev } = await this.refreshLead({
+                leadId,
+                ref,
+              });
+
+              const response = await client.request('editLead', {
+                leadId,
+                rev,
+                updates,
+              });
+
+              return await validateUpdateLeadResponseAndCache(response);
+            }
+          }
+        });
+
+      return await validateUpdateLeadResponseAndCache(response);
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
   }
 
   async createLead<CustomFields>({
@@ -223,8 +327,6 @@ export class NutshellApiService {
       throw new CrmError(err.message || 'Lead insert failed', true);
     }
   }
-
-  async updateLead() {}
 
   async addTaskToEntity({
     ref,

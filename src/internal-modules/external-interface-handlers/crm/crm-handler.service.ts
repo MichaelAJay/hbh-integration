@@ -5,6 +5,7 @@ import { validateEzManageOrder } from 'src/external-modules/ezmanage-api/validat
 import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
 import * as Sentry from '@sentry/node';
+import { IAccountModelWithId } from 'src/external-modules/database/models';
 
 @Injectable()
 export class CrmHandlerService {
@@ -22,7 +23,7 @@ export class CrmHandlerService {
   }): Promise<string | undefined> {
     switch (account.crm) {
       case 'NUTSHELL':
-        return await this.generateNutshellPrimaryEntity({
+        return await this.nutshellApiHandler.generatePrimaryEntity({
           account,
           order,
         });
@@ -34,35 +35,31 @@ export class CrmHandlerService {
     }
   }
 
-  private async generateNutshellPrimaryEntity({
+  async updateCRMEntity({
     account,
     order,
+    crmEntityId,
   }: {
-    account: AccountRecordWithId;
-    order: any;
-  }): Promise<string | undefined> {
-    switch (account.crmPrimaryType) {
-      case 'LEAD':
-        if (!validateEzManageOrder(order)) {
-          const err = new OrderManagerError('Invalid order');
-          Sentry.captureException(err);
-          err.isLogged = true;
-          throw err;
-        }
-        return await this.nutshellApiHandler.createLead({
+    account: IAccountModelWithId;
+    order: IEzManageOrder;
+    crmEntityId: string;
+  }) {
+    switch (account.crm) {
+      case 'NUTSHELL':
+        return await this.nutshellApiHandler.updatePrimaryEntity({
           account,
-          order: order as IEzManageOrder,
+          order,
+          primaryEntityId: crmEntityId,
         });
       default:
-        /** LOG */
-        const err = new InternalError(
-          `Invalid account crmPrimaryType ${account.crmPrimaryType}`,
-        );
+        const err = new CrmError('CRM not found for updateCRMEntity');
         Sentry.captureException(err);
         err.isLogged = true;
         throw err;
     }
   }
+
+  updateNutshell;
 
   async getProducts({ account }: { account: AccountRecordWithId }) {
     switch (account.crm) {
