@@ -18,6 +18,9 @@ import {
   ValidateUpdateLeadResponse,
 } from './interfaces/responses';
 import { IAbbreviatedLead } from './interfaces';
+import { Entity, NutshellApiMethod } from './types';
+import { resolveReadonlyArrayThunk } from 'graphql';
+import { INVALID_REV_KEY } from './constants';
 
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
@@ -211,11 +214,15 @@ export class NutshellApiService {
   private async refreshLead({
     leadId,
     ref,
+    client,
   }: {
     leadId: string;
     ref: ACCOUNT_REF;
+    client?: jayson.HttpsClient;
   }) {
-    const client = await this.generateClient(ref);
+    if (!client) {
+      client = await this.generateClient(ref);
+    }
     const response = await client.request('getLead', { leadId });
 
     if (!validateGetLeadResponse(response)) {
@@ -227,11 +234,23 @@ export class NutshellApiService {
     return { description, rev };
   }
 
-  async getLead({ leadId, ref }: { leadId: string; ref: ACCOUNT_REF }) {
+  async getLead({
+    leadId,
+    ref,
+    client,
+  }: {
+    leadId: string;
+    ref: ACCOUNT_REF;
+    client?: jayson.HttpsClient;
+  }) {
     const cachedLead = await this.retrieveLeadFromCache({ leadId });
     if (cachedLead !== null) return cachedLead;
 
-    const { description, rev } = await this.refreshLead({ leadId, ref });
+    const { description, rev } = await this.refreshLead({
+      leadId,
+      ref,
+      client,
+    });
 
     return { description, rev };
   }
@@ -328,6 +347,23 @@ export class NutshellApiService {
     }
   }
 
+  async deleteLead({ leadId, ref }: { leadId: string; ref: ACCOUNT_REF }) {
+    try {
+      const { rev } = await this.getLead({ leadId, ref });
+      const client = await this.generateClient(ref);
+      return await this.tryTwice({
+        ref,
+        apiMethod: 'deleteLead',
+        params: {},
+        entityId: leadId,
+        entityType: 'Lead',
+      });
+    } catch (err) {
+      console.error('err', err);
+      throw err;
+    }
+  }
+
   async addTaskToEntity({
     ref,
     task,
@@ -366,6 +402,74 @@ export class NutshellApiService {
       name: product.name,
       id: product.id,
     }));
+  }
+
+  /**
+   * Private helpers
+   */
+
+  /**
+   * tryTwice is used on descructive methods that require the current rev
+   */
+  private async tryTwice({
+    ref,
+    apiMethod,
+    params,
+    entityId,
+    entityType,
+  }: {
+    ref: ACCOUNT_REF;
+    apiMethod: NutshellApiMethod;
+    params: any;
+    entityId: string;
+    entityType: Entity;
+  }) {
+    const client = await this.generateClient(ref);
+    try {
+      switch (entityType) {
+        case 'Lead':
+          const { rev } = await this.getLead({ leadId: entityId, ref, client });
+          break;
+
+        default:
+          const crmError = new CrmError(
+            `Invalid entity type ${entityType} at tryTwice get switch`,
+          );
+          Sentry.captureException(crmError);
+          crmError.isLogged = true;
+          throw crmError;
+      }
+
+      return await client.request(apiMethod, params);
+    } catch (err: any) {
+      /**
+       * This is in place to make sure I'm understanding the return I'm supposed to receive
+       */
+      Sentry.withScope((scope) => {
+        scope.setExtra('apiMethod', apiMethod);
+        Sentry.captureException(err);
+      });
+
+      if (err.error) {
+        const { code, message } = err.error;
+        if (code === 409 && message === INVALID_REV_KEY) {
+          switch (entityType) {
+            case 'Lead':
+              const refreshedLead = await this.refreshLead({
+                leadId: entityId,
+                ref,
+              });
+              params.rev = refreshedLead.rev;
+              break;
+            default:
+              Sentry.captureMessage(`Ineligible entity type ${entityType}`);
+              throw err;
+          }
+
+          return await client.request(apiMethod, params);
+        }
+      }
+    }
   }
 }
 

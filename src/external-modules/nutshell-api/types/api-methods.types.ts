@@ -1,0 +1,1 @@
+export type NutshellApiMethod = 'deleteLead';
