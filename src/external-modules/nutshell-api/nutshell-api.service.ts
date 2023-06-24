@@ -19,8 +19,11 @@ import {
 } from './interfaces/responses';
 import { IAbbreviatedLead } from './interfaces';
 import { Entity, NutshellApiMethod } from './types';
-import { resolveReadonlyArrayThunk } from 'graphql';
 import { INVALID_REV_KEY } from './constants';
+import {
+  IDeleteLeadResponse,
+  ValidateDeleteLeadResponse,
+} from './interfaces/responses/delete-lead.response-interface';
 
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
@@ -38,202 +41,8 @@ export class NutshellApiService {
   }
 
   /**
-   * Configuration & setup
+   * PUBLIC METHODS
    */
-
-  async getApiForUsername({
-    userName,
-    apiKey,
-  }: {
-    userName: string;
-    apiKey: string;
-  }) {
-    const userCachedDomain = await this.cacheManager.get(userName);
-    if (typeof userCachedDomain === 'string') return userCachedDomain;
-
-    const client = jayson.Client.https({
-      host: 'api.nutshell.com',
-      path: '/v1/json',
-      headers: { Authorization: this.getBasicAuthValue({ userName, apiKey }) },
-    });
-    const response = await client
-      .request('getApiForUsername', {
-        username: userName,
-      })
-      .catch((reason) => {
-        console.error('Request failed', reason);
-        throw reason;
-      });
-    const selectedDomain = this.selectDomain(response);
-    await this.cacheManager
-      .set(userName, selectedDomain, this.cacheTTL_in_MS)
-      .catch((reason) => {
-        console.error('Cache manager set failed', reason);
-        throw reason;
-      });
-    return selectedDomain;
-  }
-
-  private selectDomain(response: any) {
-    try {
-      // /**
-      //  * Selection criteria: (subject to change)
-      //  */
-      if (this.isGetApiForUsernameResponseValid(response)) {
-        return (response as { result: { api: string } }).result.api;
-      } else {
-        const msg = 'Api domain not successfully found';
-        this.logger.error(msg, {});
-        throw new UnprocessableEntityException(msg);
-      }
-    } catch (err) {
-      console.error('Select domain failed', err);
-      err;
-    }
-  }
-
-  private isGetApiForUsernameResponseValid(response: any) {
-    /**
-     * This could have logs that tell a better story
-     */
-    const responseType = typeof response;
-    if (responseType !== 'object') {
-      const msg = 'Response is not object as expected';
-      this.logger.error(msg, { responseType });
-      throw new UnprocessableEntityException(msg);
-    }
-
-    const { result } = response;
-    const resultType = typeof result;
-    if (resultType !== 'object') {
-      const msg = 'Response.result is not object as expected';
-      this.logger.error(msg, { responseType, resultType });
-      throw new UnprocessableEntityException(msg);
-    }
-
-    const { api } = result;
-    const apiType = typeof api;
-    if (apiType !== 'string') {
-      const msg = 'Response.result.api is not string as expected';
-      this.logger.error(msg, { responseType, resultType, apiType });
-      throw new UnprocessableEntityException(msg);
-    }
-
-    return true;
-  }
-
-  private getBasicAuthValue({
-    userName,
-    apiKey,
-  }: {
-    userName: string;
-    apiKey: string;
-  }) {
-    /**
-     * Return Base64-encoded string <username>:<apikey>
-     */
-    return `Basic ${Buffer.from(`${userName}:${apiKey}`).toString('base64')}`;
-  }
-
-  private getUserNameAndApiKeyForAcct(ref: ACCOUNT_REF) {
-    const {
-      NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
-      NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
-    } = process.env;
-
-    if (!(userNamePostfix && apiKeyPostfix)) {
-      const msg = 'Missing necessary system configuration variables';
-      this.logger.error(msg, { userNamePostfix, apiKeyPostfix });
-      throw new InternalServerErrorException(msg);
-    }
-
-    const userNameEnvVarName = `${ref}_${userNamePostfix}`;
-    const apiKeyEnvVarName = `${ref}_${apiKeyPostfix}`;
-    const userName = process.env[userNameEnvVarName];
-    const apiKey = process.env[apiKeyEnvVarName];
-
-    if (!(userName && apiKey)) {
-      const msg = 'Missing neccessary client configuration variables';
-      this.logger.error(msg, {
-        ref: ref,
-        userNameEnvVarName,
-        apiKeyEnvVarName,
-        userName,
-        apiKey,
-      });
-      throw new InternalServerErrorException(msg);
-    }
-    return { userName, apiKey };
-  }
-
-  /**
-   * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
-   */
-  private async generateClient(ref: ACCOUNT_REF) {
-    const { userName, apiKey } = this.getUserNameAndApiKeyForAcct(ref);
-
-    const domain = await this.getApiForUsername({ userName, apiKey });
-
-    return jayson.Client.https({
-      host: domain,
-      path: '/api/v1/json',
-      headers: {
-        Authorization: this.getBasicAuthValue({ userName, apiKey }),
-      },
-    });
-  }
-
-  private async retrieveLeadFromCache({ leadId }: { leadId: string }) {
-    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(leadId);
-    if (
-      cachedLead !== null &&
-      typeof cachedLead === 'object' &&
-      typeof cachedLead.rev === 'string' &&
-      typeof cachedLead.description === 'string'
-    )
-      return cachedLead;
-    return null;
-  }
-
-  private async cacheLead({
-    leadId,
-    rev,
-    description,
-  }: {
-    leadId: string;
-    rev: string;
-    description: string;
-  }) {
-    return await this.cacheManager.set(
-      leadId,
-      { description, rev },
-      TEN_MINUTES_IN_MS,
-    );
-  }
-
-  private async refreshLead({
-    leadId,
-    ref,
-    client,
-  }: {
-    leadId: string;
-    ref: ACCOUNT_REF;
-    client?: jayson.HttpsClient;
-  }) {
-    if (!client) {
-      client = await this.generateClient(ref);
-    }
-    const response = await client.request('getLead', { leadId });
-
-    if (!validateGetLeadResponse(response)) {
-      throw new CrmError('Refresh lead response failed validation', false);
-    }
-    const { description, rev } = response.result;
-
-    await this.cacheLead({ leadId, rev, description });
-    return { description, rev };
-  }
-
   async getLead({
     leadId,
     ref,
@@ -349,15 +158,24 @@ export class NutshellApiService {
 
   async deleteLead({ leadId, ref }: { leadId: string; ref: ACCOUNT_REF }) {
     try {
-      const { rev } = await this.getLead({ leadId, ref });
-      const client = await this.generateClient(ref);
-      return await this.tryTwice({
+      const response = await this.tryTwice<IDeleteLeadResponse>({
         ref,
         apiMethod: 'deleteLead',
-        params: {},
+        params: { leadId },
         entityId: leadId,
         entityType: 'Lead',
       });
+
+      if (!ValidateDeleteLeadResponse(response)) {
+        const err = new CrmError('Delete lead returned unexpected response');
+        Sentry.withScope((scope) => {
+          scope.setExtra('response', response);
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      }
+      return response.result;
     } catch (err) {
       console.error('err', err);
       throw err;
@@ -405,13 +223,221 @@ export class NutshellApiService {
   }
 
   /**
-   * Private helpers
+   * PRIVATE METHODS
    */
+
+  private async getApiForUsername({
+    userName,
+    apiKey,
+  }: {
+    userName: string;
+    apiKey: string;
+  }) {
+    const userCachedDomain = await this.cacheManager.get(userName);
+    if (typeof userCachedDomain === 'string') return userCachedDomain;
+
+    const client = jayson.Client.https({
+      host: 'api.nutshell.com',
+      path: '/v1/json',
+      headers: { Authorization: this.getBasicAuthValue({ userName, apiKey }) },
+    });
+    const response = await client
+      .request('getApiForUsername', {
+        username: userName,
+      })
+      .catch((reason) => {
+        console.error('Request failed', reason);
+        throw reason;
+      });
+    const selectedDomain = this.selectDomain(response);
+    await this.cacheManager
+      .set(userName, selectedDomain, this.cacheTTL_in_MS)
+      .catch((reason) => {
+        console.error('Cache manager set failed', reason);
+        throw reason;
+      });
+    return selectedDomain;
+  }
+
+  private selectDomain(response: any) {
+    try {
+      // /**
+      //  * Selection criteria: (subject to change)
+      //  */
+      if (this.isGetApiForUsernameResponseValid(response)) {
+        return (response as { result: { api: string } }).result.api;
+      } else {
+        const msg = 'Api domain not successfully found';
+        this.logger.error(msg, {});
+        throw new UnprocessableEntityException(msg);
+      }
+    } catch (err) {
+      console.error('Select domain failed', err);
+      err;
+    }
+  }
+
+  private isGetApiForUsernameResponseValid(response: any) {
+    /**
+     * This could have logs that tell a better story
+     */
+    const responseType = typeof response;
+    if (responseType !== 'object') {
+      const msg = 'Response is not object as expected';
+      this.logger.error(msg, { responseType });
+      throw new UnprocessableEntityException(msg);
+    }
+
+    const { result } = response;
+    const resultType = typeof result;
+    if (resultType !== 'object') {
+      const msg = 'Response.result is not object as expected';
+      this.logger.error(msg, { responseType, resultType });
+      throw new UnprocessableEntityException(msg);
+    }
+
+    const { api } = result;
+    const apiType = typeof api;
+    if (apiType !== 'string') {
+      const msg = 'Response.result.api is not string as expected';
+      this.logger.error(msg, { responseType, resultType, apiType });
+      throw new UnprocessableEntityException(msg);
+    }
+
+    return true;
+  }
+
+  private getBasicAuthValue({
+    userName,
+    apiKey,
+  }: {
+    userName: string;
+    apiKey: string;
+  }) {
+    /**
+     * Return Base64-encoded string <username>:<apikey>
+     */
+    return `Basic ${Buffer.from(`${userName}:${apiKey}`).toString('base64')}`;
+  }
+
+  private getUserNameAndApiKeyForAcct(ref: ACCOUNT_REF) {
+    const {
+      NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
+      NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
+    } = process.env;
+
+    if (!(userNamePostfix && apiKeyPostfix)) {
+      const msg = 'Missing necessary system configuration variables';
+      this.logger.error(msg, { userNamePostfix, apiKeyPostfix });
+      throw new InternalServerErrorException(msg);
+    }
+
+    const userNameEnvVarName = `${ref}_${userNamePostfix}`;
+    const apiKeyEnvVarName = `${ref}_${apiKeyPostfix}`;
+    const userName = process.env[userNameEnvVarName];
+    const apiKey = process.env[apiKeyEnvVarName];
+
+    if (!(typeof userName === 'string' && typeof apiKey === 'string')) {
+      const message = `Client configuration variables not found for REF ${ref}`;
+      const err = new CrmError(message);
+      Sentry.withScope((scope) => {
+        scope.setExtras({
+          ref: ref,
+          userNameEnvVarName,
+          apiKeyEnvVarName,
+          userName,
+          apiKey,
+        });
+        Sentry.captureException(err);
+        err.isLogged = true;
+        throw err;
+      });
+    }
+    return { userName: userName as string, apiKey: apiKey as string };
+  }
+
+  /**
+   * This may be the wrong name, or maybe I don't want to do it this way.  Seems pretty good though.
+   */
+  private async generateClient(ref: ACCOUNT_REF) {
+    const { userName, apiKey } = this.getUserNameAndApiKeyForAcct(ref);
+
+    const domain = await this.getApiForUsername({ userName, apiKey });
+
+    return jayson.Client.https({
+      host: domain,
+      path: '/api/v1/json',
+      headers: {
+        Authorization: this.getBasicAuthValue({ userName, apiKey }),
+      },
+    });
+  }
+
+  private async retrieveLeadFromCache({ leadId }: { leadId: string }) {
+    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(leadId);
+    if (
+      cachedLead !== null &&
+      typeof cachedLead === 'object' &&
+      typeof cachedLead.rev === 'string' &&
+      typeof cachedLead.description === 'string'
+    )
+      return cachedLead;
+    return null;
+  }
+
+  private async cacheLead({
+    leadId,
+    rev,
+    description,
+  }: {
+    leadId: string;
+    rev: string;
+    description: string;
+  }) {
+    return await this.cacheManager.set(
+      leadId,
+      { description, rev },
+      TEN_MINUTES_IN_MS,
+    );
+  }
+
+  private async refreshLead({
+    leadId,
+    ref,
+    client,
+  }: {
+    leadId: string;
+    ref: ACCOUNT_REF;
+    client?: jayson.HttpsClient;
+  }) {
+    if (!client) {
+      client = await this.generateClient(ref);
+    }
+    const response = await client.request('getLead', { leadId });
+    if (
+      typeof response === 'object' &&
+      response.hasOwnProperty('result') &&
+      response.result === null
+    ) {
+      const err = new CrmError(`Lead ${leadId} not found`);
+      Sentry.captureException(err);
+      err.isLogged = true;
+      throw err;
+    }
+
+    if (!validateGetLeadResponse(response)) {
+      throw new CrmError('Refresh lead response failed validation', false);
+    }
+    const { description, rev } = response.result;
+
+    await this.cacheLead({ leadId, rev, description });
+    return { description, rev };
+  }
 
   /**
    * tryTwice is used on descructive methods that require the current rev
    */
-  private async tryTwice({
+  private async tryTwice<T>({
     ref,
     apiMethod,
     params,
@@ -423,12 +449,18 @@ export class NutshellApiService {
     params: any;
     entityId: string;
     entityType: Entity;
-  }) {
+  }): Promise<T> {
     const client = await this.generateClient(ref);
     try {
+      let rev: string;
       switch (entityType) {
         case 'Lead':
-          const { rev } = await this.getLead({ leadId: entityId, ref, client });
+          const { rev: leadRev } = await this.getLead({
+            leadId: entityId,
+            ref,
+            client,
+          });
+          rev = leadRev;
           break;
 
         default:
@@ -440,7 +472,7 @@ export class NutshellApiService {
           throw crmError;
       }
 
-      return await client.request(apiMethod, params);
+      return await client.request(apiMethod, { ...params, rev });
     } catch (err: any) {
       /**
        * This is in place to make sure I'm understanding the return I'm supposed to receive
@@ -467,15 +499,12 @@ export class NutshellApiService {
           }
 
           return await client.request(apiMethod, params);
+        } else {
+          throw err;
         }
+      } else {
+        throw err;
       }
     }
   }
 }
-
-/**
- * implement note:
- * curl -u <domain or username>:<api token> \
--d '{ "id": "<id>", "method": "getLead", "params": { "leadId": 1000 } }' \
-https://app.nutshell.com/api/v1/json
- */
