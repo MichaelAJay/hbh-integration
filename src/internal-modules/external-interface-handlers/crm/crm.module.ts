@@ -6,6 +6,6 @@ import { NutshellApiHandlerService } from './nutshell-api-handler.service';
 @Module({
   imports: [NutshellApiModule],
   providers: [CrmHandlerService, NutshellApiHandlerService],
-  exports: [CrmHandlerService],
+  exports: [CrmHandlerService, NutshellApiHandlerService],
 })
 export class CrmModule {}

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserAPIService } from './user.service';
 import { UserController } from './user.controller';
 import { UserInternalInterfaceService } from './user-internal-interface.service';
 import { AuthModule } from 'src/internal-modules/auth/auth.module';
@@ -7,7 +7,8 @@ import { InternalDatabaseModule } from 'src/internal-modules/external-interface-
 
 @Module({
   imports: [AuthModule, InternalDatabaseModule],
-  providers: [UserService, UserInternalInterfaceService],
+  providers: [UserAPIService, UserInternalInterfaceService],
   controllers: [UserController],
+  exports: [UserAPIService, UserInternalInterfaceService],
 })
-export class UserModule {}
+export class UserApiModule {}

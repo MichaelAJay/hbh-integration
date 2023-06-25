@@ -1,15 +1,17 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AdminService } from './admin.service';
+import { AdminAPIModule } from './admin.module';
+import { AdminAPIService } from './admin.service';
 
 describe('AdminService', () => {
-  let service: AdminService;
+  let service: AdminAPIService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminService],
+      imports: [ConfigModule.forRoot(), AdminAPIModule],
     }).compile();
 
-    service = module.get<AdminService>(AdminService);
+    service = module.get<AdminAPIService>(AdminAPIService);
   });
 
   it('should be defined', () => {

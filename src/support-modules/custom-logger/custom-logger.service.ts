@@ -2,7 +2,7 @@ import { Injectable, LoggerService } from '@nestjs/common';
 import { DbTransportService } from './db-transport.service';
 import winston = require('winston');
 const { format } = winston;
-const { combine, label, json, timestamp, printf } = format;
+const { combine, label, timestamp, printf } = format;
 
 @Injectable()
 export class CustomLoggerService implements LoggerService {

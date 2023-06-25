@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AdminService } from './admin.service';
+import { AdminAPIService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
 import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
@@ -18,7 +18,8 @@ import { CrmModule } from 'src/internal-modules/external-interface-handlers/crm/
     EzmanageApiHandlerModule,
     CrmModule,
   ],
-  providers: [AdminService, AdminInternalInterfaceService],
+  providers: [AdminAPIService, AdminInternalInterfaceService],
   controllers: [AdminController],
+  exports: [AdminAPIService, AdminInternalInterfaceService],
 })
-export class AdminModule {}
+export class AdminAPIModule {}

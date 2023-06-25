@@ -7,7 +7,7 @@ import {
 } from './dtos/query';
 
 @Injectable()
-export class AdminService {
+export class AdminAPIService {
   constructor(
     private readonly adminInternalInterface: AdminInternalInterfaceService,
   ) {}

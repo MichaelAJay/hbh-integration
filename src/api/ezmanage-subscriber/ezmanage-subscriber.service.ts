@@ -6,7 +6,7 @@ import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscribe
 import { EzManagePayloadValidator } from './utility/methods/validators';
 
 @Injectable()
-export class EzmanageSubscriberService {
+export class EzmanageSubscriberAPIService {
   constructor(
     private readonly ezManageInternalInterface: EzmanageSubscriberInternalInterfaceService,
     private readonly logger: CustomLoggerService,

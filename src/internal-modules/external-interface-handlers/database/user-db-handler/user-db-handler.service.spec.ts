@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { UserDbHandlerService } from './user-db-handler.service';
 
 describe('UserDbHandlerService', () => {
@@ -6,6 +7,7 @@ describe('UserDbHandlerService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ExternalDatabaseModule],
       providers: [UserDbHandlerService],
     }).compile();
 

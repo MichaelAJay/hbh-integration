@@ -1,9 +1,4 @@
-import {
-  Filter,
-  Firestore,
-  Query,
-  WhereFilterOp,
-} from '@google-cloud/firestore';
+import { Firestore, Query, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CollectionName } from './enum';
 import { ICompositeAndFilter } from './interfaces';

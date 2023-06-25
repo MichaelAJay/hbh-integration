@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { CatererDbHandlerService } from './caterer-db-handler.service';
 
 describe('CatererDbHandlerService', () => {
@@ -6,6 +7,7 @@ describe('CatererDbHandlerService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ExternalDatabaseModule],
       providers: [CatererDbHandlerService],
     }).compile();
 

@@ -5,7 +5,7 @@ import { IGetOrderOutput } from './interfaces/output';
 import { OrderInternalInterfaceService } from './order-internal-interface.service';
 
 @Injectable()
-export class OrderService {
+export class OrderAPIService {
   constructor(
     private readonly orderInternalInterface: OrderInternalInterfaceService,
     private readonly logger: CustomLoggerService,

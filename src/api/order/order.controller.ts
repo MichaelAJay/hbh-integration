@@ -2,11 +2,11 @@ import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { AuthenticatedReq } from 'src/decorators/authenticated-request.decorator';
 import { IAuthenticatedRequest } from '../interfaces';
 import { IUpdateStatus } from './interfaces';
-import { OrderService } from './order.service';
+import { OrderAPIService } from './order.service';
 
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderAPIService) {}
 
   @Get()
   async getOrdersByAccount(@AuthenticatedReq() req: IAuthenticatedRequest) {

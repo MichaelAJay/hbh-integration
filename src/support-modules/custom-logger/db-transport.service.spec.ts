@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { DbTransportService } from './db-transport.service';
 
 describe('DbTransportService', () => {
@@ -6,7 +7,14 @@ describe('DbTransportService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DbTransportService],
+      imports: [ExternalDatabaseModule],
+      providers: [
+        DbTransportService,
+        {
+          provide: 'TransportStreamOptions',
+          useValue: {},
+        },
+      ],
     }).compile();
 
     service = module.get<DbTransportService>(DbTransportService);

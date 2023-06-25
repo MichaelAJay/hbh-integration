@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { AdminService } from './admin.service';
+import { AdminAPIService } from './admin.service';
 import { AdminCreateUserBodyDto } from './dtos/body';
 import {
   AdminOrderNameWithAccountScopeQueryDto,
@@ -19,7 +19,7 @@ import {
 @UseGuards(AdminGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminAPIService) {}
 
   @Post('create-user')
   async createUser(@Body() body: AdminCreateUserBodyDto) {
