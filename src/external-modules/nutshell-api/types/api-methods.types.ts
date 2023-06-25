@@ -1,1 +1,1 @@
-export type NutshellApiMethod = 'deleteLead';
+export type NutshellApiMethod = 'deleteLead' | 'editLead';

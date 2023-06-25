@@ -66,6 +66,10 @@ export class NutshellApiService {
     return { description, rev };
   }
 
+  /**
+   * updates should be of the form found in the accompanying test suite, var leadDetails2
+   * @TODO - get return
+   */
   async updateLead({
     leadId,
     ref,
@@ -88,39 +92,21 @@ export class NutshellApiService {
     };
 
     try {
-      const { rev } = await this.getLead({ leadId, ref });
-      const client = await this.generateClient(ref);
-      const response = await client
-        .request('editLead', {
-          leadId,
-          rev,
-          updates,
-        })
-        .catch(async (reason) => {
-          Sentry.withScope((scope) => {
-            scope.setExtra('leadId', leadId);
-            Sentry.captureException(reason);
-          });
-          if (reason.error) {
-            const { code, message } = reason.error;
-            if (code === 409 && message === 'rev key is out-of-date') {
-              const { rev } = await this.refreshLead({
-                leadId,
-                ref,
-              });
+      const response = await this.tryTwice<any>({
+        ref,
+        apiMethod: 'editLead',
+        params: { leadId, ...updates },
+        entityId: leadId,
+        entityType: 'Lead',
+      });
 
-              const response = await client.request('editLead', {
-                leadId,
-                rev,
-                updates,
-              });
-
-              return await validateUpdateLeadResponseAndCache(response);
-            }
-          }
-        });
-
-      return await validateUpdateLeadResponseAndCache(response);
+      if (!validateUpdateLeadResponseAndCache(response)) {
+        const err = new CrmError('Updated lead not validated & cached');
+        Sentry.captureException(err);
+        err.isLogged = true;
+        throw err;
+      }
+      return response.result;
     } catch (err) {
       throw err;
     }
@@ -492,7 +478,9 @@ export class NutshellApiService {
           throw crmError;
       }
 
-      return await client.request(apiMethod, { ...params, rev });
+      const response = await client.request(apiMethod, { ...params, rev });
+
+      return response;
     } catch (err: any) {
       /**
        * This is in place to make sure I'm understanding the return I'm supposed to receive
@@ -502,9 +490,9 @@ export class NutshellApiService {
         Sentry.captureException(err);
       });
 
-      if (err.error) {
-        const { code, message } = err.error;
-        if (code === 409 && message === INVALID_REV_KEY) {
+      if (err.code && err.code === 409) {
+        const { message } = err;
+        if (message.includes(INVALID_REV_KEY)) {
           switch (entityType) {
             case 'Lead':
               const refreshedLead = await this.refreshLead({
@@ -518,8 +506,13 @@ export class NutshellApiService {
               throw err;
           }
 
-          return await client.request(apiMethod, params);
+          const response = await client.request(apiMethod, params);
+          return response;
         } else {
+          Sentry.withScope((scope) => {
+            scope.setExtra('message', 'Unexpected 409 error from Nutshell');
+            Sentry.captureException(err);
+          });
           throw err;
         }
       } else {

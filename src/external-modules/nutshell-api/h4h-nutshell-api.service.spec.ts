@@ -375,5 +375,5 @@ describe('H4H_NutshellApiService', () => {
     for (const leadId of leadIdsToDelete) {
       await service.deleteLead({ leadId: parseInt(leadId, 10), ref: validRef });
     }
-  });
+  }, 10000);
 });
