@@ -1,6 +1,9 @@
+import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmError } from 'src/common/classes/custom-error.class';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { NutshellApiService } from './nutshell-api.service';
 
 describe('H4H_NutshellApiService', () => {
@@ -8,7 +11,7 @@ describe('H4H_NutshellApiService', () => {
 
   const validRef = 'H4H' as ACCOUNT_REF;
   const invalidRef = 'INVALID_TEST' as ACCOUNT_REF;
-  const invalidLeadId = '2324aZZ3Tt';
+  const invalidLeadId = 1211221;
 
   const leadDetails1 = {
     lead: {
@@ -77,11 +80,6 @@ describe('H4H_NutshellApiService', () => {
     orderName: 'TEST LEAD',
   };
 
-  const validCreateLeadWithLeadDetails1 = {
-    ...validCreateLead,
-    lead: leadDetails1,
-  };
-
   const validCreateLeadWithLeadDetails2 = {
     ...validCreateLead,
     lead: leadDetails2,
@@ -97,6 +95,11 @@ describe('H4H_NutshellApiService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot(),
+        CacheModule.register({}),
+        CustomLoggerModule,
+      ],
       providers: [NutshellApiService],
     }).compile();
 
@@ -107,7 +110,7 @@ describe('H4H_NutshellApiService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('create lead', async () => {
+  describe('create lead', () => {
     /**
      * Test invalid lead creation
      */
@@ -138,7 +141,7 @@ describe('H4H_NutshellApiService', () => {
     });
   });
 
-  describe('get lead', async () => {
+  describe('get lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
       const leadId = await service.createLead({
@@ -152,14 +155,14 @@ describe('H4H_NutshellApiService', () => {
       await expect(
         service.getLead({
           ref: invalidRef,
-          leadId,
+          leadId: parseInt(leadId, 10),
         }),
       ).rejects.toThrow(CrmError);
 
       await expect(
         service.getLead({
           ref: invalidRef,
-          leadId,
+          leadId: parseInt(leadId, 10),
         }),
       ).rejects.toHaveProperty(
         'message',
@@ -169,7 +172,7 @@ describe('H4H_NutshellApiService', () => {
       await expect(
         service.getLead({
           ref: invalidRef,
-          leadId,
+          leadId: parseInt(leadId, 10),
         }),
       ).rejects.toHaveProperty('isLogged', true);
     });
@@ -207,7 +210,7 @@ describe('H4H_NutshellApiService', () => {
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
       const { description, rev } = await service.getLead({
-        leadId,
+        leadId: parseInt(leadId, 10),
         ref: validRef,
       });
       expect(description).toBeDefined();
@@ -217,7 +220,7 @@ describe('H4H_NutshellApiService', () => {
     });
   });
 
-  describe('update lead', async () => {
+  describe('update lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
       const leadId = await service.createLead({
@@ -230,7 +233,7 @@ describe('H4H_NutshellApiService', () => {
 
       const updateParamsWithInvalidRef = {
         ref: invalidRef,
-        leadId,
+        leadId: parseInt(leadId, 10),
         updates: leadDetails2,
       };
 
@@ -283,7 +286,7 @@ describe('H4H_NutshellApiService', () => {
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
       const { description, rev } = await service.updateLead({
-        leadId,
+        leadId: parseInt(leadId, 10),
         ref: validRef,
         updates: leadDetails2,
       });
@@ -295,7 +298,7 @@ describe('H4H_NutshellApiService', () => {
     });
   });
 
-  describe('delete lead', async () => {
+  describe('delete lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
       const leadId = await service.createLead({
@@ -308,7 +311,7 @@ describe('H4H_NutshellApiService', () => {
 
       const deleteParamsWithInvalidRef = {
         ref: invalidRef,
-        leadId,
+        leadId: parseInt(leadId, 10),
       };
 
       await expect(
@@ -359,7 +362,10 @@ describe('H4H_NutshellApiService', () => {
       expect(typeof leadId).toBe('string');
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
-      const didDelete = await service.deleteLead({ leadId, ref: validRef });
+      const didDelete = await service.deleteLead({
+        leadId: parseInt(leadId, 10),
+        ref: validRef,
+      });
       expect(typeof didDelete).toBe('boolean');
       expect(didDelete).toBe(true);
     });
@@ -367,7 +373,7 @@ describe('H4H_NutshellApiService', () => {
 
   afterAll(async () => {
     for (const leadId of leadIdsToDelete) {
-      await service.deleteLead({ leadId, ref: validRef });
+      await service.deleteLead({ leadId: parseInt(leadId, 10), ref: validRef });
     }
   });
 });

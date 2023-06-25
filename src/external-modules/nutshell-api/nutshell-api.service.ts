@@ -48,11 +48,13 @@ export class NutshellApiService {
     ref,
     client,
   }: {
-    leadId: string;
+    leadId: number;
     ref: ACCOUNT_REF;
     client?: jayson.HttpsClient;
   }) {
-    const cachedLead = await this.retrieveLeadFromCache({ leadId });
+    const cachedLead = await this.retrieveLeadFromCache({
+      leadId,
+    });
     if (cachedLead !== null) return cachedLead;
 
     const { description, rev } = await this.refreshLead({
@@ -69,7 +71,7 @@ export class NutshellApiService {
     ref,
     updates,
   }: {
-    leadId: string;
+    leadId: number;
     ref: ACCOUNT_REF;
     updates: any;
   }): Promise<{ description: string; rev: string }> {
@@ -120,7 +122,6 @@ export class NutshellApiService {
 
       return await validateUpdateLeadResponseAndCache(response);
     } catch (err) {
-      console.error('err', err);
       throw err;
     }
   }
@@ -156,7 +157,7 @@ export class NutshellApiService {
     }
   }
 
-  async deleteLead({ leadId, ref }: { leadId: string; ref: ACCOUNT_REF }) {
+  async deleteLead({ leadId, ref }: { leadId: number; ref: ACCOUNT_REF }) {
     try {
       const response = await this.tryTwice<IDeleteLeadResponse>({
         ref,
@@ -177,7 +178,6 @@ export class NutshellApiService {
       }
       return response.result;
     } catch (err) {
-      console.error('err', err);
       throw err;
     }
   }
@@ -212,7 +212,6 @@ export class NutshellApiService {
     const response = await client
       .request('findProducts', { limit: 100 })
       .catch((reason) => {
-        console.error('Get products failed', reason);
         throw reason;
       });
     // return response.result.map((product) => product.name);
@@ -246,14 +245,12 @@ export class NutshellApiService {
         username: userName,
       })
       .catch((reason) => {
-        console.error('Request failed', reason);
         throw reason;
       });
     const selectedDomain = this.selectDomain(response);
     await this.cacheManager
       .set(userName, selectedDomain, this.cacheTTL_in_MS)
       .catch((reason) => {
-        console.error('Cache manager set failed', reason);
         throw reason;
       });
     return selectedDomain;
@@ -267,13 +264,13 @@ export class NutshellApiService {
       if (this.isGetApiForUsernameResponseValid(response)) {
         return (response as { result: { api: string } }).result.api;
       } else {
-        const msg = 'Api domain not successfully found';
-        this.logger.error(msg, {});
-        throw new UnprocessableEntityException(msg);
+        const err = new CrmError('Api domain not successfully found');
+        Sentry.captureException(err);
+        err.isLogged = true;
+        throw err;
       }
     } catch (err) {
-      console.error('Select domain failed', err);
-      err;
+      throw err;
     }
   }
 
@@ -283,25 +280,37 @@ export class NutshellApiService {
      */
     const responseType = typeof response;
     if (responseType !== 'object') {
-      const msg = 'Response is not object as expected';
-      this.logger.error(msg, { responseType });
-      throw new UnprocessableEntityException(msg);
+      const err = new CrmError('Response is not object as expected');
+      Sentry.withScope((scope) => {
+        scope.setExtra('responseType', responseType);
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
+      throw err;
     }
 
     const { result } = response;
     const resultType = typeof result;
     if (resultType !== 'object') {
-      const msg = 'Response.result is not object as expected';
-      this.logger.error(msg, { responseType, resultType });
-      throw new UnprocessableEntityException(msg);
+      const err = new CrmError('Response.result is not object as expected');
+      Sentry.withScope((scope) => {
+        scope.setExtra('response.result', resultType);
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
+      throw err;
     }
 
     const { api } = result;
     const apiType = typeof api;
     if (apiType !== 'string') {
-      const msg = 'Response.result.api is not string as expected';
-      this.logger.error(msg, { responseType, resultType, apiType });
-      throw new UnprocessableEntityException(msg);
+      const err = new CrmError('Response.result.api is not string as expected');
+      Sentry.withScope((scope) => {
+        scope.setExtra('apiType', apiType);
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
+      throw err;
     }
 
     return true;
@@ -327,9 +336,18 @@ export class NutshellApiService {
     } = process.env;
 
     if (!(userNamePostfix && apiKeyPostfix)) {
-      const msg = 'Missing necessary system configuration variables';
-      this.logger.error(msg, { userNamePostfix, apiKeyPostfix });
-      throw new InternalServerErrorException(msg);
+      const err = new CrmError(
+        'Missing necessary system configuration variables',
+      );
+      Sentry.withScope((scope) => {
+        scope.setExtras({
+          NUTSHELL_USERNAME_POSTFIX: userNamePostfix,
+          NUTSHELL_API_KEY_POSTFIX: apiKeyPostfix,
+        });
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
+      throw err;
     }
 
     const userNameEnvVarName = `${ref}_${userNamePostfix}`;
@@ -373,8 +391,10 @@ export class NutshellApiService {
     });
   }
 
-  private async retrieveLeadFromCache({ leadId }: { leadId: string }) {
-    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(leadId);
+  private async retrieveLeadFromCache({ leadId }: { leadId: number }) {
+    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(
+      leadId.toString(),
+    );
     if (
       cachedLead !== null &&
       typeof cachedLead === 'object' &&
@@ -390,12 +410,12 @@ export class NutshellApiService {
     rev,
     description,
   }: {
-    leadId: string;
+    leadId: number;
     rev: string;
     description: string;
   }) {
     return await this.cacheManager.set(
-      leadId,
+      leadId.toString(),
       { description, rev },
       TEN_MINUTES_IN_MS,
     );
@@ -406,7 +426,7 @@ export class NutshellApiService {
     ref,
     client,
   }: {
-    leadId: string;
+    leadId: number;
     ref: ACCOUNT_REF;
     client?: jayson.HttpsClient;
   }) {
@@ -447,7 +467,7 @@ export class NutshellApiService {
     ref: ACCOUNT_REF;
     apiMethod: NutshellApiMethod;
     params: any;
-    entityId: string;
+    entityId: number;
     entityType: Entity;
   }): Promise<T> {
     const client = await this.generateClient(ref);
