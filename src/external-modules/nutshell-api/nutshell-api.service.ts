@@ -3,7 +3,6 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
@@ -24,6 +23,7 @@ import {
   IDeleteLeadResponse,
   ValidateDeleteLeadResponse,
 } from './interfaces/responses/delete-lead.response-interface';
+import { ICreateLeadReturn } from './interfaces/returns';
 
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
@@ -78,8 +78,10 @@ export class NutshellApiService {
     leadId: number;
     ref: ACCOUNT_REF;
     lead: IUpsertLead<CustomFields>;
-  }): Promise<{ description: string; rev: string }> {
-    const validateUpdateLeadResponseAndCache = async (response: any) => {
+  }): Promise<{ description: string }> {
+    const validateUpdateLeadResponseAndCache = async (
+      response: any,
+    ): Promise<{ description: string; rev: string }> => {
       if (!ValidateUpdateLeadResponse(response)) {
         throw new InternalServerErrorException(
           'Lead did not update as expected',
@@ -106,7 +108,7 @@ export class NutshellApiService {
         err.isLogged = true;
         throw err;
       }
-      return response.result;
+      return { description: response.result.description };
     } catch (err) {
       throw err;
     }
@@ -120,7 +122,7 @@ export class NutshellApiService {
     ref: ACCOUNT_REF;
     lead: IUpsertLead<CustomFields>;
     orderName: string;
-  }): Promise<string> {
+  }): Promise<ICreateLeadReturn> {
     try {
       const client = await this.generateClient(ref);
       const resp = await client.request('newLead', lead);
@@ -129,7 +131,10 @@ export class NutshellApiService {
         throw new CrmError('Create lead response failed validation', false);
       }
 
-      return resp.result.id.toString();
+      return {
+        id: resp.result.id.toString(),
+        description: resp.result.description,
+      };
     } catch (err: any) {
       Sentry.withScope((scope) => {
         scope.setExtra('order name', orderName);

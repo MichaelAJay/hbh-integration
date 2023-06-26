@@ -236,6 +236,7 @@ export class OrderDbHandlerService {
       name: record.name,
       status: record.status,
       crmId: record.crmId,
+      crmDescription: record.crmDescription,
       acceptedAt: record.acceptedAt.toDate(),
       lastUpdatedAt: record.lastUpdatedAt.toDate(),
     };

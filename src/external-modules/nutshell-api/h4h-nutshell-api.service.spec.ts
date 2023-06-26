@@ -133,7 +133,9 @@ describe('H4H_NutshellApiService', () => {
     });
 
     it('should create a lead successfully', async () => {
-      const leadId = await service.createLead(validCreateLeadWithLeadDetails2);
+      const { id: leadId } = await service.createLead(
+        validCreateLeadWithLeadDetails2,
+      );
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
       expect(leadId).toBeDefined();
@@ -144,7 +146,7 @@ describe('H4H_NutshellApiService', () => {
   describe('get lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails2,
         orderName: 'TEST LEAD',
@@ -201,7 +203,7 @@ describe('H4H_NutshellApiService', () => {
 
     it('should retrieve a lead successfully', async () => {
       // Setup
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails2,
         orderName: 'TEST LEAD',
@@ -223,7 +225,7 @@ describe('H4H_NutshellApiService', () => {
   describe('update lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails2,
         orderName: 'TEST LEAD',
@@ -234,7 +236,7 @@ describe('H4H_NutshellApiService', () => {
       const updateParamsWithInvalidRef = {
         ref: invalidRef,
         leadId: parseInt(leadId, 10),
-        updates: leadDetails2,
+        lead: leadDetails2,
       };
 
       await expect(
@@ -257,7 +259,7 @@ describe('H4H_NutshellApiService', () => {
       const updateParamsWithInvalidLeadId = {
         leadId: invalidLeadId,
         ref: validRef,
-        updates: leadDetails1,
+        lead: leadDetails1,
       };
 
       await expect(
@@ -277,7 +279,7 @@ describe('H4H_NutshellApiService', () => {
     });
 
     it('should create a lead and then update it successfully', async () => {
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails1,
         orderName: 'TEST LEAD',
@@ -285,23 +287,21 @@ describe('H4H_NutshellApiService', () => {
       expect(typeof leadId).toBe('string');
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
-      const { description, rev } = await service.updateLead({
+      const { description } = await service.updateLead({
         leadId: parseInt(leadId, 10),
         ref: validRef,
         lead: leadDetails2,
       });
 
       expect(description).toBeDefined();
-      expect(rev).toBeDefined();
       expect(typeof description).toBe('string');
-      expect(typeof rev).toBe('string');
     });
   });
 
   describe('delete lead', () => {
     it('should fail because ref is not found', async () => {
       // Setup
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails2,
         orderName: 'TEST LEAD',
@@ -354,7 +354,7 @@ describe('H4H_NutshellApiService', () => {
 
     it('should successfully delete a lead', async () => {
       // Setup
-      const leadId = await service.createLead({
+      const { id: leadId } = await service.createLead({
         ref: validRef,
         lead: leadDetails1,
         orderName: 'TEST LEAD',

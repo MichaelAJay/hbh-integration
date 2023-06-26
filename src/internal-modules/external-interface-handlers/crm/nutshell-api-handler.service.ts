@@ -10,6 +10,8 @@ import { outputH4HOrderToCrm } from './accounts/H4H/utility';
 import * as Sentry from '@sentry/node';
 import { IAccountModelWithId } from 'src/external-modules/database/models';
 import { validateEzManageOrder } from 'src/external-modules/ezmanage-api/validators';
+import { ICreateLeadReturn } from 'src/external-modules/nutshell-api/interfaces/returns';
+import { GeneratePrimaryNutshellEntityReturn } from './types/returns';
 
 @Injectable()
 export class NutshellApiHandlerService {
@@ -21,7 +23,7 @@ export class NutshellApiHandlerService {
   }: {
     account: AccountRecordWithId;
     order: any;
-  }): Promise<string | undefined> {
+  }): Promise<GeneratePrimaryNutshellEntityReturn> {
     switch (account.crmPrimaryType) {
       case 'LEAD':
         if (!validateEzManageOrder(order)) {
@@ -84,7 +86,7 @@ export class NutshellApiHandlerService {
   }: {
     account: IAccountModelWithId;
     order: IEzManageOrder;
-  }): Promise<string> {
+  }): Promise<ICreateLeadReturn> {
     const { ref } = account;
     switch (ref) {
       case 'H4H':
@@ -103,13 +105,13 @@ export class NutshellApiHandlerService {
           lead.tags = account.newLeadTags;
         }
 
-        const leadId = await this.nutshellApiService.createLead({
+        const { id, description } = await this.nutshellApiService.createLead({
           ref,
           lead: { lead },
           orderName: order.orderNumber,
         });
 
-        return leadId;
+        return { id, description };
       case 'ADMIN':
       default:
         const err = new InternalError(`Invalid ref ${ref}`);

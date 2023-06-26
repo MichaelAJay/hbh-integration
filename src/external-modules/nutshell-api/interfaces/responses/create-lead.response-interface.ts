@@ -1,7 +1,10 @@
 export interface ICreateLeadResponse {
-  result: {
-    id: number;
-  };
+  result: ICreateLeadResult;
+}
+
+export interface ICreateLeadResult {
+  id: number;
+  description: string;
 }
 
 export function validateCreateLeadResponse(
@@ -11,6 +14,7 @@ export function validateCreateLeadResponse(
     typeof resp === 'object' &&
     resp.result &&
     typeof resp.result === 'object' &&
-    typeof resp.result.id === 'number'
+    typeof resp.result.id === 'number' &&
+    typeof resp.result.description === 'string'
   );
 }

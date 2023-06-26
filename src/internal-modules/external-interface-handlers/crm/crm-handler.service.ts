@@ -19,7 +19,10 @@ export class CrmHandlerService {
   }: {
     account: AccountRecordWithId;
     order: any;
-  }): Promise<string | undefined> {
+    /**
+     * @TODO fix return type
+     */
+  }): Promise<any> {
     switch (account.crm) {
       case 'NUTSHELL':
         return await this.nutshellApiHandler.generatePrimaryEntity({

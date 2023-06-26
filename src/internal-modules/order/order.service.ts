@@ -55,7 +55,7 @@ export class OrderService {
     /**
      * Create Nutshell Lead
      */
-    const crmEntityId = await this.crmHandler
+    const generatedCRMEntity = await this.crmHandler
       .generateCRMEntity({
         account,
         order: ezManageOrder,
@@ -86,11 +86,15 @@ export class OrderService {
       name: ezManageOrder.orderNumber || 'PLACEHOLDER NAME',
       status,
       crmId: null,
+      crmDescription: null,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
 
-    if (crmEntityId) data.crmId = crmEntityId;
+    if (generatedCRMEntity) {
+      data.crmId = generatedCRMEntity.id || null;
+      data.crmDescription = generatedCRMEntity.description || null;
+    }
 
     await this.orderDbService.create({ orderId, data });
     return;
@@ -137,14 +141,26 @@ export class OrderService {
       });
     }
 
-    await this.crmHandler.updateCRMEntity({
+    const updateResult = await this.crmHandler.updateCRMEntity({
       account,
       order: ezManageOrder,
       crmEntityId: internalOrder.crmId,
     });
+
+    const updates: Partial<
+      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
+    > = { lastUpdatedAt: new Date() };
+    if (
+      updateResult &&
+      typeof updateResult === 'object' &&
+      typeof updateResult.description === 'string' &&
+      updateResult.description !== internalOrder.crmDescription
+    ) {
+      updates.crmDescription = updateResult.description;
+    }
     await this.orderDbService.updateOne({
       orderId,
-      updates: { lastUpdatedAt: new Date() },
+      updates,
     });
   }
 
