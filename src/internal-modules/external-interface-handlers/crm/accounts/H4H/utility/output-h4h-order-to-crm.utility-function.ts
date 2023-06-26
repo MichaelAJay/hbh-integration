@@ -5,7 +5,7 @@ import {
   IEzManageOrderItem,
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { IProductEntity } from 'src/external-modules/nutshell-api/interfaces/entities';
-import { ICreateLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
+import { IUpsertLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
 import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 import {
   retrieveCrmNameFromOrderSourceType,
@@ -46,7 +46,7 @@ export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
       });
     }
 
-    const lead: ICreateLeadEntity<IH4HCreateLeadCustomFields> = {
+    const lead: IUpsertLeadEntity<IH4HCreateLeadCustomFields> = {
       products,
       description: getLeadName(order),
       customFields: {

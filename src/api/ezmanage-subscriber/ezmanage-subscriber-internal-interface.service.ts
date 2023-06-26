@@ -54,7 +54,6 @@ export class EzmanageSubscriberInternalInterfaceService {
       catererName: caterer.name,
       orderId: orderId,
       occurredAt: occurred_at,
-      ref: account.ref,
     });
   }
 
@@ -91,7 +90,6 @@ export class EzmanageSubscriberInternalInterfaceService {
         orderId,
         status: DbOrderStatus.CANCELLED,
         occurredAt,
-        ref,
       });
     }
 
@@ -126,17 +124,14 @@ export class EzmanageSubscriberInternalInterfaceService {
     catererName,
     orderId,
     occurredAt,
-    ref,
   }: {
     account: IAccountModelWithId;
     catererId: string;
     catererName: string;
     orderId: string;
     occurredAt: string;
-    ref: string;
   }) {
     const order = await this.orderDbHandler.getOne(orderId);
-    console.log('looked for one');
     if (!order) {
       /**
        * Is new
@@ -147,13 +142,14 @@ export class EzmanageSubscriberInternalInterfaceService {
         orderId,
         status: DbOrderStatus.ACCEPTED,
         occurredAt,
-        ref,
         catererName,
       });
-      console.log('made one');
     } else {
       await this.orderService.updateOrder({
         account,
+        catererId,
+        occurredAt,
+        catererName,
         internalOrder: order,
       });
     }

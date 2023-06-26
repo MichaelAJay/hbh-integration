@@ -34,7 +34,6 @@ export class OrderService {
     orderId,
     status,
     occurredAt,
-    ref,
     catererName,
   }: {
     account: IAccountModelWithId;
@@ -42,9 +41,9 @@ export class OrderService {
     orderId: string;
     status: DbOrderStatus;
     occurredAt: string;
-    ref: string;
     catererName: string;
   }) {
+    const { ref } = account;
     const ezManageOrder = await this.ezManageApiHandler
       .getOrder({ orderId, ref })
       .catch((reason) => {
@@ -99,9 +98,15 @@ export class OrderService {
 
   async updateOrder({
     account,
+    catererId,
+    occurredAt,
+    catererName,
     internalOrder,
   }: {
     account: IAccountModelWithId;
+    catererId: string;
+    occurredAt: string;
+    catererName: string;
     internalOrder: IOrderModelWithId;
   }) {
     const { id: orderId, crmId } = internalOrder;
@@ -118,10 +123,24 @@ export class OrderService {
         throw reason;
       });
 
+    /**
+     * If CRM ID doesn't exist, this needs to be treated as a new order
+     */
+    if (!internalOrder.crmId) {
+      return await this.createOrder({
+        account,
+        catererId,
+        orderId,
+        status: DbOrderStatus.ACCEPTED,
+        occurredAt,
+        catererName,
+      });
+    }
+
     await this.crmHandler.updateCRMEntity({
       account,
       order: ezManageOrder,
-      crmEntityId: internalOrder.id,
+      crmEntityId: internalOrder.crmId,
     });
     await this.orderDbService.updateOne({
       orderId,

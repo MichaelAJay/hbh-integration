@@ -288,7 +288,7 @@ describe('H4H_NutshellApiService', () => {
       const { description, rev } = await service.updateLead({
         leadId: parseInt(leadId, 10),
         ref: validRef,
-        updates: leadDetails2,
+        lead: leadDetails2,
       });
 
       expect(description).toBeDefined();

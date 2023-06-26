@@ -1,10 +1,10 @@
 import { IProductEntity } from '../entities';
 
-export interface ICreateLead<CustomFields> {
-  lead: ICreateLeadEntity<CustomFields>;
+export interface IUpsertLead<CustomFields> {
+  lead: IUpsertLeadEntity<CustomFields>;
 }
 
-export interface ICreateLeadEntity<CustomFields> {
+export interface IUpsertLeadEntity<CustomFields> {
   products: IProductEntity[];
   stagesetId?: string; // Pipeline
   description?: string /** Will use this field for name */;

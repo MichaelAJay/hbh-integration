@@ -149,7 +149,7 @@ export class NutshellApiHandlerService {
         return await this.nutshellApiService.updateLead({
           leadId: parseInt(leadId, 10),
           ref,
-          updates: { products: lead.products },
+          lead: { lead },
         });
 
       case 'ADMIN':

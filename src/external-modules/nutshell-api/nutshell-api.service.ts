@@ -8,7 +8,7 @@ import {
 import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
-import { IAddTaskToEntity, ICreateLead } from './interfaces/requests';
+import { IAddTaskToEntity, IUpsertLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import * as Sentry from '@sentry/node';
 import { CrmError } from 'src/common/classes';
@@ -70,14 +70,14 @@ export class NutshellApiService {
    * updates should be of the form found in the accompanying test suite, var leadDetails2
    * @TODO - get return
    */
-  async updateLead({
+  async updateLead<CustomFields>({
     leadId,
     ref,
-    updates,
+    lead,
   }: {
     leadId: number;
     ref: ACCOUNT_REF;
-    updates: any;
+    lead: IUpsertLead<CustomFields>;
   }): Promise<{ description: string; rev: string }> {
     const validateUpdateLeadResponseAndCache = async (response: any) => {
       if (!ValidateUpdateLeadResponse(response)) {
@@ -95,7 +95,7 @@ export class NutshellApiService {
       const response = await this.tryTwice<any>({
         ref,
         apiMethod: 'editLead',
-        params: { leadId, ...updates },
+        params: { leadId, ...lead },
         entityId: leadId,
         entityType: 'Lead',
       });
@@ -118,7 +118,7 @@ export class NutshellApiService {
     orderName,
   }: {
     ref: ACCOUNT_REF;
-    lead: ICreateLead<CustomFields>;
+    lead: IUpsertLead<CustomFields>;
     orderName: string;
   }): Promise<string> {
     try {
