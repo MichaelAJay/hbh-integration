@@ -6,11 +6,13 @@ import {
   AccountRecordWithId,
   ACCOUNT_REF,
 } from '../database/account-db-handler/types';
-import { outputH4HOrderToCrm } from './accounts/H4H/utility';
+import {
+  compareEzManageSubtotalToCrmSubtotal,
+  outputH4HOrderToCrm,
+} from './accounts/H4H/utility';
 import * as Sentry from '@sentry/node';
 import { IAccountModelWithId } from 'src/external-modules/database/models';
 import { validateEzManageOrder } from 'src/external-modules/ezmanage-api/validators';
-import { ICreateLeadReturn } from 'src/external-modules/nutshell-api/interfaces/returns';
 import { GeneratePrimaryNutshellEntityReturn } from './types/returns';
 
 @Injectable()
@@ -47,7 +49,7 @@ export class NutshellApiHandlerService {
     }
   }
 
-  async updatePrimaryEntity({
+  async updatePrimaryEntityWithOrder({
     account,
     order,
     primaryEntityId,
@@ -64,7 +66,7 @@ export class NutshellApiHandlerService {
           err.isLogged = true;
           throw err;
         }
-        return await this.updateLead({
+        return await this.updateLeadWithOrder({
           account,
           order: order as IEzManageOrder,
           leadId: primaryEntityId,
@@ -80,18 +82,29 @@ export class NutshellApiHandlerService {
     }
   }
 
+  async addTagToPrimaryEntity({
+    account,
+    crmEntityId,
+    tag,
+  }: {
+    account: IAccountModelWithId;
+    crmEntityId: string;
+    tag: string;
+  }) {}
+
   private async createLead({
     account,
     order,
   }: {
     account: IAccountModelWithId;
     order: IEzManageOrder;
-  }): Promise<ICreateLeadReturn> {
+  }): Promise<GeneratePrimaryNutshellEntityReturn> {
     const { ref } = account;
     switch (ref) {
       case 'H4H':
         const { lead, invalidKeys } = outputH4HOrderToCrm({
           order,
+          account,
         });
 
         if (invalidKeys.length > 0) {
@@ -101,17 +114,28 @@ export class NutshellApiHandlerService {
           );
         }
 
-        if (account.newLeadTags) {
-          lead.tags = account.newLeadTags;
+        const requiredTags = account.newLeadTags
+          ? account.newLeadTags
+              .filter((tag) => tag.isRequired)
+              .map((tag) => tag.value)
+          : [];
+        if (requiredTags.length > 0) {
+          lead.tags = requiredTags;
         }
 
-        const { id, description } = await this.nutshellApiService.createLead({
-          ref,
-          lead: { lead },
-          orderName: order.orderNumber,
+        const { id, description, products } =
+          await this.nutshellApiService.createLead({
+            ref,
+            lead: { lead },
+            orderName: order.orderNumber,
+          });
+
+        const isSubtotalMatch = compareEzManageSubtotalToCrmSubtotal({
+          order,
+          products,
         });
 
-        return { id, description };
+        return { id, description, isSubtotalMatch };
       case 'ADMIN':
       default:
         const err = new InternalError(`Invalid ref ${ref}`);
@@ -121,7 +145,7 @@ export class NutshellApiHandlerService {
     }
   }
 
-  private async updateLead({
+  private async updateLeadWithOrder({
     account,
     order,
     leadId,
@@ -135,6 +159,7 @@ export class NutshellApiHandlerService {
       case 'H4H':
         const { lead, invalidKeys } = outputH4HOrderToCrm({
           order,
+          account,
         });
 
         if (invalidKeys.length > 0) {
@@ -144,11 +169,16 @@ export class NutshellApiHandlerService {
           );
         }
 
-        if (account.newLeadTags) {
-          lead.tags = account.newLeadTags;
+        const requiredTags = Array.isArray(account.newLeadTags)
+          ? account.newLeadTags
+              .filter((tag) => tag.isRequired)
+              .map((tag) => tag.value)
+          : [];
+        if (requiredTags) {
+          lead.tags = requiredTags;
         }
 
-        return await this.nutshellApiService.updateLead({
+        return await this.nutshellApiService.updateLeadWithOrder({
           leadId: parseInt(leadId, 10),
           ref,
           lead: { lead },

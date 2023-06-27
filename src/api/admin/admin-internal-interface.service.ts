@@ -70,7 +70,7 @@ export class AdminInternalInterfaceService {
   }
 
   async getOrderNamesForAccount(accountId: string) {
-    const orders = await this.orderDbHandler.getManyForAccount(accountId);
+    const orders = await this.orderDbHandler.getAllForAccount(accountId);
     return orders.map((order) => order.name);
   }
 
@@ -146,7 +146,7 @@ export class AdminInternalInterfaceService {
       ref,
     });
 
-    const { lead, invalidKeys } = outputH4HOrderToCrm({ order });
+    const { lead, invalidKeys } = outputH4HOrderToCrm({ order, account });
     return { lead, invalidKeys };
   }
 

@@ -240,18 +240,18 @@ describe('H4H_NutshellApiService', () => {
       };
 
       await expect(
-        service.updateLead(updateParamsWithInvalidRef),
+        service.updateLeadWithOrder(updateParamsWithInvalidRef),
       ).rejects.toThrow(CrmError);
 
       await expect(
-        service.updateLead(updateParamsWithInvalidRef),
+        service.updateLeadWithOrder(updateParamsWithInvalidRef),
       ).rejects.toHaveProperty(
         'message',
         `Client configuration variables not found for REF ${invalidRef}`,
       );
 
       await expect(
-        service.updateLead(updateParamsWithInvalidRef),
+        service.updateLeadWithOrder(updateParamsWithInvalidRef),
       ).rejects.toHaveProperty('isLogged', true);
     });
 
@@ -263,18 +263,18 @@ describe('H4H_NutshellApiService', () => {
       };
 
       await expect(
-        service.updateLead(updateParamsWithInvalidLeadId),
+        service.updateLeadWithOrder(updateParamsWithInvalidLeadId),
       ).rejects.toThrow(CrmError);
 
       await expect(
-        service.updateLead(updateParamsWithInvalidLeadId),
+        service.updateLeadWithOrder(updateParamsWithInvalidLeadId),
       ).rejects.toHaveProperty(
         'message',
         `Lead ${updateParamsWithInvalidLeadId.leadId} not found`,
       );
 
       await expect(
-        service.updateLead(updateParamsWithInvalidLeadId),
+        service.updateLeadWithOrder(updateParamsWithInvalidLeadId),
       ).rejects.toHaveProperty('isLogged', true);
     });
 
@@ -287,7 +287,7 @@ describe('H4H_NutshellApiService', () => {
       expect(typeof leadId).toBe('string');
       if (typeof leadId === 'string') leadIdsToDelete.push(leadId);
 
-      const { description } = await service.updateLead({
+      const { description } = await service.updateLeadWithOrder({
         leadId: parseInt(leadId, 10),
         ref: validRef,
         lead: leadDetails2,

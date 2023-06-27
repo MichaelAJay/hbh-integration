@@ -101,7 +101,16 @@ export class OrderDbHandlerService {
     }
   }
 
-  async getManyForAccount(accountId: string) {
+  async getManyForAccount({ orderIds }: { orderIds: string[] }) {
+    const orders = await this.findMany({
+      fieldPath: 'id',
+      filterOp: 'in',
+      value: orderIds,
+    });
+    return orders;
+  }
+
+  async getAllForAccount(accountId: string) {
     const accountRef = this.dbClientService.getDocRef({
       collectionName: CollectionName.ACCOUNTS,
       docId: accountId,
@@ -168,6 +177,18 @@ export class OrderDbHandlerService {
     } catch (err) {
       throw err;
     }
+  }
+
+  /**
+   * **********
+   * * DELETE *
+   * **********
+   */
+  async delete({ orderId: docId }: { orderId: string }) {
+    return await this.dbClientService.deleteDocument({
+      collectionName: this.collectionName,
+      docId,
+    });
   }
 
   private async findMany(filter: {

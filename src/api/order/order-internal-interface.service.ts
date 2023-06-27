@@ -26,7 +26,7 @@ export class OrderInternalInterfaceService {
   }: {
     accountId: string;
   }): Promise<GetOrdersByAccount> {
-    const orders = await this.orderDbHandler.getManyForAccount(accountId);
+    const orders = await this.orderDbHandler.getAllForAccount(accountId);
     return orders.map((order) => ({
       id: order.id,
       name: order.name,
@@ -153,6 +153,30 @@ export class OrderInternalInterfaceService {
       }
       return acc;
     }, [] as { orderId: string; didUpdate: boolean }[]);
+  }
+
+  async deleteOrders({
+    orderIds,
+    accountId,
+    ref,
+  }: {
+    orderIds: string[];
+    accountId: string;
+    ref: string;
+  }) {
+    const orders = await this.orderDbHandler.getManyForAccount({ orderIds });
+    const validOrders = orders.filter((order) => order.accountId === accountId);
+    const invalidOrderIds = orders
+      .filter((order) => order.accountId !== accountId)
+      .map((order) => order.id);
+
+    await Promise.all(
+      validOrders.map(async (order) =>
+        this.orderDbHandler.delete({ orderId: order.id }),
+      ),
+    );
+
+    return { invalidOrders: invalidOrderIds };
   }
 
   async generateLeadFromOrder({

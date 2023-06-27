@@ -11,8 +11,20 @@ export interface IAccountModel {
   isActive: boolean;
   crm?: CRM_NAME;
   crmPrimaryType?: CRM_PRIMARY_ENTITY;
-  newLeadTags?: string[];
+  crmUsers?: ICrmUser[];
+  newLeadTags?: INewLeadTag[];
   newLeadTasks?: string[];
+}
+
+export interface INewLeadTag {
+  value: string;
+  isRequired: boolean;
+}
+
+export interface ICrmUser {
+  id: number;
+  name: string;
+  assignFor?: string;
 }
 
 export interface IAccountModelWithId extends IAccountModel {

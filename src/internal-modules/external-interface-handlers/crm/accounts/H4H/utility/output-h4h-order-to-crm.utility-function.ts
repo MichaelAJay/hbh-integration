@@ -6,6 +6,7 @@ import {
 } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { IProductEntity } from 'src/external-modules/nutshell-api/interfaces/entities';
 import { IUpsertLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
+import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
 import {
   retrieveCrmNameFromOrderSourceType,
@@ -29,7 +30,13 @@ export interface LeadOutput {
   };
 }
 
-export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
+export function outputH4HOrderToCrm({
+  order,
+  account,
+}: {
+  order: IEzManageOrder;
+  account: AccountRecordWithId;
+}) {
   try {
     const { leadProducts: products, invalidKeys } = aggregateLeadProducts(
       order.catererCart.orderItems,
@@ -61,6 +68,11 @@ export function outputH4HOrderToCrm({ order }: { order: IEzManageOrder }) {
     );
     if (stagesetId) {
       lead.stagesetId = stagesetId;
+    }
+
+    const assignee = getLeadAssignee({ order, account });
+    if (assignee) {
+      lead.assignee = { ...assignee };
     }
 
     return { lead, invalidKeys };
@@ -180,4 +192,42 @@ function getDateForLeadName(timestamp: string): string {
   const month = String(date.getMonth() + 1); // Months are 0-based in JavaScript
   const year = String(date.getFullYear()).slice(-2); // Get the last 2 digits of the year
   return `${month}/${day}/${year}`;
+}
+
+function getLeadAssignee({
+  order,
+  account,
+}: {
+  order: IEzManageOrder;
+  account: AccountRecordWithId;
+}): { entityType: 'Users'; id: number } | undefined {
+  if (!Array.isArray(account.crmUsers)) return undefined;
+
+  const { caterer } = order;
+  const { address } = caterer;
+  const { city } = address;
+  const assignee = account.crmUsers.find((user) => user.assignFor === city);
+  return assignee ? { entityType: 'Users', id: assignee.id } : undefined;
+}
+
+export function compareEzManageSubtotalToCrmSubtotal({
+  order,
+  products,
+}: {
+  order: IEzManageOrder;
+  products: { amountInUsd: number }[];
+}) {
+  const crmSubtotal = products.reduce((acc, cur) => {
+    acc += cur.amountInUsd;
+    return acc;
+  }, 0);
+
+  const ezManageSubtotal = ConvertCentsToDollarsAndCents(
+    order.totals.subTotal.subunits,
+  );
+
+  return (
+    ezManageSubtotal - crmSubtotal < 0.01 ||
+    crmSubtotal - ezManageSubtotal < 0.01
+  );
 }

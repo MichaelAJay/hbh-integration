@@ -4,7 +4,10 @@ import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql
 import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
 import * as Sentry from '@sentry/node';
-import { IAccountModelWithId } from 'src/external-modules/database/models';
+import {
+  IAccountModelWithId,
+  OrderModelCRMProperties,
+} from 'src/external-modules/database/models';
 
 @Injectable()
 export class CrmHandlerService {
@@ -37,7 +40,7 @@ export class CrmHandlerService {
     }
   }
 
-  async updateCRMEntity({
+  async updateCRMEntityWithOrder({
     account,
     order,
     crmEntityId,
@@ -45,14 +48,16 @@ export class CrmHandlerService {
     account: IAccountModelWithId;
     order: IEzManageOrder;
     crmEntityId: string;
-  }) {
+  }): Promise<Partial<OrderModelCRMProperties>> {
     switch (account.crm) {
       case 'NUTSHELL':
-        return await this.nutshellApiHandler.updatePrimaryEntity({
-          account,
-          order,
-          primaryEntityId: crmEntityId,
-        });
+        const { description: crmDescription } =
+          await this.nutshellApiHandler.updatePrimaryEntityWithOrder({
+            account,
+            order,
+            primaryEntityId: crmEntityId,
+          });
+        return { crmDescription };
       default:
         const err = new CrmError('CRM not found for updateCRMEntity');
         Sentry.captureException(err);
@@ -61,7 +66,15 @@ export class CrmHandlerService {
     }
   }
 
-  updateNutshell;
+  async addTagToCrmEntity({
+    account,
+    crmEntityId,
+    tag,
+  }: {
+    account: IAccountModelWithId;
+    crmEntityId: string;
+    tag: string;
+  }) {}
 
   async getProducts({ account }: { account: AccountRecordWithId }) {
     switch (account.crm) {

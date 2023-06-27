@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Req,
+} from '@nestjs/common';
 import { AuthenticatedReq } from 'src/decorators/authenticated-request.decorator';
 import { IAuthenticatedRequest } from '../interfaces';
+import { DeleteOrdersBodyDto } from './dtos/body';
 import { IUpdateStatus } from './interfaces';
 import { OrderAPIService } from './order.service';
 
@@ -30,6 +39,19 @@ export class OrderController {
   ) {
     const { accountId, ref } = req;
     return this.orderService.getOrder({ orderId, accountId, ref });
+  }
+
+  @Delete()
+  async deleteOrders(
+    @Body() body: DeleteOrdersBodyDto,
+    @Req() req: IAuthenticatedRequest,
+  ) {
+    const { accountId, ref } = req;
+    return this.orderService.deleteOrders({
+      orderIds: body.ids,
+      accountId,
+      ref,
+    });
   }
 
   @Patch('statuses')

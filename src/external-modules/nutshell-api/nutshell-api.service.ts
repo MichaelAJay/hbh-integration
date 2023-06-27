@@ -70,7 +70,7 @@ export class NutshellApiService {
    * updates should be of the form found in the accompanying test suite, var leadDetails2
    * @TODO - get return
    */
-  async updateLead<CustomFields>({
+  async updateLeadWithOrder<CustomFields>({
     leadId,
     ref,
     lead,
@@ -134,6 +134,9 @@ export class NutshellApiService {
       return {
         id: resp.result.id.toString(),
         description: resp.result.description,
+        products: resp.result.products.map((product) => ({
+          amountInUsd: parseFloat(product.price.amount.toFixed(2)),
+        })),
       };
     } catch (err: any) {
       Sentry.withScope((scope) => {
@@ -211,6 +214,8 @@ export class NutshellApiService {
       id: product.id,
     }));
   }
+
+  async addTag({}: {}) {}
 
   /**
    * PRIVATE METHODS

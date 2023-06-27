@@ -71,6 +71,22 @@ export class OrderAPIService {
     });
   }
 
+  async deleteOrders({
+    orderIds,
+    accountId,
+    ref,
+  }: {
+    orderIds: string[];
+    accountId: string;
+    ref: string;
+  }) {
+    return await this.orderInternalInterface.deleteOrders({
+      orderIds,
+      accountId,
+      ref,
+    });
+  }
+
   async generateLeadFromOrder({
     orderName,
     accountId,

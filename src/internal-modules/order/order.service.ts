@@ -3,6 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { generate } from 'rxjs';
 import { IGetOrderOutput } from 'src/api/order/interfaces/output';
 import { checkErrorAsCustomErrorObject } from 'src/common/types';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
@@ -11,6 +12,7 @@ import {
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
+import { H4HWarnings } from 'src/external-modules/database/models/H4H';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
@@ -94,6 +96,18 @@ export class OrderService {
     if (generatedCRMEntity) {
       data.crmId = generatedCRMEntity.id || null;
       data.crmDescription = generatedCRMEntity.description || null;
+
+      if (
+        typeof generatedCRMEntity.isSubtotalMatch === 'boolean' &&
+        generatedCRMEntity.isSubtotalMatch === false
+      ) {
+        data.warnings = [H4HWarnings.SUBTOTAL_MISMATCH.message];
+
+        /**
+         * @TODO
+         * Also, update lead
+         */
+      }
     }
 
     await this.orderDbService.create({ orderId, data });
@@ -141,7 +155,7 @@ export class OrderService {
       });
     }
 
-    const updateResult = await this.crmHandler.updateCRMEntity({
+    const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
       account,
       order: ezManageOrder,
       crmEntityId: internalOrder.crmId,
@@ -153,10 +167,10 @@ export class OrderService {
     if (
       updateResult &&
       typeof updateResult === 'object' &&
-      typeof updateResult.description === 'string' &&
-      updateResult.description !== internalOrder.crmDescription
+      typeof updateResult.crmDescription === 'string' &&
+      updateResult.crmDescription !== internalOrder.crmDescription
     ) {
-      updates.crmDescription = updateResult.description;
+      updates.crmDescription = updateResult.crmDescription;
     }
     await this.orderDbService.updateOne({
       orderId,

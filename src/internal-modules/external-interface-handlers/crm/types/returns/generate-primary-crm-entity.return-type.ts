@@ -3,4 +3,9 @@ import { ICreateLeadReturn } from 'src/external-modules/nutshell-api/interfaces/
 /**
  * This will need to become more flexible
  */
-export type GeneratePrimaryNutshellEntityReturn = ICreateLeadReturn;
+export type GeneratePrimaryNutshellEntityReturn = Omit<
+  ICreateLeadReturn,
+  'products'
+> & {
+  isSubtotalMatch?: boolean;
+};
