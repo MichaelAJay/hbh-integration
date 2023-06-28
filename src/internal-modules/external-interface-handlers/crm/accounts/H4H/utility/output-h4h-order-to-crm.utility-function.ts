@@ -7,12 +7,19 @@ import {
 import { IProductEntity } from 'src/external-modules/nutshell-api/interfaces/entities';
 import { IUpsertLeadEntity } from 'src/external-modules/nutshell-api/interfaces/requests';
 import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
-import { FormatOrderName, mapH4HMenuItemToCrmProductId, ProductMap } from '.';
+import {
+  AddOnMap,
+  FormatOrderName,
+  mapH4HAddOnToCRMProductId,
+  mapH4HMenuItemToCrmProductId,
+  ProductMap,
+} from '.';
 import {
   retrieveCrmNameFromOrderSourceType,
   retrievePipelineIdFromOrderSourceType,
 } from '../constants';
 import { IH4HCreateLeadCustomFields } from '../interfaces';
+import { ADD_ON_TARGET_CUSTOMIZATION_TYPE_NAMES } from './constants';
 
 /**
  * @TODO move this
@@ -116,6 +123,30 @@ function aggregateLeadProducts(items: IEzManageOrderItem[]): {
     } else {
       invalidKeys.push(item.name);
     }
+
+    /**
+     * Handle add-ons in customization
+     * @NOTE This should be ready to use - but I want to see if I can get the product pricing comparison to fail
+     * by excluding it
+     */
+    // if (Array.isArray(item.customizations)) {
+    //   for (const customization of item.customizations) {
+    //     if (
+    //       ADD_ON_TARGET_CUSTOMIZATION_TYPE_NAMES.includes(
+    //         customization.customizationTypeName,
+    //       )
+    //     ) {
+    //       const id = mapH4HAddOnToCRMProductId(
+    //         customization.customizationTypeName as keyof typeof AddOnMap,
+    //       );
+    //       if (id !== undefined && typeof customization.quantity === 'number') {
+    //         aggregator[id] = (aggregator[id] || 0) + customization.quantity;
+    //       } else {
+    //         invalidKeys.push(item.name);
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   const leadProducts: IProductEntity[] = [];

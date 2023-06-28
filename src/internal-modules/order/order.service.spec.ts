@@ -1,4 +1,3 @@
-import { InternalServerErrorException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DbOrderStatus } from 'src/external-modules/database/enum';

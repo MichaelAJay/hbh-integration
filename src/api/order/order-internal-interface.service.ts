@@ -105,19 +105,7 @@ export class OrderInternalInterfaceService {
     ref: string;
   }): Promise<IGetOrderOutput> {
     const order = await this.getInternalOrderByName({ orderName, accountId });
-
-    const ezManageOrder = await this.getEzManageOrder({
-      orderId: order.id,
-      accountId,
-      ref,
-    });
-
-    const convertedOrder = convertEzManageOrderForOutput({
-      ...ezManageOrder,
-      status: order.status,
-    });
-
-    return { ...convertedOrder, catererName: 'TODO' };
+    return await this.getOrder({ orderId: order.id, accountId, ref });
   }
 
   async updateStatuses({
