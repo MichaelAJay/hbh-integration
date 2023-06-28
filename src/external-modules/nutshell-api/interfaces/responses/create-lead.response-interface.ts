@@ -10,6 +10,7 @@ export interface ICreateLeadResult {
       amount: number; // This number has to be parseFloat(num.toFixed(2))
     };
   }[];
+  tags: string[];
 }
 
 export function validateCreateLeadResponse(
@@ -22,7 +23,9 @@ export function validateCreateLeadResponse(
     typeof resp.result.id === 'number' &&
     typeof resp.result.description === 'string' &&
     Array.isArray(resp.result.products) &&
-    resp.result.products.every((product) => validateProduct(product))
+    resp.result.products.every((product) => validateProduct(product)) &&
+    Array.isArray(resp.result.tags) &&
+    resp.result.tags.every((tag) => typeof tag === 'string')
   );
 }
 

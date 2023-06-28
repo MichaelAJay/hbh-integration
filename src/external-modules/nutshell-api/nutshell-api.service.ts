@@ -70,7 +70,7 @@ export class NutshellApiService {
    * updates should be of the form found in the accompanying test suite, var leadDetails2
    * @TODO - get return
    */
-  async updateLeadWithOrder<CustomFields>({
+  async updateLead<CustomFields>({
     leadId,
     ref,
     lead,
@@ -131,13 +131,18 @@ export class NutshellApiService {
         throw new CrmError('Create lead response failed validation', false);
       }
 
-      return {
+      const ret: ICreateLeadReturn = {
         id: resp.result.id.toString(),
         description: resp.result.description,
         products: resp.result.products.map((product) => ({
           amountInUsd: parseFloat(product.price.amount.toFixed(2)),
         })),
       };
+      if (resp.result.tags.length > 0) {
+        ret.tags = resp.result.tags;
+      }
+
+      return ret;
     } catch (err: any) {
       Sentry.withScope((scope) => {
         scope.setExtra('order name', orderName);
@@ -214,8 +219,6 @@ export class NutshellApiService {
       id: product.id,
     }));
   }
-
-  async addTag({}: {}) {}
 
   /**
    * PRIVATE METHODS

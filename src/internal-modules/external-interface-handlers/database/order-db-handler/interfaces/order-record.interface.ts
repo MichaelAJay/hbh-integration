@@ -10,8 +10,8 @@ export interface IOrderRecord {
   name: string;
   status: DbOrderStatus;
   warnings?: string[];
-  crmId: string | null;
-  crmDescription: string | null;
+  crmId?: string;
+  crmDescription?: string;
   acceptedAt: Timestamp;
   lastUpdatedAt: Timestamp;
 }

@@ -53,10 +53,12 @@ export class NutshellApiHandlerService {
     account,
     order,
     primaryEntityId,
+    additionalAndExistingTags,
   }: {
     account: AccountRecordWithId;
     order: any;
     primaryEntityId: string;
+    additionalAndExistingTags?: string[];
   }) {
     switch (account.crmPrimaryType) {
       case 'LEAD':
@@ -81,16 +83,6 @@ export class NutshellApiHandlerService {
         throw err;
     }
   }
-
-  async addTagToPrimaryEntity({
-    account,
-    crmEntityId,
-    tag,
-  }: {
-    account: IAccountModelWithId;
-    crmEntityId: string;
-    tag: string;
-  }) {}
 
   private async createLead({
     account,
@@ -149,10 +141,12 @@ export class NutshellApiHandlerService {
     account,
     order,
     leadId,
+    additionalAndExistingTags,
   }: {
     account: IAccountModelWithId;
     order: IEzManageOrder;
     leadId: string;
+    additionalAndExistingTags?: string[];
   }) {
     const { ref } = account;
     switch (ref) {
@@ -169,16 +163,28 @@ export class NutshellApiHandlerService {
           );
         }
 
-        const requiredTags = Array.isArray(account.newLeadTags)
-          ? account.newLeadTags
-              .filter((tag) => tag.isRequired)
-              .map((tag) => tag.value)
-          : [];
-        if (requiredTags) {
-          lead.tags = requiredTags;
+        const tagSet: Set<string> = new Set();
+        if (Array.isArray(account.newLeadTags)) {
+          for (const tag of account.newLeadTags) {
+            if (tag.isRequired) {
+              tagSet.add(tag.value);
+            }
+          }
         }
 
-        return await this.nutshellApiService.updateLeadWithOrder({
+        if (Array.isArray(additionalAndExistingTags)) {
+          for (const tag of additionalAndExistingTags) {
+            tagSet.add(tag);
+          }
+        }
+
+        const allTags: string[] = Array.from(tagSet);
+
+        if (allTags.length > 0) {
+          lead.tags = allTags;
+        }
+
+        return await this.nutshellApiService.updateLead({
           leadId: parseInt(leadId, 10),
           ref,
           lead: { lead },

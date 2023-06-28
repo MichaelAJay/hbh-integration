@@ -3,9 +3,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { generate } from 'rxjs';
 import { IGetOrderOutput } from 'src/api/order/interfaces/output';
-import { checkErrorAsCustomErrorObject } from 'src/common/types';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -19,6 +17,7 @@ import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handle
 import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class OrderService {
@@ -63,16 +62,9 @@ export class OrderService {
         order: ezManageOrder,
       })
       .catch((reason) => {
-        /** DON'T THROW */
-        if (checkErrorAsCustomErrorObject(reason)) {
-          if (reason.isLogged === false) {
-            /** Log */
-          }
-        } else {
-          const message = 'Crm entity not generated';
-          /**
-           * @TODO log
-           */
+        if (typeof reason.isLogged === 'boolean' && reason.isLogged === false) {
+          Sentry.captureException(reason);
+          reason.isLogged = true;
         }
         return undefined;
       });
@@ -87,8 +79,6 @@ export class OrderService {
       catererName,
       name: ezManageOrder.orderNumber || 'PLACEHOLDER NAME',
       status,
-      crmId: null,
-      crmDescription: null,
       acceptedAt: now,
       lastUpdatedAt: now,
     };
@@ -101,12 +91,22 @@ export class OrderService {
         typeof generatedCRMEntity.isSubtotalMatch === 'boolean' &&
         generatedCRMEntity.isSubtotalMatch === false
       ) {
-        data.warnings = [H4HWarnings.SUBTOTAL_MISMATCH.message];
+        const { message, crmTag } = H4HWarnings.SUBTOTAL_MISMATCH;
+        data.warnings = [message];
 
-        /**
-         * @TODO
-         * Also, update lead
-         */
+        const additionalAndExistingTags: string[] = Array.isArray(
+          generatedCRMEntity.tags,
+        )
+          ? generatedCRMEntity.tags.filter((tag) => typeof tag === 'string')
+          : ([] as string[]);
+        additionalAndExistingTags.push(crmTag);
+
+        await this.crmHandler.updateCRMEntityWithOrder({
+          account,
+          order: ezManageOrder,
+          crmEntityId: generatedCRMEntity.id,
+          additionalAndExistingTags,
+        });
       }
     }
 
@@ -129,9 +129,6 @@ export class OrderService {
   }) {
     const { id: orderId, crmId } = internalOrder;
     const { ref } = account;
-    if (!crmId) {
-      throw new InternalServerErrorException('No CRM ID found to update');
-    }
 
     const ezManageOrder = await this.ezManageApiHandler
       .getOrder({ orderId, ref })
@@ -144,7 +141,7 @@ export class OrderService {
     /**
      * If CRM ID doesn't exist, this needs to be treated as a new order
      */
-    if (!internalOrder.crmId) {
+    if (crmId === undefined) {
       return await this.createOrder({
         account,
         catererId,
@@ -158,7 +155,7 @@ export class OrderService {
     const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
       account,
       order: ezManageOrder,
-      crmEntityId: internalOrder.crmId,
+      crmEntityId: internalOrder.crmId as string,
     });
 
     const updates: Partial<

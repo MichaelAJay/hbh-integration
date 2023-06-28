@@ -44,10 +44,12 @@ export class CrmHandlerService {
     account,
     order,
     crmEntityId,
+    additionalAndExistingTags,
   }: {
     account: IAccountModelWithId;
     order: IEzManageOrder;
     crmEntityId: string;
+    additionalAndExistingTags?: string[];
   }): Promise<Partial<OrderModelCRMProperties>> {
     switch (account.crm) {
       case 'NUTSHELL':
@@ -56,6 +58,7 @@ export class CrmHandlerService {
             account,
             order,
             primaryEntityId: crmEntityId,
+            additionalAndExistingTags,
           });
         return { crmDescription };
       default:
@@ -65,16 +68,6 @@ export class CrmHandlerService {
         throw err;
     }
   }
-
-  async addTagToCrmEntity({
-    account,
-    crmEntityId,
-    tag,
-  }: {
-    account: IAccountModelWithId;
-    crmEntityId: string;
-    tag: string;
-  }) {}
 
   async getProducts({ account }: { account: AccountRecordWithId }) {
     switch (account.crm) {
