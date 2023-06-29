@@ -24,6 +24,7 @@ import {
   ValidateDeleteLeadResponse,
 } from './interfaces/responses/delete-lead.response-interface';
 import { ICreateLeadReturn } from './interfaces/returns';
+import { ProductIdSumExclusions } from 'src/internal-modules/external-interface-handlers/crm/accounts/utility';
 
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
@@ -131,12 +132,18 @@ export class NutshellApiService {
         throw new CrmError('Create lead response failed validation', false);
       }
 
+      const productIdForSumExclusions =
+        ProductIdSumExclusions[ref].map((el) => parseInt(el, 10)) || [];
+
       const ret: ICreateLeadReturn = {
         id: resp.result.id.toString(),
         description: resp.result.description,
-        products: resp.result.products.map((product) => ({
-          amountInUsd: parseFloat(product.price.amount.toFixed(2)),
-        })),
+        products: resp.result.products
+          .filter((product) => !productIdForSumExclusions.includes(product.id))
+          .map((product) => ({
+            amountInUsd:
+              parseFloat(product.price.amount.toFixed(2)) * product.quantity,
+          })),
       };
       if (resp.result.tags.length > 0) {
         ret.tags = resp.result.tags;

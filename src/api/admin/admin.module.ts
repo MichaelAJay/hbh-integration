@@ -8,6 +8,7 @@ import { AuthModule } from 'src/internal-modules/auth/auth.module';
 import { EzmanageApiHandlerModule } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api-handler.module';
 import { AccountModule } from 'src/internal-modules/account/account.module';
 import { CrmModule } from 'src/internal-modules/external-interface-handlers/crm/crm.module';
+import { OrderModule } from 'src/internal-modules/order/order.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CrmModule } from 'src/internal-modules/external-interface-handlers/crm/
     AuthModule,
     EzmanageApiHandlerModule,
     CrmModule,
+    OrderModule,
   ],
   providers: [AdminAPIService, AdminInternalInterfaceService],
   controllers: [AdminController],

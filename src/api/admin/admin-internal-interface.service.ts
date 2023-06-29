@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InternalError } from 'src/common/classes';
 import { AccountService } from 'src/internal-modules/account/account.service';
@@ -18,6 +19,11 @@ import {
   AdminOrderNameWithAccountScopeQueryDto,
   SentOrderToCrmQueryDto,
 } from './dtos/query';
+import { OrderService } from 'src/internal-modules/order/order.service';
+import { DbOrderStatus } from 'src/external-modules/database/enum';
+import { IOrderModelWithId } from 'src/external-modules/database/models';
+import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+import internal from 'stream';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -30,6 +36,7 @@ export class AdminInternalInterfaceService {
     private readonly userService: UserService,
     private readonly ezManagerApiHandler: EzmanageApiHandlerService,
     private readonly crmHandler: CrmHandlerService,
+    private readonly orderService: OrderService,
   ) {}
 
   async createUser(body: AdminCreateUserBodyDto) {
@@ -95,21 +102,16 @@ export class AdminInternalInterfaceService {
     'account-id': accountId,
     ref,
   }: SentOrderToCrmQueryDto) {
-    const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
-    const account = await this.accountDbHandler.getAccount(accountId);
+    const [internalOrder, account] = await Promise.all([
+      this.orderDbHandler.getOne(orderId),
+      this.accountDbHandler.getAccount(accountId),
+    ]);
     if (!account) throw new NotFoundException('Account not found');
-    const crmId = await this.crmHandler.generateCRMEntity({
-      account,
-      order: ezManageOrder,
-    });
-
-    if (crmId) {
-      await this.orderDbHandler.updateOne({
-        orderId,
-        updates: { crmId },
-      });
-    }
-    return crmId;
+    if (!internalOrder) throw new NotFoundException('Order not found');
+    if (internalOrder.accountId !== accountId)
+      throw new UnauthorizedException('Order does not belong to account');
+    const result = await this.generateCrmEntity({ internalOrder, account });
+    return result;
   }
 
   /**
@@ -165,13 +167,32 @@ export class AdminInternalInterfaceService {
       console.error(message);
       throw new InternalError(message);
     }
+    if (internalOrder.accountId !== accountId)
+      throw new UnauthorizedException('Order does not belong to account');
 
-    const order = await this.getEzManageOrder({
-      orderId: internalOrder.id,
-      ref,
+    // const leadId = await this.crmHandler.generateCRMEntity({ account, order });
+    // return leadId;
+
+    const result = await this.generateCrmEntity({ internalOrder, account });
+
+    return result;
+  }
+
+  private async generateCrmEntity({
+    internalOrder,
+    account,
+  }: {
+    internalOrder: IOrderModelWithId;
+    account: AccountRecordWithId;
+  }) {
+    const { catererId, id: orderId, catererName } = internalOrder;
+    return await this.orderService.generateCRMEntityFromOrder({
+      account,
+      catererId,
+      orderId,
+      status: DbOrderStatus.ACCEPTED,
+      occurredAt: 'NOT USED',
+      catererName,
     });
-
-    const leadId = await this.crmHandler.generateCRMEntity({ account, order });
-    return leadId;
   }
 }

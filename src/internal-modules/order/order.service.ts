@@ -44,6 +44,34 @@ export class OrderService {
     occurredAt: string;
     catererName: string;
   }) {
+    const data = await this.generateCRMEntityFromOrder({
+      account,
+      catererId,
+      orderId,
+      status,
+      occurredAt,
+      catererName,
+    });
+
+    await this.orderDbService.create({ orderId, data });
+    return;
+  }
+
+  async generateCRMEntityFromOrder({
+    account,
+    catererId,
+    orderId,
+    status,
+    occurredAt,
+    catererName,
+  }: {
+    account: IAccountModelWithId;
+    catererId: string;
+    orderId: string;
+    status: DbOrderStatus;
+    occurredAt: string;
+    catererName: string;
+  }): Promise<IOrderModel> {
     const { ref } = account;
     const ezManageOrder = await this.ezManageApiHandler
       .getOrder({ orderId, ref })
@@ -109,9 +137,7 @@ export class OrderService {
         });
       }
     }
-
-    await this.orderDbService.create({ orderId, data });
-    return;
+    return data;
   }
 
   async updateOrder({
@@ -223,14 +249,4 @@ export class OrderService {
       ref,
     });
   }
-
-  async generateLeadFromOrder(ezManageOrder: IEzManageOrder) {}
-
-  outputOrderToCRM({
-    ref,
-    order,
-  }: {
-    ref: string;
-    order: Omit<IGetOrderOutput, 'catererName'>;
-  }) {}
 }

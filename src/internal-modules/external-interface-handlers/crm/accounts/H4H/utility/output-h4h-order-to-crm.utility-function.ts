@@ -12,7 +12,7 @@ import {
   FormatOrderName,
   mapH4HAddOnToCRMProductId,
   mapH4HMenuItemToCrmProductId,
-  ProductMap,
+  ProductMap_H4H,
 } from '.';
 import {
   retrieveCrmNameFromOrderSourceType,
@@ -116,7 +116,7 @@ function aggregateLeadProducts(items: IEzManageOrderItem[]): {
     }
 
     const id = mapH4HMenuItemToCrmProductId(
-      item.name as keyof typeof ProductMap,
+      item.name as keyof typeof ProductMap_H4H,
     );
     if (id !== undefined) {
       aggregator[id] = (aggregator[id] || 0) + item.quantity;
@@ -126,27 +126,25 @@ function aggregateLeadProducts(items: IEzManageOrderItem[]): {
 
     /**
      * Handle add-ons in customization
-     * @NOTE This should be ready to use - but I want to see if I can get the product pricing comparison to fail
-     * by excluding it
      */
-    // if (Array.isArray(item.customizations)) {
-    //   for (const customization of item.customizations) {
-    //     if (
-    //       ADD_ON_TARGET_CUSTOMIZATION_TYPE_NAMES.includes(
-    //         customization.customizationTypeName,
-    //       )
-    //     ) {
-    //       const id = mapH4HAddOnToCRMProductId(
-    //         customization.customizationTypeName as keyof typeof AddOnMap,
-    //       );
-    //       if (id !== undefined && typeof customization.quantity === 'number') {
-    //         aggregator[id] = (aggregator[id] || 0) + customization.quantity;
-    //       } else {
-    //         invalidKeys.push(item.name);
-    //       }
-    //     }
-    //   }
-    // }
+    if (Array.isArray(item.customizations)) {
+      for (const customization of item.customizations) {
+        if (
+          ADD_ON_TARGET_CUSTOMIZATION_TYPE_NAMES.includes(
+            customization.customizationTypeName,
+          )
+        ) {
+          const id = mapH4HAddOnToCRMProductId(
+            customization.customizationTypeName as keyof typeof AddOnMap,
+          );
+          if (id !== undefined && typeof customization.quantity === 'number') {
+            aggregator[id] = (aggregator[id] || 0) + customization.quantity;
+          } else {
+            invalidKeys.push(item.name);
+          }
+        }
+      }
+    }
   }
 
   const leadProducts: IProductEntity[] = [];
@@ -165,7 +163,7 @@ function handleSaladBoxedLunch(item: IEzManageOrderItem) {
     if (customization.customizationTypeName === 'Salad') {
       const menuItem = `${customization.name} - Boxed Lunch`;
       const id = mapH4HMenuItemToCrmProductId(
-        menuItem as keyof typeof ProductMap,
+        menuItem as keyof typeof ProductMap_H4H,
       );
 
       if (id !== undefined) {
@@ -257,8 +255,5 @@ export function compareEzManageSubtotalToCrmSubtotal({
     order.totals.subTotal.subunits,
   );
 
-  return (
-    ezManageSubtotal - crmSubtotal < 0.01 ||
-    crmSubtotal - ezManageSubtotal < 0.01
-  );
+  return Math.abs(ezManageSubtotal - crmSubtotal) < 0.01;
 }

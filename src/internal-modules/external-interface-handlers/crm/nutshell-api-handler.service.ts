@@ -72,6 +72,7 @@ export class NutshellApiHandlerService {
           account,
           order: order as IEzManageOrder,
           leadId: primaryEntityId,
+          additionalAndExistingTags,
         });
       default:
         /** LOG */
@@ -115,7 +116,7 @@ export class NutshellApiHandlerService {
           lead.tags = requiredTags;
         }
 
-        const { id, description, products } =
+        const { id, description, products, tags } =
           await this.nutshellApiService.createLead({
             ref,
             lead: { lead },
@@ -127,7 +128,7 @@ export class NutshellApiHandlerService {
           products,
         });
 
-        return { id, description, isSubtotalMatch };
+        return { id, description, isSubtotalMatch, tags };
       case 'ADMIN':
       default:
         const err = new InternalError(`Invalid ref ${ref}`);

@@ -6,9 +6,11 @@ export interface ICreateLeadResult {
   id: number;
   description: string;
   products: {
+    id: number;
     price: {
       amount: number; // This number has to be parseFloat(num.toFixed(2))
     };
+    quantity: number;
   }[];
   tags: string[];
 }
@@ -33,7 +35,9 @@ function validateProduct(product: any): boolean {
   return (
     product &&
     typeof product === 'object' &&
+    typeof product.id === 'number' &&
     typeof product.price === 'object' &&
-    typeof product.price.amount === 'number'
+    typeof product.price.amount === 'number' &&
+    typeof product.quantity === 'number'
   );
 }

@@ -1,4 +1,4 @@
-export const ProductMap = {
+export const ProductMap_H4H = {
   '$10 Gift Card': { name: '$10 Gift Card', id: '387' },
   '$125 Gift Card': { name: '$125 Gift Card', id: '375' },
   '$150 Gift Card': { name: '$150 Gift Card', id: '299' },
@@ -140,10 +140,10 @@ export const ProductMap = {
 };
 
 export function mapH4HMenuItemToCrmProductId(
-  menuItem: keyof typeof ProductMap,
+  menuItem: keyof typeof ProductMap_H4H,
   // ): number | undefined {
 ): string | undefined {
-  if (ProductMap[menuItem]) return ProductMap[menuItem].id;
+  if (ProductMap_H4H[menuItem]) return ProductMap_H4H[menuItem].id;
   else return undefined;
 }
 
@@ -159,6 +159,6 @@ export function mapH4HAddOnToCRMProductId(
 ): string | undefined {
   const menuItem = AddOnMap[addOn];
   return menuItem
-    ? mapH4HMenuItemToCrmProductId(menuItem as keyof typeof ProductMap)
+    ? mapH4HMenuItemToCrmProductId(menuItem as keyof typeof ProductMap_H4H)
     : undefined;
 }
