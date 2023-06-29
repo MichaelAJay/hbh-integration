@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { IGetOrderOutput } from 'src/api/order/interfaces/output';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -11,7 +6,6 @@ import {
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
 import { H4HWarnings } from 'src/external-modules/database/models/H4H';
-import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
 import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
@@ -137,6 +131,9 @@ export class OrderService {
         });
       }
     }
+
+    // Need to convert accountId and catererId to references
+
     return data;
   }
 

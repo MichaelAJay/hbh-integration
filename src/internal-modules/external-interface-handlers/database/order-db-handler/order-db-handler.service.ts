@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { UUID } from 'src/common/types';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
-import { CollectionName } from 'src/external-modules/database/enum';
+import {
+  CollectionName,
+  DbOrderStatus,
+} from 'src/external-modules/database/enum';
 import { ICompositeAndFilter } from 'src/external-modules/database/interfaces';
 import {
   IOrderModel,
@@ -18,6 +21,7 @@ import {
   isIOrderRecord,
   OrderRecordInput,
 } from './interfaces';
+import { UpdateableOrderModel } from './types';
 
 @Injectable()
 export class OrderDbHandlerService {
@@ -162,15 +166,19 @@ export class OrderDbHandlerService {
     updates,
   }: {
     orderId: UUID;
-    updates: Partial<
-      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
-    >;
+    updates: UpdateableOrderModel;
   }) {
+    /**
+     * Ensure updates don't include accountId, catererId, catererName
+     */
+    const { accountId, catererId, catererName, ...targetUpdates } =
+      updates as Partial<IOrderModel>;
+
     try {
       await this.dbClientService.update({
         collectionName: this.collectionName,
         docId,
-        data: updates,
+        data: targetUpdates,
       });
 
       return { updated: true };

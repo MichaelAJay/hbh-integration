@@ -21,7 +21,10 @@ import {
 } from './dtos/query';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
-import { IOrderModelWithId } from 'src/external-modules/database/models';
+import {
+  IOrderModel,
+  IOrderModelWithId,
+} from 'src/external-modules/database/models';
 import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import internal from 'stream';
 
@@ -111,6 +114,8 @@ export class AdminInternalInterfaceService {
     if (internalOrder.accountId !== accountId)
       throw new UnauthorizedException('Order does not belong to account');
     const result = await this.generateCrmEntity({ internalOrder, account });
+
+    await this.orderDbHandler.updateOne({ orderId, updates: result });
     return result;
   }
 
