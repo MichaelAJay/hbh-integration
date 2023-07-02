@@ -5,6 +5,7 @@ import { AuthModule } from 'src/internal-modules/auth/auth.module';
 import { CrmModule } from 'src/internal-modules/external-interface-handlers/crm/crm.module';
 import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
 import { EzmanageApiHandlerModule } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api-handler.module';
+import { OrderModule } from 'src/internal-modules/order/order.module';
 import { UserModule } from 'src/internal-modules/user/user.module';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
 
@@ -21,6 +22,7 @@ describe('AdminInternalInterfaceService', () => {
         UserModule,
         EzmanageApiHandlerModule,
         CrmModule,
+        OrderModule,
       ],
       providers: [AdminInternalInterfaceService],
     }).compile();

@@ -62,8 +62,11 @@ export class CrmHandlerService {
           });
         return { crmDescription };
       default:
-        const err = new CrmError('CRM not found for updateCRMEntity');
-        Sentry.captureException(err);
+        const err = new CrmError(`${account.crm} is not supported.`);
+        Sentry.withScope((scope) => {
+          scope.setExtras({ account, orderNumber: order.orderNumber });
+          Sentry.captureException(err);
+        });
         err.isLogged = true;
         throw err;
     }

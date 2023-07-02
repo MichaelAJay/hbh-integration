@@ -132,8 +132,6 @@ export class OrderService {
       }
     }
 
-    // Need to convert accountId and catererId to references
-
     return data;
   }
 
@@ -153,14 +151,6 @@ export class OrderService {
     const { id: orderId, crmId } = internalOrder;
     const { ref } = account;
 
-    const ezManageOrder = await this.ezManageApiHandler
-      .getOrder({ orderId, ref })
-      .catch((reason) => {
-        const msg = `Failed to retrieve order ${orderId}`;
-        this.logger.error(msg, reason);
-        throw reason;
-      });
-
     /**
      * If CRM ID doesn't exist, this needs to be treated as a new order
      */
@@ -174,6 +164,11 @@ export class OrderService {
         catererName,
       });
     }
+
+    const ezManageOrder = await this.ezManageApiHandler.getOrder({
+      orderId,
+      ref,
+    });
 
     const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
       account,

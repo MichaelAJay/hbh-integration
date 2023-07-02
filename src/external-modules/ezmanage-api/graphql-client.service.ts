@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { GraphQLClient, gql } from 'graphql-request';
@@ -9,6 +10,7 @@ import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-lo
 import { isGetOrderNameReturn, isIGetH4HCatererMenu } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
 import { validateEzManageOrder } from './validators';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class GraphqlClientService {
@@ -39,8 +41,8 @@ export class GraphqlClientService {
   async queryOrder({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
-    try {
-      const query = gql`
+    // const badOrderId = '71185f7d-2298-44af-b079-4c34d3856ef68';
+    const query = gql`
       {
         order(id: "${orderId}") {
           orderNumber
@@ -106,33 +108,75 @@ export class GraphqlClientService {
       }
       }
       `;
-      const data: { order: any } = await client.request(query);
 
-      if (!validateEzManageOrder(data.order)) {
-        const message = 'Malformed GQL order response';
-        this.logger.error(message, { id: orderId });
-        throw new UnprocessableEntityException({
-          message,
-          isLogged: true,
-        } as CustomErrorObject);
-      }
-
-      return data.order as IEzManageOrder;
-    } catch (err: any) {
+    /**
+     * The response is an object with a property 'data' - at least in Postman
+     * But here it looks like that's not the case...
+     */
+    const response = await client.request(query).catch((reason) => {
       if (
-        typeof err.message === 'string' &&
-        typeof err.isLogged === 'boolean' &&
-        err.isLogged
+        reason !== null &&
+        typeof reason === 'object' &&
+        'response' in reason &&
+        reason['response'] !== null &&
+        typeof reason['response'] === 'object' &&
+        'data' in reason['response'] &&
+        reason['response']['data'] !== null &&
+        typeof reason['response']['data'] === 'object' &&
+        'order' in reason['response']['data'] &&
+        reason['response']['data']['order'] === null
       ) {
+        const err = new NotFoundException(
+          'Order not found with id for account',
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            orderId,
+            ref,
+          });
+          Sentry.captureException(err);
+        });
         throw err;
+      } else {
+        Sentry.withScope((scope) => {
+          scope.setExtra('message', 'GrapQL client queryOrder failed');
+          Sentry.captureException(reason);
+        });
+        throw reason;
       }
-      const message = err.message || 'GraphQL queryOrder error';
+    });
+
+    /** FORM SHOULD BE (below) */
+    // const response = {
+    //   order: {...},
+    // };
+
+    if (
+      !(
+        response !== null &&
+        typeof response === 'object' &&
+        'order' in response
+      )
+    ) {
+      const message = 'Malformed GQL response';
+      const err = new UnprocessableEntityException(message);
+      Sentry.withScope((scope) => {
+        scope.setExtra('response', response);
+        Sentry.captureException(err);
+      });
+      throw err;
+    }
+
+    if (!validateEzManageOrder(response['order'])) {
+      const message = 'Malformed GQL order response';
       this.logger.error(message, { id: orderId });
-      throw new InternalServerErrorException({
+      throw new UnprocessableEntityException({
         message,
         isLogged: true,
       } as CustomErrorObject);
     }
+
+    return response['order'] as IEzManageOrder;
   }
 
   /**

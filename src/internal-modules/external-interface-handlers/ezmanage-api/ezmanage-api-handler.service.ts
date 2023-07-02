@@ -6,7 +6,11 @@ export class EzmanageApiHandlerService {
   constructor(private readonly ezManageApiService: EzmanageApiService) {}
 
   async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
-    return await this.ezManageApiService.getOrder(orderId, ref);
+    try {
+      return await this.ezManageApiService.getOrder(orderId, ref);
+    } catch (err) {
+      throw err;
+    }
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
