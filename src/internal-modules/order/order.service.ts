@@ -173,7 +173,7 @@ export class OrderService {
     const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
       account,
       order: ezManageOrder,
-      crmEntityId: internalOrder.crmId as string,
+      crmEntityId: crmId,
     });
 
     const updates: Partial<

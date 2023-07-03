@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InternalError, OrderManagerError } from 'src/common/classes';
+import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
 import {
@@ -64,7 +64,10 @@ export class NutshellApiHandlerService {
       case 'LEAD':
         if (!validateEzManageOrder(order)) {
           const err = new OrderManagerError('Invalid order');
-          Sentry.captureException(err);
+          Sentry.withScope((scope) => {
+            scope.setExtras({ account, order, entityId: primaryEntityId });
+            Sentry.captureException(err);
+          });
           err.isLogged = true;
           throw err;
         }
@@ -76,10 +79,13 @@ export class NutshellApiHandlerService {
         });
       default:
         /** LOG */
-        const err = new InternalError(
-          `Invalid account crmPrimaryType ${account.crmPrimaryType}`,
+        const err = new CrmError(
+          `${account.crmPrimaryType} crm type is not supported.`,
         );
-        Sentry.captureException(err);
+        Sentry.withScope((scope) => {
+          scope.setExtras({ account, order, entityId: primaryEntityId });
+          Sentry.captureException(err);
+        });
         err.isLogged = true;
         throw err;
     }

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CrmError } from 'src/common/classes';
+import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -407,12 +407,11 @@ describe('OrderService', () => {
 
     describe('crmHandler.updateCRMEntityWithOrder', () => {
       it('should reject with CRM error if account crm not in switch', async () => {
-        const UNSUPPORTED_CRM = 'UNSUPPORTED CRM';
         jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
         jest
           .spyOn(crmHandler, 'updateCRMEntityWithOrder')
           .mockRejectedValue(
-            new CrmError(`${UNSUPPORTED_CRM} is not supported.`, true),
+            new CrmError(`${validAccount.crm} is not supported.`, true),
           );
 
         await service
@@ -425,11 +424,116 @@ describe('OrderService', () => {
           })
           .catch((reason) => {
             expect(reason).toBeInstanceOf(CrmError);
-            expect(reason.message).toBe(`${UNSUPPORTED_CRM} is not supported.`);
+            expect(reason.message).toBe(
+              `${validAccount.crm} is not supported.`,
+            );
             expect(reason.isLogged).toBe(true);
           });
+      });
+      it('should reject with CRM error if account crmPrimaryType not in switch', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockRejectedValue(
+            new CrmError(
+              `${validAccount.crmPrimaryType} crm type is not supported.`,
+              true,
+            ),
+          );
 
-        expect(crmHandler.updateCRMEntityWithOrder).toHaveBeenCalledTimes(1);
+        await service
+          .updateOrder({
+            account: { ...validAccount, crm: 'NUTSHELL' },
+            catererId: 'catererId',
+            occurredAt: 'occurredAt',
+            catererName: 'catererName',
+            internalOrder: validInternalOrder,
+          })
+          .catch((reason) => {
+            expect(reason).toBeInstanceOf(CrmError);
+            expect(reason.message).toBe(
+              `${validAccount.crmPrimaryType} crm type is not supported.`,
+            );
+            expect(reason.isLogged).toBe(true);
+          });
+      });
+      it('should reject with OrderManagerError if order is invalid EzManage order', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockRejectedValue(new OrderManagerError('Invalid order', true));
+
+        await service
+          .updateOrder({
+            account: {
+              ...validAccount,
+              crm: 'NUTSHELL',
+              crmPrimaryType: 'LEAD',
+            },
+            catererId: 'catererId',
+            occurredAt: 'occurredAt',
+            catererName: 'catererName',
+            internalOrder: validInternalOrder,
+          })
+          .catch((reason) => {
+            expect(reason).toBeInstanceOf(OrderManagerError);
+            expect(reason.message).toBe('Invalid order');
+            expect(reason.isLogged).toBe(true);
+          });
+      });
+      it('should reject with InternalError if order is account.ref is not in switch', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockRejectedValue(
+            new InternalError('Invalid ref INVALID_TEST', true),
+          );
+
+        await service
+          .updateOrder({
+            account: {
+              ...validAccount,
+              crm: 'NUTSHELL',
+              crmPrimaryType: 'LEAD',
+              ref: 'INVALID_TEST',
+            },
+            catererId: 'catererId',
+            occurredAt: 'occurredAt',
+            catererName: 'catererName',
+            internalOrder: validInternalOrder,
+          })
+          .catch((reason) => {
+            expect(reason).toBeInstanceOf(InternalError);
+            expect(reason.message).toBe('Invalid ref INVALID_TEST');
+            expect(reason.isLogged).toBe(true);
+          });
+      });
+      it('should reject with InternalError if order is account.ref is not in switch', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockRejectedValue(
+            new InternalError('Invalid ref INVALID_TEST', true),
+          );
+
+        await service
+          .updateOrder({
+            account: {
+              ...validAccount,
+              crm: 'NUTSHELL',
+              crmPrimaryType: 'LEAD',
+              ref: 'INVALID_TEST',
+            },
+            catererId: 'catererId',
+            occurredAt: 'occurredAt',
+            catererName: 'catererName',
+            internalOrder: validInternalOrder,
+          })
+          .catch((reason) => {
+            expect(reason).toBeInstanceOf(InternalError);
+            expect(reason.message).toBe('Invalid ref INVALID_TEST');
+            expect(reason.isLogged).toBe(true);
+          });
       });
     });
   });
