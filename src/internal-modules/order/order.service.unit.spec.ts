@@ -6,6 +6,8 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
+import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
+import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -124,11 +126,6 @@ describe('OrderService', () => {
   let orderDbService;
   let ezManageApiHandler;
 
-  const mockOrderDbService = {
-    create: jest.fn(),
-    updateOne: jest.fn(),
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -138,24 +135,7 @@ describe('OrderService', () => {
         CrmModule,
         CustomLoggerModule,
       ],
-      providers: [
-        OrderService,
-        // {
-        //   provide: EzmanageApiHandlerService,
-        //   useValue: { getOrder: jest.fn() },
-        // },
-        // {
-        //   provide: CrmHandlerService,
-        //   useValue: {
-        //     generateCRMEntity: jest.fn(),
-        //     updateCRMEntityWithOrder: jest.fn(),
-        //   },
-        // },
-        {
-          provide: OrderDbHandlerService,
-          useValue: mockOrderDbService,
-        },
-      ],
+      providers: [OrderService],
     }).compile();
 
     service = module.get<OrderService>(OrderService);
@@ -164,7 +144,9 @@ describe('OrderService', () => {
     orderDbService = module.get(OrderDbHandlerService);
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
@@ -200,6 +182,8 @@ describe('OrderService', () => {
         service,
         'generateCRMEntityFromOrder',
       );
+
+      jest.spyOn(orderDbService, 'create').mockResolvedValue({});
 
       mockGenerateCRMEntity.mockResolvedValue(
         generateCRMEntityMockResolvedValue,
@@ -252,6 +236,8 @@ describe('OrderService', () => {
         'generateCRMEntityFromOrder',
       );
       generateCRMEntitySpy.mockResolvedValue(generateCRMEntityMockResponse);
+
+      jest.spyOn(orderDbService, 'create').mockResolvedValue({});
       await service.createOrder({
         account,
         catererId,
@@ -269,7 +255,7 @@ describe('OrderService', () => {
         occurredAt,
         catererName,
       });
-      expect(mockOrderDbService.create).toHaveBeenCalledWith({
+      expect(orderDbService.create).toHaveBeenCalledWith({
         orderId: 'order123',
         data: expect.objectContaining(generateCRMEntityMockResponse),
       });
@@ -286,16 +272,13 @@ describe('OrderService', () => {
       it('should call createOrder', async () => {
         const mockCreateOrder = jest.spyOn(service, 'createOrder');
         mockCreateOrder.mockResolvedValue();
-
         const internalOrderWithMissingCrmId = { ...validInternalOrder };
         delete internalOrderWithMissingCrmId.crmId;
-
         const account = validAccount;
         const catererId = 'catererId';
         const occurredAt = 'occurredAt';
         const catererName = 'catererName';
         const internalOrder = internalOrderWithMissingCrmId;
-
         await service.updateOrder({
           account,
           catererId,
@@ -508,32 +491,203 @@ describe('OrderService', () => {
             expect(reason.isLogged).toBe(true);
           });
       });
-      it('should reject with InternalError if order is account.ref is not in switch', async () => {
+      it('should call crmHandler.updateCRMEntityWithOrder once', async () => {
         jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
         jest
           .spyOn(crmHandler, 'updateCRMEntityWithOrder')
-          .mockRejectedValue(
-            new InternalError('Invalid ref INVALID_TEST', true),
-          );
+          .mockResolvedValue({});
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
 
+        await service.updateOrder({
+          account: {
+            ...validAccount,
+            crm: 'NUTSHELL',
+            crmPrimaryType: 'LEAD',
+            ref: 'INVALID_TEST',
+          },
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: validInternalOrder,
+        });
+
+        expect(crmHandler.updateCRMEntityWithOrder).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('orderDbService.updateOne', () => {
+      /**
+       * Probably going to need to mock updateCRMEntityWithOrder in all the different ways here
+       */
+      it('should reject if orderId does not correspond to a record in the Order collection', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue({});
+        jest
+          .spyOn(orderDbService, 'updateOne')
+          .mockRejectedValue(
+            new InternalError(
+              'No matching record found with the provided document id',
+              true,
+            ),
+          );
+        const invalidOrderId = '123';
         await service
           .updateOrder({
-            account: {
-              ...validAccount,
-              crm: 'NUTSHELL',
-              crmPrimaryType: 'LEAD',
-              ref: 'INVALID_TEST',
-            },
+            account: validAccount,
             catererId: 'catererId',
             occurredAt: 'occurredAt',
             catererName: 'catererName',
-            internalOrder: validInternalOrder,
+            internalOrder: { ...validInternalOrder, id: invalidOrderId },
           })
           .catch((reason) => {
             expect(reason).toBeInstanceOf(InternalError);
-            expect(reason.message).toBe('Invalid ref INVALID_TEST');
             expect(reason.isLogged).toBe(true);
+            expect(reason.message).toBe(
+              'No matching record found with the provided document id',
+            );
           });
+      });
+
+      it('should be called once', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue({});
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
+
+        await service.updateOrder({
+          account: validAccount,
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: { ...validInternalOrder },
+        });
+
+        expect(orderDbService.updateOne).toBeCalledTimes(1);
+      });
+
+      it('should be called with orderId: validInternalOrder.id', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue({});
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
+
+        await service.updateOrder({
+          account: validAccount,
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: { ...validInternalOrder },
+        });
+
+        expect(orderDbService.updateOne).toBeCalledWith({
+          orderId: validInternalOrder.id,
+          updates: expect.objectContaining({ lastUpdatedAt: expect.any(Date) }),
+        });
+      });
+
+      it('should be called with lastUpdated only if crmHandler.updateCRMEntityWithOrder does not return an object with crmDescription property', async () => {
+        const updateResult = {};
+
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue(updateResult);
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
+
+        await service.updateOrder({
+          account: validAccount,
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: { ...validInternalOrder },
+        });
+
+        expect(orderDbService.updateOne).toBeCalledWith(
+          expect.objectContaining({
+            orderId: validInternalOrder.id,
+            updates: expect.objectContaining({
+              lastUpdatedAt: expect.any(Date),
+            }),
+          }),
+        );
+
+        expect(orderDbService.updateOne).toBeCalledWith(
+          expect.objectContaining({
+            orderId: validInternalOrder.id,
+            updates: expect.not.objectContaining({
+              crmDescription: expect.anything(),
+            }),
+          }),
+        );
+      });
+
+      it('should be called without crmDescription in update if no change from internalOrder', async () => {
+        const updateResult = {
+          crmDescription: validInternalOrder.crmDescription,
+        };
+
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue(updateResult);
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
+
+        await service.updateOrder({
+          account: validAccount,
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: { ...validInternalOrder },
+        });
+
+        expect(orderDbService.updateOne).toBeCalledWith(
+          expect.objectContaining({
+            orderId: validInternalOrder.id,
+            updates: expect.objectContaining({
+              lastUpdatedAt: expect.any(Date),
+            }),
+          }),
+        );
+
+        expect(orderDbService.updateOne).toBeCalledWith(
+          expect.objectContaining({
+            orderId: validInternalOrder.id,
+            updates: expect.not.objectContaining({
+              crmDescription: expect.anything(),
+            }),
+          }),
+        );
+      });
+
+      it('should be called with crmDescription in update if returned from crmHandler.updateCRMEntityWithOrder and different from internalOrder property', async () => {
+        const crmDescription = 'UPDATED DESCRIPTION';
+        const updateResult = { crmDescription };
+
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest
+          .spyOn(crmHandler, 'updateCRMEntityWithOrder')
+          .mockResolvedValue(updateResult);
+        jest.spyOn(orderDbService, 'updateOne').mockResolvedValue({});
+
+        await service.updateOrder({
+          account: validAccount,
+          catererId: 'catererId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+          internalOrder: { ...validInternalOrder },
+        });
+
+        expect(orderDbService.updateOne).toBeCalledWith({
+          orderId: validInternalOrder.id,
+          updates: expect.objectContaining({
+            lastUpdatedAt: expect.any(Date),
+            crmDescription,
+          }),
+        });
       });
     });
   });

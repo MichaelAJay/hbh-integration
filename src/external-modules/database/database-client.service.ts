@@ -1,11 +1,13 @@
 import { Firestore, Query, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InternalError } from 'src/common/classes';
 import { CollectionName } from './enum';
 import { ICompositeAndFilter } from './interfaces';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class DatabaseClientService {
-  private firestore: Firestore;
+  firestore: Firestore;
   constructor() {
     this.firestore = new Firestore();
   }
@@ -70,9 +72,24 @@ export class DatabaseClientService {
   }) {
     try {
       await this.firestore.collection(collectionName).doc(docId).update(data);
-    } catch (err) {
-      console.error('err', err);
-      throw err;
+    } catch (err: any) {
+      const outErr = new InternalError('DB client update failed');
+      if (
+        err !== null &&
+        typeof err === 'object' &&
+        err.code === 5 &&
+        typeof err.message === 'string' &&
+        err.message.includes('NOT_FOUND')
+      ) {
+        outErr.message =
+          'No matching record found with the provided document id';
+      }
+      Sentry.withScope((scope) => {
+        scope.setExtras({ collectionName, docId, data });
+        Sentry.captureException(err);
+      });
+      outErr.isLogged = true;
+      throw outErr;
     }
   }
 
