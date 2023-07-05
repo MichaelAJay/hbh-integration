@@ -6,8 +6,6 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
-import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
-import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -262,7 +260,41 @@ describe('OrderService', () => {
     });
   });
 
-  describe('generateCRMEntityFromOrder', () => {});
+  describe('generateCRMEntityFromOrder', () => {
+    describe('ezManageApiHandler.getOrder', () => {
+      it('should reject with error if no order found by orderId', async () => {
+        const mockEzManageApiHandlerGetOrder = jest.spyOn(
+          ezManageApiHandler,
+          'getOrder',
+        );
+        mockEzManageApiHandlerGetOrder.mockRejectedValue(
+          new NotFoundException('Order not found with id for account'),
+        );
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.generateCRMEntityFromOrder(input).catch((reason) => {
+          expect(reason).toBeInstanceOf(NotFoundException);
+          expect(reason.message).toBe('Order not found with id for account');
+        });
+
+        expect(mockEzManageApiHandlerGetOrder).toHaveBeenCalledTimes(1);
+      });
+    });
+    describe('crmHandler.generateCrmEntity', () => {});
+    describe('crmHandler.updateCRMEntityWithOrder', () => {});
+    describe('return', () => {
+      it('should return object without crm properites if undefined crm entity', async () => {});
+      it('should return object with added crmId and crmDescription property if crm entity', async () => {});
+      it('should return object with warnings array on subtotal mismatch', async () => {});
+    });
+  });
 
   /**
    * Try mocking the other async methods in updateOrder
@@ -347,7 +379,7 @@ describe('OrderService', () => {
 
         expect(mockEzManageApiHandlerGetOrder).toHaveBeenCalledTimes(1);
       });
-      it('should reject with error if response is not object with order property', async () => {
+      it('should reject with error if response fails validation', async () => {
         const mockEzManageApiHandlerGetOrder = jest.spyOn(
           ezManageApiHandler,
           'getOrder',
