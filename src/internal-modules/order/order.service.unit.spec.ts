@@ -9,12 +9,14 @@ import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
+  IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
 import { CrmModule } from '../external-interface-handlers/crm/crm.module';
+import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { InternalDatabaseModule } from '../external-interface-handlers/database/database.module';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerModule } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.module';
@@ -150,118 +152,11 @@ describe('OrderService', () => {
     expect(service).toBeDefined();
   });
 
+  /** Complete (for now - could use error cases on orderDbService.create) */
   describe('createOrder', () => {
-    it('should call this.generateCRMEntityFromOrder', async () => {
-      const generateCRMEntityMockResolvedValue = {
-        accountId: 'account123',
-        catererId: 'caterer123',
-        catererName: 'Caterer Name',
-        name: 'Order Number',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: new Date(),
-        lastUpdatedAt: new Date(),
-      };
-
-      // Test data
-      const account: IAccountModelWithId = {
-        id: 'account123',
-        ref: 'H4H',
-        name: '',
-        contactEmail: '',
-        isActive: true,
-      };
-      const catererId = 'caterer123';
-      const orderId = 'order123';
-      const status = DbOrderStatus.ACCEPTED;
-      const occurredAt = '2023-06-29T10:00:00Z';
-      const catererName = 'Caterer Name';
-
-      const mockGenerateCRMEntity = jest.spyOn(
-        service,
-        'generateCRMEntityFromOrder',
-      );
-
-      jest.spyOn(orderDbService, 'create').mockResolvedValue({});
-
-      mockGenerateCRMEntity.mockResolvedValue(
-        generateCRMEntityMockResolvedValue,
-      );
-      await service.createOrder({
-        account,
-        catererId,
-        orderId,
-        status,
-        occurredAt,
-        catererName,
-      });
-
-      expect(mockGenerateCRMEntity).toHaveBeenCalledWith({
-        account,
-        catererId,
-        orderId,
-        status,
-        occurredAt,
-        catererName,
-      });
-    });
-
-    it('should call orderDbService.create', async () => {
-      // Test data
-      const account: IAccountModelWithId = {
-        id: 'account123',
-        ref: 'H4H',
-        name: '',
-        contactEmail: '',
-        isActive: true,
-      };
-      const catererId = 'caterer123';
-      const orderId = 'order123';
-      const status = DbOrderStatus.ACCEPTED;
-      const occurredAt = '2023-06-29T10:00:00Z';
-      const catererName = 'Caterer Name';
-
-      const generateCRMEntityMockResponse = {
-        accountId: 'account123',
-        catererId: 'caterer123',
-        catererName: 'Caterer Name',
-        name: 'Order Number',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: new Date(),
-        lastUpdatedAt: new Date(),
-      };
-      const generateCRMEntitySpy = jest.spyOn(
-        service,
-        'generateCRMEntityFromOrder',
-      );
-      generateCRMEntitySpy.mockResolvedValue(generateCRMEntityMockResponse);
-
-      jest.spyOn(orderDbService, 'create').mockResolvedValue({});
-      await service.createOrder({
-        account,
-        catererId,
-        orderId,
-        status,
-        occurredAt,
-        catererName,
-      });
-
-      expect(generateCRMEntitySpy).toHaveBeenCalledWith({
-        account,
-        catererId,
-        orderId,
-        status,
-        occurredAt,
-        catererName,
-      });
-      expect(orderDbService.create).toHaveBeenCalledWith({
-        orderId: 'order123',
-        data: expect.objectContaining(generateCRMEntityMockResponse),
-      });
-    });
-  });
-
-  describe('generateCRMEntityFromOrder', () => {
+    /** Complete */
     describe('ezManageApiHandler.getOrder', () => {
+      /** Need a test to what happens if the request can't be made successfully */
       it('should reject with error if no order found by orderId', async () => {
         const mockEzManageApiHandlerGetOrder = jest.spyOn(
           ezManageApiHandler,
@@ -275,18 +170,254 @@ describe('OrderService', () => {
           account: validAccount,
           catererId: 'catererId',
           orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
           occurredAt: 'occurredAt',
           catererName: 'catererName',
         };
 
-        await service.generateCRMEntityFromOrder(input).catch((reason) => {
+        await service.createOrder(input).catch((reason) => {
           expect(reason).toBeInstanceOf(NotFoundException);
           expect(reason.message).toBe('Order not found with id for account');
         });
 
         expect(mockEzManageApiHandlerGetOrder).toHaveBeenCalledTimes(1);
       });
+      it('should reject with error if response is not object with order property', async () => {
+        const mockEzManageApiHandlerGetOrder = jest.spyOn(
+          ezManageApiHandler,
+          'getOrder',
+        );
+        mockEzManageApiHandlerGetOrder.mockRejectedValue(
+          new UnprocessableEntityException('Malformed GQL response'),
+        );
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input).catch((reason) => {
+          expect(reason).toBeInstanceOf(UnprocessableEntityException);
+          expect(reason.message).toBe('Malformed GQL response');
+        });
+
+        expect(mockEzManageApiHandlerGetOrder).toHaveBeenCalledTimes(1);
+      });
+      it('should reject with error if response fails validation', async () => {
+        const mockEzManageApiHandlerGetOrder = jest.spyOn(
+          ezManageApiHandler,
+          'getOrder',
+        );
+        mockEzManageApiHandlerGetOrder.mockRejectedValue(
+          new UnprocessableEntityException('Malformed GQL order response'),
+        );
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input).catch((reason) => {
+          expect(reason).toBeInstanceOf(UnprocessableEntityException);
+          expect(reason.message).toBe('Malformed GQL order response');
+        });
+
+        expect(mockEzManageApiHandlerGetOrder).toHaveBeenCalledTimes(1);
+      });
+      it('is called with correct arguments', async () => {
+        jest.spyOn(ezManageApiHandler, 'getOrder').mockResolvedValue({});
+        jest.spyOn(service, 'generateCRMEntityFromOrder').mockResolvedValue({});
+        jest.spyOn(service, 'generateIOrderModelFromCrmEntity');
+        jest.spyOn(orderDbService, 'create').mockResolvedValue({});
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input);
+        expect(ezManageApiHandler.getOrder).toHaveBeenCalledWith({
+          orderId: input.orderId,
+          ref: validAccount.ref,
+        });
+      });
     });
+    /** Complete */
+    describe('orderService.generateCRMEntityFromOrder', () => {
+      it('is called with correct arguments', async () => {
+        const mockEzManageOrder: IEzManageOrder = {
+          orderNumber: '45HGZ3',
+          uuid: 'uuid-1234-5678-91011',
+          event: {
+            timestamp: '2023-06-27T10:00:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Test City',
+              name: 'Test Name',
+              state: 'Test State',
+              street: 'Test Street',
+              street2: 'Test Street 2',
+              street3: 'Test Street 3',
+              zip: '12345',
+            },
+            contact: {
+              name: 'Test Contact',
+              phone: '123-456-7890',
+            },
+          },
+          orderCustomer: {
+            firstName: 'Test',
+            lastName: 'Customer',
+          },
+          totals: {
+            subTotal: { subunits: 2000 },
+            tip: { subunits: 200 },
+          },
+          caterer: {
+            address: {
+              city: 'Test City',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Test Fee',
+                cost: { subunits: 200 },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 1,
+                name: 'Test Item',
+                totalInSubunits: { subunits: 1000 },
+                customizations: [
+                  {
+                    customizationTypeName: 'Test Customization',
+                    name: 'Test Name',
+                    quantity: 1,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 5000,
+            },
+          },
+          orderSourceType: 'Test Source',
+        };
+
+        jest
+          .spyOn(ezManageApiHandler, 'getOrder')
+          .mockResolvedValue(mockEzManageOrder);
+        jest.spyOn(service, 'generateCRMEntityFromOrder').mockResolvedValue({});
+        jest.spyOn(service, 'generateIOrderModelFromCrmEntity');
+        jest.spyOn(orderDbService, 'create').mockResolvedValue({});
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input);
+        expect(service.generateCRMEntityFromOrder).toHaveBeenCalledWith({
+          account: input.account,
+          ezManageOrder: mockEzManageOrder,
+        });
+      });
+    });
+    /** Complete */
+    describe('orderService.generateIOrderModelFromCrmEntity', () => {
+      it('is called with correct arguments', async () => {
+        const mockEzManageOrder = { orderNumber: 'AAABBB' };
+        const mockCrmEntity = { id: '123', description: 'Mock crm entity' };
+
+        jest
+          .spyOn(ezManageApiHandler, 'getOrder')
+          .mockResolvedValue(mockEzManageOrder);
+        jest
+          .spyOn(service, 'generateCRMEntityFromOrder')
+          .mockResolvedValue(mockCrmEntity);
+        jest.spyOn(service, 'generateIOrderModelFromCrmEntity');
+        jest.spyOn(orderDbService, 'create').mockResolvedValue({});
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input);
+        expect(service.generateIOrderModelFromCrmEntity).toHaveBeenCalledWith({
+          account: input.account,
+          catererId: input.catererId,
+          ezManageOrderNumber: mockEzManageOrder.orderNumber,
+          status: DbOrderStatus.ACCEPTED,
+          crmEntity: mockCrmEntity,
+          catererName: input.catererName,
+        });
+      });
+    });
+    describe('orderDbService.create', () => {
+      /**
+       * @TODO Add error cases
+       */
+      it('is called with correct arguments', async () => {
+        const now = new Date();
+        const mockOrderModel: IOrderModel = {
+          accountId: 'acctId123',
+          catererId: 'catererId123',
+          catererName: 'caterer name',
+          name: 'AAABBB',
+          status: DbOrderStatus.ACCEPTED,
+          acceptedAt: now,
+          lastUpdatedAt: now,
+        };
+
+        jest.spyOn(ezManageApiHandler, 'getOrder');
+        jest.spyOn(service, 'generateCRMEntityFromOrder');
+        jest
+          .spyOn(service, 'generateIOrderModelFromCrmEntity')
+          .mockReturnValue(mockOrderModel);
+        jest.spyOn(orderDbService, 'create');
+
+        const input = {
+          account: validAccount,
+          catererId: 'catererId',
+          orderId: 'orderId',
+          status: DbOrderStatus.ACCEPTED,
+          occurredAt: 'occurredAt',
+          catererName: 'catererName',
+        };
+
+        await service.createOrder(input);
+        expect(orderDbService.create).toHaveBeenCalledWith({
+          orderId: input.orderId,
+          data: mockOrderModel,
+        });
+      });
+    });
+  });
+
+  describe('generateCRMEntityFromOrder', () => {
     describe('crmHandler.generateCrmEntity', () => {});
     describe('crmHandler.updateCRMEntityWithOrder', () => {});
     describe('return', () => {
@@ -296,9 +427,8 @@ describe('OrderService', () => {
     });
   });
 
-  /**
-   * Try mocking the other async methods in updateOrder
-   */
+  describe('generateIOrderModelFromCrmEntity', () => {});
+
   describe('updateOrder', () => {
     describe('no crmId on internalOrder param', () => {
       it('should call createOrder', async () => {

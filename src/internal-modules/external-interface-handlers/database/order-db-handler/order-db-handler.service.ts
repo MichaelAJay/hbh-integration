@@ -38,6 +38,10 @@ export class OrderDbHandlerService {
    * * CREATE *
    * **********
    */
+
+  /**
+   * @TODO Requires validation since Firestore does not validate
+   */
   async create({ orderId, data }: { orderId: UUID; data: IOrderModel }) {
     try {
       const accountRef = this.dbClientService.getDocRef({

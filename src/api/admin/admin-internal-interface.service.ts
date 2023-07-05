@@ -20,13 +20,8 @@ import {
   SentOrderToCrmQueryDto,
 } from './dtos/query';
 import { OrderService } from 'src/internal-modules/order/order.service';
-import { DbOrderStatus } from 'src/external-modules/database/enum';
-import {
-  IOrderModel,
-  IOrderModelWithId,
-} from 'src/external-modules/database/models';
+import { IOrderModelWithId } from 'src/external-modules/database/models';
 import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
-import internal from 'stream';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -103,7 +98,6 @@ export class AdminInternalInterfaceService {
   async sendEzManageOrderToCrm({
     'order-id': orderId,
     'account-id': accountId,
-    ref,
   }: SentOrderToCrmQueryDto) {
     const [internalOrder, account] = await Promise.all([
       this.orderDbHandler.getOne(orderId),
@@ -160,7 +154,6 @@ export class AdminInternalInterfaceService {
   async generateCrmEntityFromOrderName({
     'order-name': orderName,
     'account-id': accountId,
-    ref,
   }: AdminOrderNameWithAccountScopeQueryDto) {
     const [internalOrder, account] = await Promise.all([
       this.orderDbHandler.findByNameForAccount(orderName, accountId),
@@ -190,14 +183,12 @@ export class AdminInternalInterfaceService {
     internalOrder: IOrderModelWithId;
     account: AccountRecordWithId;
   }) {
-    const { catererId, id: orderId, catererName } = internalOrder;
+    const { ref } = account;
+    const { id: orderId } = internalOrder;
+    const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
     return await this.orderService.generateCRMEntityFromOrder({
       account,
-      catererId,
-      orderId,
-      status: DbOrderStatus.ACCEPTED,
-      occurredAt: 'NOT USED',
-      catererName,
+      ezManageOrder,
     });
   }
 }
