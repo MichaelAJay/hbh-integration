@@ -6,17 +6,17 @@ import {
 } from '@nestjs/common';
 import { GraphQLClient, gql } from 'graphql-request';
 import { CustomErrorObject } from 'src/common/types';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { isGetOrderNameReturn, isIGetH4HCatererMenu } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
 import { validateEzManageOrder } from './validators';
 import * as Sentry from '@sentry/node';
+import { OrderManagerError } from 'src/common/classes';
 
 @Injectable()
 export class GraphqlClientService {
   private readonly client: GraphQLClient;
 
-  constructor(private readonly logger: CustomLoggerService) {
+  constructor() {
     const { EZMANAGE_API_URL: apiUrl } = process.env;
     if (!apiUrl) throw new InternalServerErrorException('Bad config');
     this.client = new GraphQLClient(apiUrl);
@@ -169,11 +169,16 @@ export class GraphqlClientService {
 
     if (!validateEzManageOrder(response['order'])) {
       const message = 'Malformed GQL order response';
-      this.logger.error(message, { id: orderId });
-      throw new UnprocessableEntityException({
+
+      const err = new UnprocessableEntityException({
         message,
         isLogged: true,
       } as CustomErrorObject);
+      Sentry.withScope((scope) => {
+        scope.setExtra('response', response);
+        Sentry.captureException(err);
+      });
+      throw err;
     }
 
     return response['order'] as IEzManageOrder;
@@ -185,47 +190,47 @@ export class GraphqlClientService {
   async queryOrderName({ orderId, ref }: { orderId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
-    try {
-      const query = gql`
+    const query = gql`
         {
           order(id: "${orderId}") {
             orderNumber
           }
         }
       `;
-      const data = await client.request(query);
+    const response = await client.request(query).catch((reason) => {
+      let message = 'GraphQL client request failed for queryOrderName';
+      if (reason instanceof Error) {
+        message = reason.message;
+      } else if (typeof reason === 'string') {
+        message = reason;
+      }
 
-      if (!isGetOrderNameReturn(data)) {
-        const message = 'Returned data does not match expected data shape';
-        this.logger.error(message, { data });
-        throw new UnprocessableEntityException({
-          message,
-          isLogged: true,
-        } as CustomErrorObject);
-      }
-      return data.order.orderNumber;
-    } catch (err: any) {
-      if (
-        typeof err.message === 'string' &&
-        typeof err.isLogged === 'boolean' &&
-        err.isLogged
-      ) {
-        throw err;
-      }
-      const message = err.message || 'GraphQL queryOrderName error';
-      this.logger.error(message, { id: orderId });
-      throw new InternalServerErrorException({
-        message,
-        isLogged: true,
-      } as CustomErrorObject);
+      const err = new OrderManagerError(message);
+      Sentry.withScope((scope) => {
+        scope.setExtras({ orderId, ref, reason });
+        Sentry.captureException(err);
+      });
+      throw err;
+    });
+
+    if (!isGetOrderNameReturn(response)) {
+      const err = new OrderManagerError(
+        'Returned data does not match expected data shape',
+      );
+      Sentry.withScope((scope) => {
+        scope.setExtras({ response, orderId, ref });
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
+      throw err;
     }
+    return response.order.orderNumber;
   }
 
   async getCatererMenu({ catererId, ref }: { catererId: string; ref: string }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
-    try {
-      const query = gql`
+    const query = gql`
       {
         menu(catererId: "${catererId}") {
             endDate
@@ -253,31 +258,32 @@ export class GraphqlClientService {
         }
     }
       `;
-      const data = await client.request(query);
+    const response = await client.request(query).catch((reason) => {
+      let message = 'GraphQL client request failed for queryOrderName';
+      if (reason instanceof Error) {
+        message = reason.message;
+      } else if (typeof reason === 'string') {
+        message = reason;
+      }
 
-      if (!isIGetH4HCatererMenu(data)) {
-        const message = 'Returned data does not match expected data shape';
-        this.logger.error(message, { data });
-        throw new UnprocessableEntityException({
-          message,
-          isLogged: true,
-        } as CustomErrorObject);
-      }
-      return data;
-    } catch (err: any) {
-      if (
-        typeof err.message === 'string' &&
-        typeof err.isLogged === 'boolean' &&
-        err.isLogged
-      ) {
-        throw err;
-      }
-      const message = err.message || 'GraphQL getCatererMenu error';
-      this.logger.error(message, { id: catererId });
-      throw new InternalServerErrorException({
-        message,
-        isLogged: true,
-      } as CustomErrorObject);
+      const err = new OrderManagerError(message);
+      Sentry.withScope((scope) => {
+        scope.setExtras({ arguments: { catererId, ref }, reason });
+        Sentry.captureException(err);
+      });
+      throw err;
+    });
+
+    if (!isIGetH4HCatererMenu(response)) {
+      const err = new OrderManagerError(
+        'Returned data does not match expected data shape',
+      );
+      Sentry.withScope((scope) => {
+        scope.setExtras({ arguments: { catererId, ref }, response });
+        Sentry.captureException(err);
+      });
+      throw err;
     }
+    return response;
   }
 }

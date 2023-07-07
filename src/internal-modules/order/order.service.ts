@@ -13,6 +13,7 @@ import { OrderDbHandlerService } from '../external-interface-handlers/database/o
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import * as Sentry from '@sentry/node';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { InternalError } from 'src/common/classes';
 
 @Injectable()
 export class OrderService {
@@ -43,8 +44,14 @@ export class OrderService {
     const ezManageOrder = await this.ezManageApiHandler
       .getOrder({ orderId, ref })
       .catch((reason) => {
-        const msg = `Failed to retrieve order ${orderId}`;
-        this.logger.error(msg, reason);
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            account,
+            orderId,
+            message: `Failed to retrieve order ${orderId}`,
+          });
+          Sentry.captureException(reason);
+        });
         throw reason;
       });
 

@@ -15,7 +15,5 @@ describe('GraphqlClientService', () => {
     service = module.get<GraphqlClientService>(GraphqlClientService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  test('service is defined', async () => expect(service).toBeDefined());
 });
