@@ -11,10 +11,11 @@ import { IEzManageOrder } from './interfaces/gql/responses';
 import { validateEzManageOrder } from './validators';
 import * as Sentry from '@sentry/node';
 import { OrderManagerError } from 'src/common/classes';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 
 @Injectable()
 export class GraphqlClientService {
-  private readonly client: GraphQLClient;
+  public readonly client: GraphQLClient;
 
   constructor() {
     const { EZMANAGE_API_URL: apiUrl } = process.env;
@@ -38,7 +39,7 @@ export class GraphqlClientService {
   /**
    * Specific queries
    */
-  async queryOrder({ orderId, ref }: { orderId: string; ref: string }) {
+  async queryOrder({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     // const badOrderId = '71185f7d-2298-44af-b079-4c34d3856ef68';
@@ -126,7 +127,7 @@ export class GraphqlClientService {
         'order' in reason['response']['data'] &&
         reason['response']['data']['order'] === null
       ) {
-        const err = new NotFoundException(
+        const err = new OrderManagerError(
           'Order not found with id for account',
         );
         Sentry.withScope((scope) => {
@@ -136,6 +137,7 @@ export class GraphqlClientService {
           });
           Sentry.captureException(err);
         });
+        err.isLogged = true;
         throw err;
       } else {
         Sentry.withScope((scope) => {
@@ -159,7 +161,7 @@ export class GraphqlClientService {
       )
     ) {
       const message = 'Malformed GQL response';
-      const err = new UnprocessableEntityException(message);
+      const err = new OrderManagerError(message);
       Sentry.withScope((scope) => {
         scope.setExtra('response', response);
         Sentry.captureException(err);
@@ -168,12 +170,7 @@ export class GraphqlClientService {
     }
 
     if (!validateEzManageOrder(response['order'])) {
-      const message = 'Malformed GQL order response';
-
-      const err = new UnprocessableEntityException({
-        message,
-        isLogged: true,
-      } as CustomErrorObject);
+      const err = new OrderManagerError('Malformed GQL order response');
       Sentry.withScope((scope) => {
         scope.setExtra('response', response);
         Sentry.captureException(err);
