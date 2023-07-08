@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import * as jayson from 'jayson/promise';
 import { Cache } from 'cache-manager';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { IAddTaskToEntity, IUpsertLead } from './interfaces/requests';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import * as Sentry from '@sentry/node';
@@ -31,42 +30,17 @@ const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 @Injectable()
 export class NutshellApiService {
   private cacheTTL_in_MS: number;
-  constructor(
-    private readonly logger: CustomLoggerService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
+  constructor(@Inject(CACHE_MANAGER) public readonly cacheManager: Cache) {
     /**
      * As of cache-manager@5, TTL is set in milliseconds
      */
     this.cacheTTL_in_MS = 20 * 60 * 1000;
   }
 
-  /**
-   * PUBLIC METHODS
-   */
-  async getLead({
-    leadId,
-    ref,
-    client,
-  }: {
-    leadId: number;
-    ref: ACCOUNT_REF;
-    client?: jayson.HttpsClient;
-  }) {
-    const cachedLead = await this.retrieveLeadFromCache({
-      leadId,
-    });
-    if (cachedLead !== null) return cachedLead;
-
-    const { description, rev } = await this.refreshLead({
-      leadId,
-      ref,
-      client,
-    });
-
-    return { description, rev };
+  async getLead({ leadId, ref }: { leadId: number; ref: ACCOUNT_REF }) {
+    const client = await this.generateClient(ref);
+    return await this.internalLeadFetcher({ leadId, ref, client });
   }
-
   /**
    * updates should be of the form found in the accompanying test suite, var leadDetails2
    * @TODO - get return
@@ -90,7 +64,7 @@ export class NutshellApiService {
       }
 
       const { description, rev: updatedRev } = response.result;
-      await this.cacheLead({ leadId, rev: updatedRev, description });
+      await this.cacheLead({ leadId, rev: updatedRev, description, ref });
       return { description, rev: updatedRev };
     };
 
@@ -397,32 +371,69 @@ export class NutshellApiService {
     });
   }
 
-  private async retrieveLeadFromCache({ leadId }: { leadId: number }) {
-    const cachedLead = await this.cacheManager.get<IAbbreviatedLead>(
-      leadId.toString(),
-    );
+  private async internalLeadFetcher({
+    leadId,
+    ref,
+    client,
+  }: {
+    leadId: number;
+    ref: ACCOUNT_REF;
+    client?: jayson.HttpsClient;
+  }) {
+    const cachedLead = await this.retrieveLeadFromCache({
+      leadId,
+      ref,
+    });
+    if (cachedLead !== null) return cachedLead;
+
+    const { description, rev } = await this.refreshLead({
+      leadId,
+      ref,
+      client,
+    });
+
+    return { description, rev };
+  }
+
+  private async retrieveLeadFromCache({
+    leadId,
+    ref,
+  }: {
+    leadId: number;
+    ref: ACCOUNT_REF;
+  }) {
+    const cachedLead = await this.cacheManager.get<
+      IAbbreviatedLead & { ref: ACCOUNT_REF }
+    >(leadId.toString());
     if (
       cachedLead !== null &&
       typeof cachedLead === 'object' &&
       typeof cachedLead.rev === 'string' &&
-      typeof cachedLead.description === 'string'
+      typeof cachedLead.description === 'string' &&
+      cachedLead.ref === ref
     )
       return cachedLead;
     return null;
   }
 
+  /**
+   * @TODO
+   * Need to save
+   */
   private async cacheLead({
     leadId,
     rev,
     description,
+    ref,
   }: {
     leadId: number;
     rev: string;
     description: string;
+    ref: ACCOUNT_REF;
   }) {
     return await this.cacheManager.set(
       leadId.toString(),
-      { description, rev },
+      { description, rev, ref },
       TEN_MINUTES_IN_MS,
     );
   }
@@ -452,11 +463,19 @@ export class NutshellApiService {
     }
 
     if (!validateGetLeadResponse(response)) {
-      throw new CrmError('Refresh lead response failed validation', false);
+      const err = new CrmError(
+        'Refresh lead response failed validation',
+        false,
+      );
+      Sentry.withScope((scope) => {
+        scope.setExtras({ leadId, ref, response });
+        Sentry.captureException(err);
+      });
+      throw err;
     }
     const { description, rev } = response.result;
 
-    await this.cacheLead({ leadId, rev, description });
+    await this.cacheLead({ leadId, rev, description, ref });
     return { description, rev };
   }
 
@@ -481,7 +500,7 @@ export class NutshellApiService {
       let rev: string;
       switch (entityType) {
         case 'Lead':
-          const { rev: leadRev } = await this.getLead({
+          const { rev: leadRev } = await this.internalLeadFetcher({
             leadId: entityId,
             ref,
             client,

@@ -1,11 +1,5 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { GraphQLClient, gql } from 'graphql-request';
-import { CustomErrorObject } from 'src/common/types';
 import { isGetOrderNameReturn, isIGetH4HCatererMenu } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
 import { validateEzManageOrder } from './validators';
