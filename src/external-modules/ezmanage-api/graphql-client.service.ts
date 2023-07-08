@@ -26,7 +26,7 @@ export class GraphqlClientService {
   /**
    * GENERAL
    */
-  private setAuthHeaderOnClient(client: GraphQLClient, ref: string) {
+  private setAuthHeaderOnClient(client: GraphQLClient, ref: ACCOUNT_REF) {
     const { EZMANAGE_AUTH_TOKEN_POSTFIX } = process.env;
     if (!EZMANAGE_AUTH_TOKEN_POSTFIX)
       throw new InternalServerErrorException('Bad config');
@@ -184,7 +184,13 @@ export class GraphqlClientService {
   /**
    * This is testable by sending a bogus UUID
    */
-  async queryOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+  async queryOrderName({
+    orderId,
+    ref,
+  }: {
+    orderId: string;
+    ref: ACCOUNT_REF;
+  }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     const query = gql`
@@ -256,7 +262,13 @@ export class GraphqlClientService {
     return response.order.orderNumber;
   }
 
-  async getCatererMenu({ catererId, ref }: { catererId: string; ref: string }) {
+  async getCatererMenu({
+    catererId,
+    ref,
+  }: {
+    catererId: string;
+    ref: ACCOUNT_REF;
+  }) {
     const client = this.setAuthHeaderOnClient(this.client, ref);
 
     const query = gql`

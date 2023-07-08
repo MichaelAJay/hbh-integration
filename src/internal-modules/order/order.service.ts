@@ -264,7 +264,7 @@ export class OrderService {
     });
   }
 
-  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+  async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
     return this.ezManageApiHandler.getOrderName({
       orderId,
       ref,

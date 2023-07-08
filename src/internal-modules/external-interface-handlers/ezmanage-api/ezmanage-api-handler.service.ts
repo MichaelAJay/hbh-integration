@@ -14,7 +14,7 @@ export class EzmanageApiHandlerService {
     }
   }
 
-  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+  async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
     return await this.ezManageApiService.getOrderName({
       orderId,
       ref,
