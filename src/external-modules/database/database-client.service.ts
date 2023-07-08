@@ -172,7 +172,7 @@ export class DatabaseClientService {
     }
   }
 
-  async deleteDocument({
+  async delete({
     collectionName,
     docId,
   }: {

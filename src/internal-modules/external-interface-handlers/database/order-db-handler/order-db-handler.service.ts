@@ -197,7 +197,7 @@ export class OrderDbHandlerService {
    * **********
    */
   async delete({ orderId: docId }: { orderId: string }) {
-    return await this.dbClientService.deleteDocument({
+    return await this.dbClientService.delete({
       collectionName: this.collectionName,
       docId,
     });
