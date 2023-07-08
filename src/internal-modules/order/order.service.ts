@@ -14,6 +14,7 @@ import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmana
 import * as Sentry from '@sentry/node';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { InternalError } from 'src/common/classes';
+import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
 
 @Injectable()
 export class OrderService {
@@ -255,7 +256,7 @@ export class OrderService {
     ref,
   }: {
     order: IOrderModelWithId;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     return await this.ezManageApiHandler.getOrder({
       orderId: order.id,

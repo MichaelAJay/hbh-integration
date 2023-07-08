@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { IUpdateStatus } from './interfaces';
 import { IGetOrderOutput } from './interfaces/output';
@@ -26,7 +27,7 @@ export class OrderAPIService {
   }: {
     orderId: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }): Promise<IGetOrderOutput> {
     return await this.orderInternalInterface.getOrder({
       orderId,
@@ -42,7 +43,7 @@ export class OrderAPIService {
   }: {
     orderName: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     return await this.orderInternalInterface.getOrderByName({
       orderName: orderName
@@ -94,7 +95,7 @@ export class OrderAPIService {
   }: {
     orderName: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     return await this.orderInternalInterface.generateLeadFromOrder({
       orderName,

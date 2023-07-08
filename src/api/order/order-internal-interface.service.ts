@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IUpdateStatus } from './interfaces';
@@ -42,7 +43,7 @@ export class OrderInternalInterfaceService {
   }: {
     orderId: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }): Promise<IGetOrderOutput> {
     const internalOrder = await this.orderDbHandler.getOne(orderId);
     if (!internalOrder) {
@@ -73,7 +74,7 @@ export class OrderInternalInterfaceService {
   }: {
     orderId: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     const order = await this.orderDbHandler.getOne(orderId);
     if (!order) throw new BadRequestException('Order not found');
@@ -102,7 +103,7 @@ export class OrderInternalInterfaceService {
   }: {
     orderName: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }): Promise<IGetOrderOutput> {
     const order = await this.getInternalOrderByName({ orderName, accountId });
     return await this.getOrder({ orderId: order.id, accountId, ref });
@@ -174,7 +175,7 @@ export class OrderInternalInterfaceService {
   }: {
     orderName: string;
     accountId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     const internalOrder = await this.getInternalOrderByName({
       orderName,

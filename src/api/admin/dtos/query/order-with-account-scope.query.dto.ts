@@ -1,4 +1,5 @@
 import { IsString } from 'class-validator';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 
 export class AdminOrderIdWithAccountScopeQueryDto {
   @IsString()
@@ -19,5 +20,5 @@ export class AdminOrderNameWithAccountScopeQueryDto {
   'account-id': string;
 
   @IsString()
-  ref: string;
+  ref: ACCOUNT_REF;
 }

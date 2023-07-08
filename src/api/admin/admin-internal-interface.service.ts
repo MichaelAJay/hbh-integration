@@ -21,7 +21,10 @@ import {
 } from './dtos/query';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IOrderModelWithId } from 'src/external-modules/database/models';
-import { AccountRecordWithId } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+import {
+  AccountRecordWithId,
+  ACCOUNT_REF,
+} from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -121,7 +124,7 @@ export class AdminInternalInterfaceService {
     ref,
   }: {
     orderId: string;
-    ref: string;
+    ref: ACCOUNT_REF;
   }) {
     return this.ezManagerApiHandler.getOrder({ orderId, ref });
   }
