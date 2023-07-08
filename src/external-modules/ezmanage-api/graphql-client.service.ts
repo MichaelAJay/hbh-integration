@@ -195,25 +195,57 @@ export class GraphqlClientService {
         }
       `;
     const response = await client.request(query).catch((reason) => {
-      let message = 'GraphQL client request failed for queryOrderName';
-      if (reason instanceof Error) {
-        message = reason.message;
-      } else if (typeof reason === 'string') {
-        message = reason;
+      if (
+        reason !== null &&
+        typeof reason === 'object' &&
+        'response' in reason &&
+        reason['response'] !== null &&
+        typeof reason['response'] === 'object' &&
+        'data' in reason['response'] &&
+        reason['response']['data'] !== null &&
+        typeof reason['response']['data'] === 'object' &&
+        'order' in reason['response']['data'] &&
+        reason['response']['data']['order'] === null
+      ) {
+        const err = new OrderManagerError(
+          'Order not found with id for account',
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            orderId,
+            ref,
+          });
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      } else {
+        Sentry.withScope((scope) => {
+          scope.setExtra('message', 'GrapQL client queryOrder failed');
+          Sentry.captureException(reason);
+        });
+        throw reason;
       }
+    });
 
+    if (
+      !(
+        response !== null &&
+        typeof response === 'object' &&
+        'order' in response
+      )
+    ) {
+      const message = 'Malformed GQL response';
       const err = new OrderManagerError(message);
       Sentry.withScope((scope) => {
-        scope.setExtras({ orderId, ref, reason });
+        scope.setExtra('response', response);
         Sentry.captureException(err);
       });
       throw err;
-    });
+    }
 
     if (!isGetOrderNameReturn(response)) {
-      const err = new OrderManagerError(
-        'Returned data does not match expected data shape',
-      );
+      const err = new OrderManagerError('Malformed GQL order response');
       Sentry.withScope((scope) => {
         scope.setExtras({ response, orderId, ref });
         Sentry.captureException(err);
@@ -256,25 +288,53 @@ export class GraphqlClientService {
     }
       `;
     const response = await client.request(query).catch((reason) => {
-      let message = 'GraphQL client request failed for queryOrderName';
-      if (reason instanceof Error) {
-        message = reason.message;
-      } else if (typeof reason === 'string') {
-        message = reason;
+      if (
+        reason !== null &&
+        typeof reason === 'object' &&
+        'response' in reason &&
+        reason['response'] !== null &&
+        typeof reason['response'] === 'object' &&
+        'data' in reason['response'] &&
+        reason['response']['data'] !== null &&
+        typeof reason['response']['data'] === 'object' &&
+        'menu' in reason['response']['data'] &&
+        reason['response']['data']['menu'] === null
+      ) {
+        const err = new OrderManagerError(
+          'Menu not found with caterer id for account',
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            catererId,
+            ref,
+          });
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      } else {
+        Sentry.withScope((scope) => {
+          scope.setExtra('message', 'GrapQL client getCatererMenu failed');
+          Sentry.captureException(reason);
+        });
+        throw reason;
       }
+    });
 
+    if (
+      !(response !== null && typeof response === 'object' && 'menu' in response)
+    ) {
+      const message = 'Malformed GQL response';
       const err = new OrderManagerError(message);
       Sentry.withScope((scope) => {
-        scope.setExtras({ arguments: { catererId, ref }, reason });
+        scope.setExtra('response', response);
         Sentry.captureException(err);
       });
       throw err;
-    });
+    }
 
     if (!isIGetH4HCatererMenu(response)) {
-      const err = new OrderManagerError(
-        'Returned data does not match expected data shape',
-      );
+      const err = new OrderManagerError('Malformed GQL menu response');
       Sentry.withScope((scope) => {
         scope.setExtras({ arguments: { catererId, ref }, response });
         Sentry.captureException(err);
