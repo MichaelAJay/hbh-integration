@@ -12,7 +12,9 @@ describe('DatabaseClientService', () => {
     service = module.get<DatabaseClientService>(DatabaseClientService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('existence tests', () => {
+    test('service should be defined', () => expect(service).toBeDefined());
+    test('firestore instance should exist on service', () =>
+      expect(service.firestore).toBeDefined());
   });
 });

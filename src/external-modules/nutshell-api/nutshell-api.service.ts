@@ -225,13 +225,25 @@ export class NutshellApiService {
         username: userName,
       })
       .catch((reason) => {
-        throw reason;
+        const err = new CrmError(
+          'External request failed to getApiForUsername',
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtra('reason', reason);
+          Sentry.captureException(err);
+        });
+        throw err;
       });
     const selectedDomain = this.selectDomain(response);
     await this.cacheManager
       .set(userName, selectedDomain, this.cacheTTL_in_MS)
       .catch((reason) => {
-        throw reason;
+        const err = new CrmError('Cache manager failed to set domain');
+        Sentry.withScope((scope) => {
+          scope.setExtras({ userName, selectedDomain, reason });
+          Sentry.captureException(err);
+        });
+        throw err;
       });
     return selectedDomain;
   }
@@ -350,6 +362,8 @@ export class NutshellApiService {
         err.isLogged = true;
         throw err;
       });
+      err.isLogged = true;
+      throw err;
     }
     return { userName: userName as string, apiKey: apiKey as string };
   }
