@@ -29,3 +29,10 @@ export class OrderManagerError extends CustomError {
     this.name = 'Order Manager Error';
   }
 }
+
+export class DatabaseClientError extends CustomError {
+  constructor(message?: string, isLogged?: boolean) {
+    super(message, isLogged);
+    this.name = 'Database client error';
+  }
+}

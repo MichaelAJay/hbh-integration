@@ -63,7 +63,7 @@ describe('DatabaseClientService', () => {
       });
       expect(mockCollection.doc).toHaveBeenCalledWith(mockDocumentId);
     });
-    it('returns a DocumentReference instance with correct id and parent id', async () => {
+    it('returns a DocumentReference instance with correct id and parent id', () => {
       const mockCollectionName = CollectionName.ACCOUNTS;
       const mockDocumentId = 'MOCK DOCUMENT ID';
       const docRef = service.getDocRef({
