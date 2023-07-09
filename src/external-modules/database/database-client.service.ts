@@ -1,6 +1,6 @@
 import { Firestore, Query, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InternalError } from 'src/common/classes';
+import { DatabaseClientError, InternalError } from 'src/common/classes';
 import { CollectionName } from './enum';
 import { ICompositeAndFilter } from './interfaces';
 import * as Sentry from '@sentry/node';
@@ -31,15 +31,29 @@ export class DatabaseClientService {
     docId: string;
     data: Record<string, any>;
   }) {
-    try {
-      /**
-       * @QUESTION to answer: Does set return the created object?
-       */
-      await this.firestore.collection(collectionName).doc(docId).set(data);
-    } catch (err) {
-      console.error('err', err);
-      throw err;
-    }
+    /**
+     * @QUESTION to answer: Does set return the created object?
+     */
+    return await this.firestore
+      .collection(collectionName)
+      .doc(docId)
+      .set(data)
+      .catch((reason) => {
+        const err = new DatabaseClientError('DB set operation failed');
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            arguments: {
+              collectionName,
+              docId,
+              data,
+            },
+            reason,
+          });
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      });
   }
 
   async add({
@@ -52,8 +66,19 @@ export class DatabaseClientService {
     try {
       const res = await this.firestore.collection(collectionName).add(data);
       return { id: res.id };
-    } catch (err) {
-      console.error('err', err);
+    } catch (reason) {
+      const err = new DatabaseClientError('Db add operation failed');
+      Sentry.withScope((scope) => {
+        scope.setExtras({
+          arguments: {
+            collectionName,
+            data,
+          },
+          reason,
+        });
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
       throw err;
     }
   }
@@ -73,7 +98,7 @@ export class DatabaseClientService {
     try {
       await this.firestore.collection(collectionName).doc(docId).update(data);
     } catch (err: any) {
-      const outErr = new InternalError('DB client update failed');
+      const outErr = new DatabaseClientError('DB update operation failed');
       if (
         err !== null &&
         typeof err === 'object' &&
@@ -106,8 +131,19 @@ export class DatabaseClientService {
       if (!data.exists) return null;
       const record = data.data();
       return { id: data.id, ...record };
-    } catch (err) {
-      console.error('err', err);
+    } catch (reason) {
+      const err = new DatabaseClientError('DB get operation failed');
+      Sentry.withScope((scope) => {
+        scope.setExtras({
+          arguments: {
+            collectionName,
+            docId,
+          },
+          reason,
+        });
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
       throw err;
     }
   }
@@ -125,16 +161,25 @@ export class DatabaseClientService {
     filter: { fieldPath: string; filterOp: WhereFilterOp; value: any };
   }) {
     const { fieldPath, filterOp, value } = filter;
-    try {
-      const records = await this.firestore
-        .collection(collectionName)
-        .where(fieldPath, filterOp, value)
-        .get();
-      return records;
-    } catch (err) {
-      console.error('err', err);
-      throw err;
-    }
+    return await this.firestore
+      .collection(collectionName)
+      .where(fieldPath, filterOp, value)
+      .get()
+      .catch((reason) => {
+        const err = new DatabaseClientError('DB get operation failed');
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            arguments: {
+              collectionName,
+              filter,
+            },
+            reason,
+          });
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      });
   }
 
   /**
@@ -164,10 +209,20 @@ export class DatabaseClientService {
       query = filter.filters.reduce((acc, cur) => {
         return acc.where(cur.fieldPath, cur.opStr, cur.value);
       }, query);
-      const records = await query.get();
-      return records;
-    } catch (err) {
-      console.error('err', err);
+      return await query.get();
+    } catch (reason) {
+      const err = new DatabaseClientError('DB get operation failed');
+      Sentry.withScope((scope) => {
+        scope.setExtras({
+          arguments: {
+            collectionName,
+            filter,
+          },
+          reason,
+        });
+        Sentry.captureException(err);
+      });
+      err.isLogged = true;
       throw err;
     }
   }
@@ -179,10 +234,24 @@ export class DatabaseClientService {
     collectionName: CollectionName;
     docId: string;
   }) {
-    try {
-      await this.firestore.collection(collectionName).doc(docId).delete();
-    } catch (err) {
-      throw err;
-    }
+    return await this.firestore
+      .collection(collectionName)
+      .doc(docId)
+      .delete()
+      .catch((reason) => {
+        const err = new DatabaseClientError('DB delete operation failed');
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            arguments: {
+              collectionName,
+              docId,
+            },
+            reason,
+          });
+          Sentry.captureException(err);
+        });
+        err.isLogged = true;
+        throw err;
+      });
   }
 }
