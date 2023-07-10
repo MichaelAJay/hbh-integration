@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class CrmHandlerService {
-  constructor(private readonly nutshellApiHandler: NutshellApiHandlerService) {}
+  constructor(public readonly nutshellApiHandler: NutshellApiHandlerService) {}
 
   /**
    * Need to think about a supertype

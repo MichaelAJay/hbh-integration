@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
+import { CrmError, OrderManagerError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
 import {
@@ -40,7 +40,7 @@ export class NutshellApiHandlerService {
         });
       default:
         /** LOG */
-        const err = new InternalError(
+        const err = new CrmError(
           `Invalid account crmPrimaryType ${account.crmPrimaryType}`,
         );
         Sentry.captureException(err);
@@ -137,7 +137,7 @@ export class NutshellApiHandlerService {
         return { id, description, isSubtotalMatch, tags };
       case 'ADMIN':
       default:
-        const err = new InternalError(`Invalid ref ${ref}`);
+        const err = new CrmError(`Invalid ref ${ref}`);
         Sentry.captureException(err);
         err.isLogged = true;
         throw err;
@@ -199,7 +199,7 @@ export class NutshellApiHandlerService {
 
       case 'ADMIN':
       default:
-        const err = new InternalError(`Invalid ref ${ref}`);
+        const err = new CrmError(`Invalid ref ${ref}`);
         Sentry.captureException(err);
         err.isLogged = true;
         throw err;
