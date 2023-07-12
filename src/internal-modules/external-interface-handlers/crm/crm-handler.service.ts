@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CrmError } from 'src/common/classes';
+import { CrmError, InternalError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
@@ -78,9 +78,14 @@ export class CrmHandlerService {
         return await this.nutshellApiHandler.getProducts({ ref: account.ref });
       default:
         /** LOG */
-        throw new InternalServerErrorException(
+        const err = new CrmError(
           `Get products method not defined for CRM ${account.crm}`,
         );
+        Sentry.withScope((scope) => {
+          scope.setExtra('account', account);
+          Sentry.captureException(err);
+        });
+        throw err;
     }
   }
 }
