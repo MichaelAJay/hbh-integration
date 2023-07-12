@@ -17,7 +17,7 @@ import { GeneratePrimaryNutshellEntityReturn } from './types/returns';
 
 @Injectable()
 export class NutshellApiHandlerService {
-  constructor(private readonly nutshellApiService: NutshellApiService) {}
+  constructor(public readonly nutshellApiService: NutshellApiService) {}
 
   async generatePrimaryEntity({
     account,
