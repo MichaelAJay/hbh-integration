@@ -83,6 +83,10 @@ export const ProductMap_H4H = {
   'Ham Salad': { name: 'Ham Salad p/p', id: '91' },
   'Heat and Serve Side Dish': { name: 'Heat and Serve Side Dish', id: '335' },
   'Honey Baked Plate Boxed Lunch': { name: 'Honey Baked Plate', id: '247' },
+  'Honey Baked Ham & Cheddar Biscuit Box': {
+    name: 'Honey Baked Ham & Cheddar Biscuit Box',
+    id: '403',
+  },
   'Honey Baked Plate - GF': { name: 'Honey Baked Plate - GF', id: '287' },
   'Honey Baked Plate - Veg': { name: 'Honey Baked Plate - Veg', id: '283' },
   Ice: { name: 'Ice', id: '123' },

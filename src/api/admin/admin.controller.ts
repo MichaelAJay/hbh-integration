@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminAPIService } from './admin.service';
-import { AdminCreateUserBodyDto } from './dtos/body';
+import { AdminCreateUserBodyDto, BulkSendOrdersToCrm } from './dtos/body';
 import {
   AdminOrderNameWithAccountScopeQueryDto,
   GetCrmProductsQueryDto,
@@ -60,5 +60,10 @@ export class AdminController {
   @Post('send-order-to-crm')
   async sendOrderToCrm(@Query() query: SentOrderToCrmQueryDto) {
     return this.adminService.sendEzManageOrderToCrm(query);
+  }
+
+  @Post('send-orders-to-crm')
+  async sendOrdersToCrm(@Body() body: BulkSendOrdersToCrm) {
+    return this.adminService.bulkSendEzManageOrdersToCrm(body);
   }
 }

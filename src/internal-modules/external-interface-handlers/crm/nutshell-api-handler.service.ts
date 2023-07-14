@@ -134,7 +134,7 @@ export class NutshellApiHandlerService {
           products,
         });
 
-        return { id, description, isSubtotalMatch, tags };
+        return { crmId: id, description, isSubtotalMatch, tags };
       case 'ADMIN':
       default:
         const err = new CrmError(`Invalid ref ${ref}`);

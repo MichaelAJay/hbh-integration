@@ -14,13 +14,16 @@ import { OrderDbHandlerService } from 'src/internal-modules/external-interface-h
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
 import { EzmanageApiHandlerService } from 'src/internal-modules/external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import { UserService } from 'src/internal-modules/user/user.service';
-import { AdminCreateUserBodyDto } from './dtos/body';
+import { AdminCreateUserBodyDto, BulkSendOrdersToCrm } from './dtos/body';
 import {
   AdminOrderNameWithAccountScopeQueryDto,
   SentOrderToCrmQueryDto,
 } from './dtos/query';
 import { OrderService } from 'src/internal-modules/order/order.service';
-import { IOrderModelWithId } from 'src/external-modules/database/models';
+import {
+  IOrderModel,
+  IOrderModelWithId,
+} from 'src/external-modules/database/models';
 import {
   AccountRecordWithId,
   ACCOUNT_REF,
@@ -112,8 +115,58 @@ export class AdminInternalInterfaceService {
       throw new UnauthorizedException('Order does not belong to account');
     const result = await this.generateCrmEntity({ internalOrder, account });
 
+    /**
+     * Sentry guard so I don't mess up again
+     */
+
     await this.orderDbHandler.updateOne({ orderId, updates: result });
     return result;
+  }
+
+  async bulkSendEzManageOrdersToCrm(body: BulkSendOrdersToCrm) {
+    const { accountId, orderNames } = body;
+
+    const account = await this.accountDbHandler.getAccount(accountId);
+    if (!account) throw new NotFoundException('Account not found');
+
+    const orders = await this.orderDbHandler.getAllForAccount(accountId);
+    const { internalOrders, rejects, badAccounts } = orderNames.reduce(
+      (acc, cur) => {
+        const matchingOrder = orders.find((order) => order.name === cur);
+        if (matchingOrder) {
+          if (matchingOrder.accountId === accountId)
+            acc.internalOrders.push(matchingOrder);
+          else acc.badAccounts.push(matchingOrder.id);
+        } else {
+          acc.rejects.push(cur);
+        }
+        return acc;
+      },
+      {
+        internalOrders: [] as IOrderModelWithId[],
+        rejects: [] as string[],
+        badAccounts: [] as string[],
+      },
+    );
+
+    const promiseResults = await Promise.all(
+      internalOrders.map(async (internalOrder) => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const result = await this.generateCrmEntity({ internalOrder, account });
+        return this.orderDbHandler.updateOne({
+          orderId: internalOrder.id,
+          updates: result,
+        });
+      }),
+    );
+
+    const res = {
+      promiseResults,
+      addedLeadsCt: promiseResults.length,
+      rejects,
+      badAccounts,
+    };
+    return res;
   }
 
   /**

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AdminInternalInterfaceService } from './admin-internal-interface.service';
-import { AdminCreateUserBodyDto } from './dtos/body';
+import { AdminCreateUserBodyDto, BulkSendOrdersToCrm } from './dtos/body';
 import {
   AdminOrderNameWithAccountScopeQueryDto,
   SentOrderToCrmQueryDto,
@@ -11,6 +11,10 @@ export class AdminAPIService {
   constructor(
     private readonly adminInternalInterface: AdminInternalInterfaceService,
   ) {}
+
+  async bulkSendEzManageOrdersToCrm(body: BulkSendOrdersToCrm) {
+    return await this.adminInternalInterface.bulkSendEzManageOrdersToCrm(body);
+  }
 
   async createUser(body: AdminCreateUserBodyDto) {
     const val = await this.adminInternalInterface.createUser(body);

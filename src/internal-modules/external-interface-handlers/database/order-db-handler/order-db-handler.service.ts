@@ -175,8 +175,25 @@ export class OrderDbHandlerService {
     /**
      * Ensure updates don't include accountId, catererId, catererName
      */
-    const { accountId, catererId, catererName, ...targetUpdates } =
-      updates as Partial<IOrderModel>;
+    // const { id, accountId, catererId, catererName, ...targetUpdates } =
+    //   updates as Partial<IOrderModelWithId>;
+
+    const UPDATEABLE_PROPERTIES = [
+      'name',
+      'status',
+      'crmId',
+      'crmDescription',
+      'warnings',
+      'acceptedAt',
+      'lastUpdatedAt',
+    ];
+
+    const targetUpdates: UpdateableOrderModel = {};
+    for (const property in updates) {
+      if (UPDATEABLE_PROPERTIES.includes(property)) {
+        targetUpdates[property] = updates[property];
+      }
+    }
 
     try {
       await this.dbClientService.update({

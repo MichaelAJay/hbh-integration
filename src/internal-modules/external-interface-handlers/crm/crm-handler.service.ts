@@ -1,5 +1,5 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CrmError, InternalError } from 'src/common/classes';
+import { Injectable } from '@nestjs/common';
+import { CrmError } from 'src/common/classes';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
