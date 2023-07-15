@@ -5,13 +5,20 @@ export class EzManageWebhookPayloadBodyDto
   implements IEventNotificationPayload
 {
   @IsString()
-  id: string;
+  parent_type: string;
 
   @IsString()
-  parent_type: string;
   parent_id: string;
+
+  @IsString()
   entity_type: string;
+
+  @IsString()
   entity_id: string;
+
+  @IsString()
   key: string;
+
+  @IsString()
   occurred_at: string;
 }

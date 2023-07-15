@@ -1,5 +1,4 @@
 export interface IEventNotificationPayload {
-  id: string;
   parent_type: string; // Expected value: 'Caterer'
   parent_id: string; // Expected as catererId
   entity_type: string; // Expected value: 'Order', could also be 'Menu'

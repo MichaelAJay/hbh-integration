@@ -7,6 +7,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import * as Sentry from '@sentry/node';
+import { BadRequestFilter } from './filters/bad-request.filter';
 
 async function bootstrap() {
   const { ENV, FRONTEND_BASE_URL, SENTRY_DSN } = process.env;
@@ -39,9 +40,10 @@ async function bootstrap() {
 
   app.enableCors(corsOptions);
 
+  app.useGlobalFilters(new BadRequestFilter());
   app.useGlobalPipes(
-    // new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
-    new ValidationPipe({ whitelist: true }),
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    // new SentryValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
   await app.listen(8080, '0.0.0.0');
