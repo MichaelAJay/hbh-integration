@@ -1,11 +1,16 @@
+import { UnprocessableEntityException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountModule } from 'src/internal-modules/account/account.module';
 import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
+import {
+  EventNotificationPayloadEntityType,
+  EventNotificationPayloadKey,
+  EventNotificationPayloadParentType,
+} from './enums';
 import { EzmanageSubscriberController } from './ezmanage-subscriber.controller';
 import { EzmanageSubscriberAPIModule } from './ezmanage-subscriber.module';
 import { IEventNotificationPayload } from './interfaces';
-import * as request from 'supertest';
 
 describe('EzmanageSubscriberController', () => {
   let controller: EzmanageSubscriberController;
@@ -35,11 +40,11 @@ describe('EzmanageSubscriberController', () => {
   describe('handleH4HWebhook', () => {
     it('calls ezManageSubscriberService.handleWebhook with request payload as parameter', async () => {
       const mockPayload: IEventNotificationPayload = {
-        parent_type: '',
+        parent_type: EventNotificationPayloadParentType.CATERER,
         parent_id: '',
-        entity_type: '',
+        entity_type: EventNotificationPayloadEntityType.ORDER,
         entity_id: '',
-        key: '',
+        key: EventNotificationPayloadKey.ACCEPTED,
         occurred_at: '',
       };
       jest
@@ -51,8 +56,23 @@ describe('EzmanageSubscriberController', () => {
         controller.ezManageSubscriberService.handleWebhook,
       ).toHaveBeenCalledWith(mockPayload);
     });
-    it('returns 201 if ezManageSubscriberService.handleWebhook resolves', async () => {});
-    it('propagates any error thrown by ezManageSubscriberService.handleWebhook', async () => {});
+    it('propagates any error thrown by ezManageSubscriberService.handleWebhook', async () => {
+      const mockPayload: IEventNotificationPayload = {
+        parent_type: EventNotificationPayloadParentType.CATERER,
+        parent_id: '',
+        entity_type: EventNotificationPayloadEntityType.ORDER,
+        entity_id: '',
+        key: EventNotificationPayloadKey.ACCEPTED,
+        occurred_at: '',
+      };
+      const mockError = new UnprocessableEntityException('ERROR UNDER TEST');
+      jest
+        .spyOn(controller.ezManageSubscriberService, 'handleWebhook')
+        .mockRejectedValue(mockError);
+      await expect(controller.handleH4HWebhook(mockPayload)).rejects.toThrow(
+        mockError,
+      );
+    });
   });
   afterEach(() => jest.restoreAllMocks());
 });

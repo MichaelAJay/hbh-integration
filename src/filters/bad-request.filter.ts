@@ -39,6 +39,9 @@ export class BadRequestFilter implements ExceptionFilter {
         request: {
           method: request.method,
           url: request.url,
+          body: request.body,
+          params: request.params,
+          query: request.query,
         },
       });
       Sentry.captureException(exception);

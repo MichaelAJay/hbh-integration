@@ -1,29 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { Injectable } from '@nestjs/common';
 import { EventNotificationPayloadKey } from './enums';
 import { IEventNotificationPayload } from './interfaces';
 import { EzmanageSubscriberInternalInterfaceService } from './ezmanage-subscriber-internal-interface.service';
-import { EzManagePayloadValidator } from './utility/methods/validators';
 
 @Injectable()
 export class EzmanageSubscriberAPIService {
   constructor(
     private readonly ezManageInternalInterface: EzmanageSubscriberInternalInterfaceService,
-    private readonly logger: CustomLoggerService,
   ) {}
 
   async handleWebhook(payload: IEventNotificationPayload) {
-    /**
-     * Custom validator with logging
-     */
-    try {
-      EzManagePayloadValidator(payload);
-    } catch (err) {
-      const msg = 'Unexpected payload failed validation requirements';
-      this.logger.error(msg, payload);
-      throw new BadRequestException(msg);
-    }
-
     try {
       const {
         parent_id: catererId,

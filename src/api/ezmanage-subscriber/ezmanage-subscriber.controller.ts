@@ -14,7 +14,6 @@ export class EzmanageSubscriberController {
   @Public()
   @Post('hams-for-Him')
   async handleH4HWebhook(@Body() payload: EzManageWebhookPayloadBodyDto) {
-    return 'works';
-    // return this.ezManageSubscriberService.handleWebhook(payload);
+    return this.ezManageSubscriberService.handleWebhook(payload);
   }
 }

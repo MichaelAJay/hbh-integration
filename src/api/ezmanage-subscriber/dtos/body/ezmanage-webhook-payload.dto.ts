@@ -1,23 +1,33 @@
-import { IsString } from 'class-validator';
+import { IsIn, IsString } from 'class-validator';
+import {
+  EventNotificationPayloadEntityType,
+  EventNotificationPayloadKey,
+  EventNotificationPayloadParentType,
+} from '../../enums';
 import { IEventNotificationPayload } from '../../interfaces';
 
 export class EzManageWebhookPayloadBodyDto
   implements IEventNotificationPayload
 {
-  @IsString()
-  parent_type: string;
+  // @IsString()
+  @IsIn([EventNotificationPayloadParentType.CATERER])
+  parent_type: EventNotificationPayloadParentType.CATERER;
 
   @IsString()
   parent_id: string;
 
-  @IsString()
-  entity_type: string;
+  @IsIn([EventNotificationPayloadEntityType.ORDER])
+  entity_type: EventNotificationPayloadEntityType.ORDER;
 
   @IsString()
   entity_id: string;
 
-  @IsString()
-  key: string;
+  @IsIn([
+    EventNotificationPayloadKey.ACCEPTED,
+    EventNotificationPayloadKey.CANCELLED,
+    EventNotificationPayloadKey.UPDATED,
+  ])
+  key: EventNotificationPayloadKey;
 
   @IsString()
   occurred_at: string;

@@ -1,9 +1,15 @@
+import {
+  EventNotificationPayloadEntityType,
+  EventNotificationPayloadKey,
+  EventNotificationPayloadParentType,
+} from '../enums';
+
 export interface IEventNotificationPayload {
-  parent_type: string; // Expected value: 'Caterer'
-  parent_id: string; // Expected as catererId
-  entity_type: string; // Expected value: 'Order', could also be 'Menu'
-  entity_id: string; // Expected as orderId, could also be 'menuId'
-  key: string; // Expected in: 'accepted', 'cancelled', 'updated' (see below)
+  parent_type: EventNotificationPayloadParentType.CATERER;
+  parent_id: string;
+  entity_type: EventNotificationPayloadEntityType.ORDER;
+  entity_id: string;
+  key: EventNotificationPayloadKey;
   occurred_at: string;
 }
 
