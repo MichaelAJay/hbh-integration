@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { IUpdateStatus } from './interfaces';
 import { IGetOrderOutput } from './interfaces/output';
 import { OrderInternalInterfaceService } from './order-internal-interface.service';
@@ -9,7 +8,6 @@ import { OrderInternalInterfaceService } from './order-internal-interface.servic
 export class OrderAPIService {
   constructor(
     private readonly orderInternalInterface: OrderInternalInterfaceService,
-    private readonly logger: CustomLoggerService,
   ) {}
 
   async getOrdersByAccount({ accountId }: { accountId: string }) {

@@ -3,16 +3,15 @@ import {
   IAccountModelWithId,
   ICatererModelWithId,
 } from 'src/external-modules/database/models';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { CatererDbHandlerService } from '../external-interface-handlers/database/caterer-db-handler/caterer-db-handler.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class AccountService {
   constructor(
     private readonly accountDbService: AccountDbHandlerService,
     private readonly catererDbService: CatererDbHandlerService,
-    private readonly logger: CustomLoggerService,
   ) {}
 
   async findAccountByCatererId(
@@ -20,20 +19,26 @@ export class AccountService {
   ): Promise<{ caterer: ICatererModelWithId; account: IAccountModelWithId }> {
     const caterer = await this.catererDbService.getCaterer(catererId);
     if (!caterer) {
-      const msg = `Caterer not found with id ${catererId}`;
-      this.logger.error(msg, {
-        from: 'Internal module AccountService findAccountByCatererId',
+      const err = new NotFoundException(
+        `Caterer not found with id ${catererId}`,
+      );
+      Sentry.withScope((scope) => {
+        scope.setExtra(
+          'from',
+          'Internal module AccountService findAccountByCatererId',
+        );
+        Sentry.captureException(err);
       });
-      throw new NotFoundException(msg);
+      throw err;
     }
 
     const account = await this.accountDbService.getAccount(caterer.accountId);
     if (!account) {
-      const msg = `Caterer with id ${catererId} found, but associated account not found`;
-      this.logger.error(msg, {
-        from: 'Internal module AccountService findAccountByCatererId',
-      });
-      throw new NotFoundException(msg);
+      const err = new NotFoundException(
+        `Caterer with id ${catererId} found, but associated account not found`,
+      );
+      Sentry.captureException(err);
+      throw err;
     }
     return { caterer, account };
   }

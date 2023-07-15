@@ -6,24 +6,19 @@ import {
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
 import { H4HWarnings } from 'src/external-modules/database/models/H4H';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
-import { AccountDbHandlerService } from '../external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import * as Sentry from '@sentry/node';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
-import { InternalError } from 'src/common/classes';
 import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
 
 @Injectable()
 export class OrderService {
   constructor(
-    private readonly accountDbService: AccountDbHandlerService,
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
     private readonly crmHandler: CrmHandlerService,
-    private readonly logger: CustomLoggerService,
   ) {}
 
   async createOrder({

@@ -6,30 +6,24 @@ import {
 } from '@nestjs/common';
 import { UUID } from 'src/common/types';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
-import {
-  CollectionName,
-  DbOrderStatus,
-} from 'src/external-modules/database/enum';
+import { CollectionName } from 'src/external-modules/database/enum';
 import { ICompositeAndFilter } from 'src/external-modules/database/interfaces';
 import {
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import {
   IOrderRecordWithId,
   isIOrderRecord,
   OrderRecordInput,
 } from './interfaces';
 import { UpdateableOrderModel } from './types';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class OrderDbHandlerService {
   private collectionName: CollectionName;
-  constructor(
-    private readonly dbClientService: DatabaseClientService,
-    private readonly logger: CustomLoggerService,
-  ) {
+  constructor(private readonly dbClientService: DatabaseClientService) {
     this.collectionName = CollectionName.ORDERS;
   }
 
@@ -151,9 +145,12 @@ export class OrderDbHandlerService {
     }
 
     if (records.length > 1) {
-      this.logger.error('More than one order found matching specification', {
-        orderName,
-        accountId,
+      Sentry.withScope((scope) => {
+        scope.setExtras({ orderName, accountId });
+        Sentry.captureMessage(
+          'More than one order found matching specification',
+          'warning',
+        );
       });
     }
 
