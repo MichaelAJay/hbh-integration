@@ -4,17 +4,14 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { JwtSecretRequestType } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmError, InternalError, OrderManagerError } from 'src/common/classes';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
-  IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
-import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
 import { CrmModule } from '../external-interface-handlers/crm/crm.module';
 import { InternalDatabaseModule } from '../external-interface-handlers/database/database.module';
@@ -133,7 +130,6 @@ describe('OrderService', () => {
         InternalDatabaseModule,
         EzmanageApiHandlerModule,
         CrmModule,
-        CustomLoggerModule,
       ],
       providers: [OrderService],
     }).compile();
