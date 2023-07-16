@@ -19,8 +19,6 @@ export class EzmanageSubscriberInternalInterfaceService {
    * 1) parent_id references a Caterer
    * 2) entity_id is an EzManage Order UUID
    * 3) key is either 'accepted' or 'cancelled'
-   * @param param0
-   * @returns
    */
   async handleWebhook({
     catererId,
@@ -57,7 +55,7 @@ export class EzmanageSubscriberInternalInterfaceService {
     });
   }
 
-  private async handleOrderCancelled({
+  async handleOrderCancelled({
     account,
     catererId,
     orderId,
@@ -100,14 +98,6 @@ export class EzmanageSubscriberInternalInterfaceService {
       });
     }
 
-    /**
-     * Do I want to do the update from the orderDbHandler or through the OrderService?
-     * Typically, if it's a single operation, going through the db handler is fine.
-     * And now the Order status has been updated and we can proceed with the role of the
-     * api controller & related providers, which is to control the process of handling the "Cancelled" event
-     *
-     * The next thing to do in the "Cancelled" event is to prepare for the Nutshell integration
-     */
     await this.orderService.handleCancelledOrder(orderId);
   }
 
@@ -118,7 +108,7 @@ export class EzmanageSubscriberInternalInterfaceService {
    *
    * @TODO need to think through process of "Accepted" after "Cancelled" - is that possible?
    */
-  private async handleOrderAccepted({
+  async handleOrderAccepted({
     account,
     catererId,
     catererName,

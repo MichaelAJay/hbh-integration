@@ -8,7 +8,7 @@ import { EzManageWebhookPayloadBodyDto } from './dtos/body';
 @Controller('ezmanage-subscriber')
 export class EzmanageSubscriberController {
   constructor(
-    public readonly ezManageSubscriberService: EzmanageSubscriberAPIService,
+    private readonly ezManageSubscriberService: EzmanageSubscriberAPIService,
   ) {}
 
   @Public()
