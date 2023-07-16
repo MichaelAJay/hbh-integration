@@ -1,10 +1,8 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import exp from 'constants';
 import { OrderDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { OrderInternalInterfaceService } from './order-internal-interface.service';
-import { OrderAPIModule } from './order.module';
 
 describe('OrderInternalInterfaceService', () => {
   let service: OrderInternalInterfaceService;
