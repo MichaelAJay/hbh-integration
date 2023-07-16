@@ -9,7 +9,7 @@ import { OrderDbHandlerService } from 'src/internal-modules/external-interface-h
 import { OrderService } from 'src/internal-modules/order/order.service';
 import { IUpdateStatus } from './interfaces';
 import { IGetOrderOutput } from './interfaces/output';
-import { GetOrdersByAccount } from './types/output/get-orders-by-account.type';
+import { GetOrdersByAccount } from './types/output';
 import { convertEzManageOrderForOutput } from './utility';
 
 @Injectable()
