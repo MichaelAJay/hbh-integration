@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:target": "npx jest --testPathPattern=order.controller.unit.spec.ts"
+    "test:target": "npx jest --testPathPattern=api/order/order.service.unit.spec.ts"
   },
   "dependencies": {
     "@google-cloud/firestore": "^6.5.0",
