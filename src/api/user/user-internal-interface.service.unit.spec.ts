@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthModule } from 'src/internal-modules/auth/auth.module';
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
-import { InternalDatabaseModule } from 'src/internal-modules/external-interface-handlers/database/database.module';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
 import { UserInternalInterfaceService } from './user-internal-interface.service';
 
