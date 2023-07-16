@@ -33,6 +33,7 @@ export class EzmanageSubscriberInternalInterfaceService {
   }) {
     const { account, caterer } =
       await this.accountService.findAccountByCatererId(catererId);
+
     if (key === EventNotificationPayloadKey.CANCELLED)
       return this.handleOrderCancelled({
         account,
