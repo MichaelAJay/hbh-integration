@@ -424,6 +424,5 @@ describe('OrderService', () => {
       ).rejects.toThrow(mockError);
     });
   });
-
   afterEach(() => jest.restoreAllMocks());
 });
