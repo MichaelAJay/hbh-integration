@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
@@ -31,13 +31,20 @@ describe('OrderInternalInterfaceService', () => {
         OrderInternalInterfaceService,
         {
           provide: OrderService,
-          useValue: {},
+          useValue: {
+            doesOrderBelongToAccount: jest.fn(),
+            getEzManageOrder: jest.fn(),
+          },
         },
         {
           provide: OrderDbHandlerService,
           useValue: {
             getAllForAccount: jest.fn(),
+            getManyForAccount: jest.fn(),
             getOne: jest.fn(),
+            updateOne: jest.fn(),
+            delete: jest.fn(),
+            findByNameForAccount: jest.fn(),
           },
         },
       ],
@@ -303,7 +310,11 @@ describe('OrderInternalInterfaceService', () => {
         .spyOn(orderUtils, 'convertEzManageOrderForOutput')
         .mockReturnValue(mockEzManageOrderForOutput);
       await service.getOrder(mockArguments);
-      expect(target).toHaveBeenCalledWith(mockArguments);
+      expect(target).toHaveBeenCalledWith({
+        order: mockOrderModelWithId,
+        accountId: mockArguments.accountId,
+        ref: mockArguments.ref,
+      });
     });
     it('propagates any error thrown by service.getEzManageOrder', async () => {
       const mockArguments = {
@@ -760,11 +771,542 @@ describe('OrderInternalInterfaceService', () => {
       });
     });
   });
+  describe('getEzManageOrder', () => {
+    it('calls orderService.doesOrderBelongToAccount with the correct arguments', async () => {
+      const mockDate = new Date();
+      const mockArguments = {
+        order: {
+          id: 'MOCK ORDER ID',
+          accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+          catererId: 'MOCK CATERER ID',
+          catererName: 'MOCK CATERER NAME',
+          name: 'MOCK ORDER NAME',
+          status: DbOrderStatus.ACCEPTED,
+          acceptedAt: mockDate,
+          lastUpdatedAt: mockDate,
+        },
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const target = jest
+        .spyOn(orderService, 'doesOrderBelongToAccount')
+        .mockResolvedValue(false);
+      await service.getEzManageOrder(mockArguments).catch(() => {
+        expect(target).toHaveBeenCalledWith({
+          input: mockArguments.order,
+          accountId: mockArguments.accountId,
+        });
+      });
+    });
+    it('throws WRONG_ACCT error if orderService.doesOrderbelongToAccount resolves to false and does not call orderService.getEzManageOrder', async () => {
+      const mockDate = new Date();
+      const mockArguments = {
+        order: {
+          id: 'MOCK ORDER ID',
+          accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+          catererId: 'MOCK CATERER ID',
+          catererName: 'MOCK CATERER NAME',
+          name: 'MOCK ORDER NAME',
+          status: DbOrderStatus.ACCEPTED,
+          acceptedAt: mockDate,
+          lastUpdatedAt: mockDate,
+        },
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      jest
+        .spyOn(orderService, 'doesOrderBelongToAccount')
+        .mockResolvedValue(false);
+      jest.spyOn(orderService, 'getEzManageOrder');
+
+      await service.getEzManageOrder(mockArguments).catch((reason) => {
+        expect(reason).toEqual(
+          new ForbiddenException({ reason: 'WRONG_ACCT' }),
+        );
+        expect(orderService.getEzManageOrder).not.toHaveBeenCalled();
+      });
+    });
+    it('calls orderService.getEzManageOrder with the correct arguments', async () => {
+      const mockDate = new Date();
+      const mockArguments = {
+        order: {
+          id: 'MOCK ORDER ID',
+          accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+          catererId: 'MOCK CATERER ID',
+          catererName: 'MOCK CATERER NAME',
+          name: 'MOCK ORDER NAME',
+          status: DbOrderStatus.ACCEPTED,
+          acceptedAt: mockDate,
+          lastUpdatedAt: mockDate,
+        },
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      jest
+        .spyOn(orderService, 'doesOrderBelongToAccount')
+        .mockResolvedValue(true);
+
+      const mockResolvedEzManageOrder: IEzManageOrder = {
+        orderNumber: 'FW8M2X',
+        uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+        event: {
+          timestamp: '2023-06-29T15:15:00Z',
+          timeZoneOffset: '-04:00',
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        orderCustomer: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: {
+            subunits: 16920,
+          },
+          tip: {
+            subunits: 0,
+          },
+        },
+        caterer: {
+          address: {
+            city: 'Athens',
+          },
+        },
+        catererCart: {
+          feesAndDiscounts: [
+            {
+              name: 'Delivery Fee',
+              cost: {
+                subunits: 2500,
+              },
+            },
+          ],
+          orderItems: [
+            {
+              quantity: 15,
+              name: 'Signature Sandwich Boxed Lunches',
+              totalInSubunits: {
+                subunits: 16920,
+              },
+              customizations: [
+                {
+                  customizationTypeName: 'Signature Sandwiches',
+                  name: 'Assorted',
+                  quantity: 15,
+                },
+                {
+                  customizationTypeName: 'Add Drinks',
+                  name: 'Assorted Canned Sodas',
+                  quantity: 15,
+                },
+              ],
+            },
+          ],
+          totals: {
+            catererTotalDue: 154.22,
+          },
+        },
+        orderSourceType: 'MARKETPLACE',
+      };
+
+      const target = jest
+        .spyOn(orderService, 'getEzManageOrder')
+        .mockResolvedValue(mockResolvedEzManageOrder);
+
+      await service.getEzManageOrder(mockArguments);
+      expect(target).toHaveBeenCalledWith({
+        order: mockArguments.order,
+        ref: mockArguments.ref,
+      });
+    });
+    it('returns a Promise which resolves to what orderService.getEzManageOrder resolves to', async () => {
+      const mockDate = new Date();
+      const mockArguments = {
+        order: {
+          id: 'MOCK ORDER ID',
+          accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+          catererId: 'MOCK CATERER ID',
+          catererName: 'MOCK CATERER NAME',
+          name: 'MOCK ORDER NAME',
+          status: DbOrderStatus.ACCEPTED,
+          acceptedAt: mockDate,
+          lastUpdatedAt: mockDate,
+        },
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      jest
+        .spyOn(orderService, 'doesOrderBelongToAccount')
+        .mockResolvedValue(true);
+
+      const mockResolvedEzManageOrder: IEzManageOrder = {
+        orderNumber: 'FW8M2X',
+        uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+        event: {
+          timestamp: '2023-06-29T15:15:00Z',
+          timeZoneOffset: '-04:00',
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        orderCustomer: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: {
+            subunits: 16920,
+          },
+          tip: {
+            subunits: 0,
+          },
+        },
+        caterer: {
+          address: {
+            city: 'Athens',
+          },
+        },
+        catererCart: {
+          feesAndDiscounts: [
+            {
+              name: 'Delivery Fee',
+              cost: {
+                subunits: 2500,
+              },
+            },
+          ],
+          orderItems: [
+            {
+              quantity: 15,
+              name: 'Signature Sandwich Boxed Lunches',
+              totalInSubunits: {
+                subunits: 16920,
+              },
+              customizations: [
+                {
+                  customizationTypeName: 'Signature Sandwiches',
+                  name: 'Assorted',
+                  quantity: 15,
+                },
+                {
+                  customizationTypeName: 'Add Drinks',
+                  name: 'Assorted Canned Sodas',
+                  quantity: 15,
+                },
+              ],
+            },
+          ],
+          totals: {
+            catererTotalDue: 154.22,
+          },
+        },
+        orderSourceType: 'MARKETPLACE',
+      };
+
+      jest
+        .spyOn(orderService, 'getEzManageOrder')
+        .mockResolvedValue(mockResolvedEzManageOrder);
+
+      await expect(service.getEzManageOrder(mockArguments)).resolves.toEqual(
+        mockResolvedEzManageOrder,
+      );
+    });
+  });
+  describe('getOrderByName', () => {
+    it('calls service.getInternalOrderByName with correct arguments', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockInternalOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: mockArguments.orderName,
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const target = jest
+        .spyOn(service, 'getInternalOrderByName')
+        .mockResolvedValue(mockInternalOrder);
+
+      const mockOrderOutput: IGetOrderOutput = {
+        status: UiOrderStatus.PENDING,
+        catererName: 'MOCK CATERER NAME',
+        orderNumber: 'FW8M2X',
+        sourceType: 'MARKETPLACE',
+        event: {
+          deliveryTime: new Date(),
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        contact: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: 169.2,
+          catererTotalDue: 154.22,
+          tip: 0,
+          deliveryFee: 25,
+          commission: -39.98,
+        },
+        items: [
+          {
+            quantity: 15,
+            name: 'Signature Sandwich Boxed Lunches',
+            cost: 169.2,
+            customizations: [
+              {
+                customizationTypeName: 'Signature Sandwiches',
+                name: 'Assorted',
+                quantity: 15,
+              },
+              {
+                customizationTypeName: 'Add Drinks',
+                name: 'Assorted Canned Sodas',
+                quantity: 15,
+              },
+            ],
+          },
+        ],
+        itemsAggregate: {
+          'Signature Sandwich Boxed Lunches': 15,
+        },
+      };
+      jest.spyOn(service, 'getOrder').mockResolvedValue(mockOrderOutput);
+
+      await service.getOrderByName(mockArguments);
+      expect(target).toHaveBeenCalledWith({
+        orderName: mockArguments.orderName,
+        accountId: mockArguments.accountId,
+      });
+    });
+    it('propagates any error thrown by service.getInternalOrderByName and does not call remaining methods', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest
+        .spyOn(service, 'getInternalOrderByName')
+        .mockRejectedValue(mockError);
+
+      jest.spyOn(service, 'getOrder');
+
+      await service.getOrderByName(mockArguments).catch((reason) => {
+        expect(reason).toEqual(mockError);
+        expect(service.getOrder).not.toHaveBeenCalled();
+      });
+    });
+    it('calls service.getOrder with the correct arguments', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockInternalOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: mockArguments.orderName,
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest
+        .spyOn(service, 'getInternalOrderByName')
+        .mockResolvedValue(mockInternalOrder);
+
+      const mockOrderOutput: IGetOrderOutput = {
+        status: UiOrderStatus.PENDING,
+        catererName: 'MOCK CATERER NAME',
+        orderNumber: 'FW8M2X',
+        sourceType: 'MARKETPLACE',
+        event: {
+          deliveryTime: new Date(),
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        contact: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: 169.2,
+          catererTotalDue: 154.22,
+          tip: 0,
+          deliveryFee: 25,
+          commission: -39.98,
+        },
+        items: [
+          {
+            quantity: 15,
+            name: 'Signature Sandwich Boxed Lunches',
+            cost: 169.2,
+            customizations: [
+              {
+                customizationTypeName: 'Signature Sandwiches',
+                name: 'Assorted',
+                quantity: 15,
+              },
+              {
+                customizationTypeName: 'Add Drinks',
+                name: 'Assorted Canned Sodas',
+                quantity: 15,
+              },
+            ],
+          },
+        ],
+        itemsAggregate: {
+          'Signature Sandwich Boxed Lunches': 15,
+        },
+      };
+      jest.spyOn(service, 'getOrder').mockResolvedValue(mockOrderOutput);
+
+      await service.getOrderByName(mockArguments);
+      expect(service.getOrder).toHaveBeenCalledWith({
+        orderId: mockInternalOrder.id,
+        accountId: mockArguments.accountId,
+        ref: mockArguments.ref,
+      });
+    });
+    it('returns a Promise which resolves to what service.getOrder resolves to', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockInternalOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: mockArguments.orderName,
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest
+        .spyOn(service, 'getInternalOrderByName')
+        .mockResolvedValue(mockInternalOrder);
+
+      const mockOrderOutput: IGetOrderOutput = {
+        status: UiOrderStatus.PENDING,
+        catererName: 'MOCK CATERER NAME',
+        orderNumber: 'FW8M2X',
+        sourceType: 'MARKETPLACE',
+        event: {
+          deliveryTime: new Date(),
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        contact: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: 169.2,
+          catererTotalDue: 154.22,
+          tip: 0,
+          deliveryFee: 25,
+          commission: -39.98,
+        },
+        items: [
+          {
+            quantity: 15,
+            name: 'Signature Sandwich Boxed Lunches',
+            cost: 169.2,
+            customizations: [
+              {
+                customizationTypeName: 'Signature Sandwiches',
+                name: 'Assorted',
+                quantity: 15,
+              },
+              {
+                customizationTypeName: 'Add Drinks',
+                name: 'Assorted Canned Sodas',
+                quantity: 15,
+              },
+            ],
+          },
+        ],
+        itemsAggregate: {
+          'Signature Sandwich Boxed Lunches': 15,
+        },
+      };
+      jest.spyOn(service, 'getOrder').mockResolvedValue(mockOrderOutput);
+
+      await expect(service.getOrderByName(mockArguments)).resolves.toEqual(
+        mockOrderOutput,
+      );
+    });
+  });
   /**
    * START HERE
    */
-  describe('getEzManageOrder', () => {});
-  describe('getOrderByName', () => {});
   describe('updateStatuses', () => {});
   describe('deleteOrders', () => {});
   describe('generateLeadFromOrder', () => {});
