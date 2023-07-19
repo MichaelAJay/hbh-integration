@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { IOrderModelWithId } from 'src/external-modules/database/models';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
@@ -126,7 +127,7 @@ export class OrderInternalInterfaceService {
 
         if (!order) return { orderId, didUpdate: false };
 
-        if (order.id !== accountId) return { orderId, didUpdate: false };
+        if (order.accountId !== accountId) return { orderId, didUpdate: false };
 
         if (order.status === status) return { orderId, didUpdate: false };
         const { updated } = await this.orderDbHandler.updateOne({
@@ -146,6 +147,9 @@ export class OrderInternalInterfaceService {
     }, [] as { orderId: string; didUpdate: boolean }[]);
   }
 
+  /**
+   * This should really use Promise.allSettled instead
+   */
   async deleteOrders({
     orderIds,
     accountId,
@@ -179,18 +183,21 @@ export class OrderInternalInterfaceService {
     accountId: string;
     ref: ACCOUNT_REF;
   }) {
-    const internalOrder = await this.getInternalOrderByName({
-      orderName,
-      accountId,
-    });
+    throw new NotImplementedException(
+      'Order internal service generateLeadFromOrder not implemented',
+    );
+    // const internalOrder = await this.getInternalOrderByName({
+    //   orderName,
+    //   accountId,
+    // });
 
-    if (!internalOrder) throw new BadRequestException('Order not found');
+    // if (!internalOrder) throw new BadRequestException('Order not found');
 
-    const ezManageOrder = await this.getEzManageOrder({
-      order: internalOrder,
-      accountId,
-      ref,
-    });
+    // const ezManageOrder = await this.getEzManageOrder({
+    //   order: internalOrder,
+    //   accountId,
+    //   ref,
+    // });
 
     // const VOID_RETURN = await this.orderService.generateLeadFromOrder(
     //   ezManageOrder,

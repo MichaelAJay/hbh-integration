@@ -1,4 +1,8 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
@@ -1307,9 +1311,466 @@ describe('OrderInternalInterfaceService', () => {
   /**
    * START HERE
    */
-  describe('updateStatuses', () => {});
-  describe('deleteOrders', () => {});
-  describe('generateLeadFromOrder', () => {});
-  describe('getInternalOrderByName', () => {});
+  describe('updateStatuses', () => {
+    it('resolves with didUpdate false if order is not found', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValueOnce(null);
+      const result = await service.updateStatuses(mockArguments);
+      expect(result[0].didUpdate).toEqual(false);
+    });
+    it('resolves with didUpdate false if order does not belong to account', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValueOnce(mockOrder);
+      const result = await service.updateStatuses(mockArguments);
+      expect(result[0].didUpdate).toEqual(false);
+    });
+    it('resolves with didUpdate false if order status is unchanged', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ARCHIVED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValueOnce(mockOrder);
+      const result = await service.updateStatuses(mockArguments);
+      expect(result[0].didUpdate).toEqual(false);
+    });
+    it('resolves with an array whose length is shorter than the input when orderDbHandler.getOne throws an error', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockError = new Error('ANY ERROR');
+      jest.spyOn(orderDbHandler, 'getOne').mockRejectedValue(mockError);
+      const result = await service.updateStatuses(mockArguments);
+      expect(result).toHaveLength(0);
+    });
+    it('resolves with an array whose length is shorter than the input when orderDbHandler.updateOne throws an error', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValueOnce(mockOrder);
+      jest
+        .spyOn(orderDbHandler, 'updateOne')
+        .mockRejectedValueOnce(new Error('ANY ERROR'));
+      const result = await service.updateStatuses(mockArguments);
+      expect(result).toHaveLength(0);
+    });
+    it('calls orderDbHandler.getOne as many times as the length of incoming updates', async () => {
+      const mockArguments = {
+        updates: [
+          { id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK ORDER ID 2', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK ORDER ID 3', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK ORDER ID 4', status: DbOrderStatus.ARCHIVED },
+        ],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockOrder = null; /** Enabled earliest possible loop termination */
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValue(mockOrder);
+      await service.updateStatuses(mockArguments);
+      expect(orderDbHandler.getOne).toHaveBeenCalledTimes(
+        mockArguments.updates.length,
+      );
+    });
+    it('calls orderDbHandler.updateOne as many times as passes constraints: order is found, belongs to account, and status is different', async () => {
+      const mockArguments = {
+        updates: [
+          { id: 'MOCK MISSING ORDER ID', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK ORDER ID 2', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK ORDER ID 3', status: DbOrderStatus.ARCHIVED },
+          { id: 'MOCK MISSING ORDER ID 4', status: DbOrderStatus.ARCHIVED },
+        ],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockDate = new Date();
+      const mockOrder2: IOrderModelWithId = {
+        id: 'MOCK ORDER ID 2',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockOrder3: IOrderModelWithId = {
+        id: 'MOCK ORDER ID 3',
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest
+        .spyOn(orderDbHandler, 'getOne')
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(mockOrder2)
+        .mockResolvedValueOnce(mockOrder3)
+        .mockResolvedValueOnce(null);
+      jest
+        .spyOn(orderDbHandler, 'updateOne')
+        .mockResolvedValue({ updated: true });
+      await service.updateStatuses(mockArguments);
+      expect(orderDbHandler.updateOne).toHaveBeenCalledTimes(2);
+    });
+    it('resolves with didUpdate true if updateOrder is called and returns { didUpdate: true }', async () => {
+      const mockArguments = {
+        updates: [{ id: 'MOCK ORDER ID', status: DbOrderStatus.ARCHIVED }],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: mockArguments.updates[0].id,
+        accountId: mockArguments.accountId,
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest.spyOn(orderDbHandler, 'getOne').mockResolvedValueOnce(mockOrder);
+      jest
+        .spyOn(orderDbHandler, 'updateOne')
+        .mockResolvedValue({ updated: true });
+      const result = await service.updateStatuses(mockArguments);
+      expect(result[0].didUpdate).toEqual(true);
+    });
+  });
+  describe('deleteOrders', () => {
+    it('calls getManyForAccount with the correct arguments', async () => {
+      const mockArguments = {
+        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      jest
+        .spyOn(orderDbHandler, 'getManyForAccount')
+        .mockRejectedValue(new Error('QUICKEST METHOD TERMINATION ERROR'));
+
+      await service.deleteOrders(mockArguments).catch(() => {
+        expect(orderDbHandler.getManyForAccount).toHaveBeenCalledWith({
+          orderIds: mockArguments.orderIds,
+        });
+      });
+    });
+    it('propagates any error thrown by orderDbHandler.getManyForAccount', async () => {
+      const mockArguments = {
+        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest
+        .spyOn(orderDbHandler, 'getManyForAccount')
+        .mockRejectedValue(mockError);
+
+      await expect(service.deleteOrders(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('calls orderDbHandler.delete as many times as there are valid orders (found orders with matching account ids)', async () => {
+      const mockArguments = {
+        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockValidOrder1: IOrderModelWithId = {
+        id: mockArguments.orderIds[0],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockInvalidOrder2: IOrderModelWithId = {
+        id: mockArguments.orderIds[1],
+        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockValidOrder3: IOrderModelWithId = {
+        id: mockArguments.orderIds[2],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+
+      jest
+        .spyOn(orderDbHandler, 'getManyForAccount')
+        .mockResolvedValue([
+          mockValidOrder1,
+          mockInvalidOrder2,
+          mockValidOrder3,
+        ]);
+      jest
+        .spyOn(orderDbHandler, 'delete')
+        .mockResolvedValue({ didDelete: true });
+
+      await service.deleteOrders(mockArguments);
+      /**
+       * Expected to be called twice because mockInvalidOrder2 has a non-matching accountId
+       */
+      expect(orderDbHandler.delete).toHaveBeenCalledTimes(2);
+    });
+    it('returns accurate invalidOrders array of invalid order ids if Promise.all resolves', async () => {
+      const mockArguments = {
+        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockValidOrder1: IOrderModelWithId = {
+        id: mockArguments.orderIds[0],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockInvalidOrder2: IOrderModelWithId = {
+        id: mockArguments.orderIds[1],
+        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockValidOrder3: IOrderModelWithId = {
+        id: mockArguments.orderIds[2],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+
+      jest
+        .spyOn(orderDbHandler, 'getManyForAccount')
+        .mockResolvedValue([
+          mockValidOrder1,
+          mockInvalidOrder2,
+          mockValidOrder3,
+        ]);
+      jest
+        .spyOn(orderDbHandler, 'delete')
+        .mockResolvedValue({ didDelete: true });
+
+      const result = await service.deleteOrders(mockArguments);
+      expect(result).toEqual({ invalidOrders: [mockInvalidOrder2.id] });
+    });
+    it('throws an error if orderDbHandler.delete throws an error in any iteration', async () => {
+      const mockArguments = {
+        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      const mockDate = new Date();
+      const mockValidOrder1: IOrderModelWithId = {
+        id: mockArguments.orderIds[0],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockInvalidOrder2: IOrderModelWithId = {
+        id: mockArguments.orderIds[1],
+        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockValidOrder3: IOrderModelWithId = {
+        id: mockArguments.orderIds[2],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+
+      jest
+        .spyOn(orderDbHandler, 'getManyForAccount')
+        .mockResolvedValue([
+          mockValidOrder1,
+          mockInvalidOrder2,
+          mockValidOrder3,
+        ]);
+      const mockError = new Error('ERROR UNDER TEST');
+      jest
+        .spyOn(orderDbHandler, 'delete')
+        .mockResolvedValueOnce({ didDelete: true })
+        .mockRejectedValueOnce(mockError);
+
+      await expect(service.deleteOrders(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+  });
+  describe('generateLeadFromOrder', () => {
+    it('rejects with NotImplementedException', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+        ref: 'H4H' as ACCOUNT_REF,
+      };
+      await expect(
+        service.generateLeadFromOrder(mockArguments),
+      ).rejects.toThrow(
+        new NotImplementedException(
+          'Order internal service generateLeadFromOrder not implemented',
+        ),
+      );
+    });
+  });
+  describe('getInternalOrderByName', () => {
+    it('calls orderDbHandler.findByNameForAccount with the correct arguments', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+      };
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: mockArguments.orderName,
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest
+        .spyOn(orderDbHandler, 'findByNameForAccount')
+        .mockResolvedValue(mockOrder);
+      await service.getInternalOrderByName(mockArguments);
+      expect(orderDbHandler.findByNameForAccount).toHaveBeenCalledWith(
+        mockArguments.orderName,
+        mockArguments.accountId,
+      );
+    });
+    it('passes through the return of orderDbHandler.findByNameForAccount', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+      };
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: mockArguments.orderName,
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      jest
+        .spyOn(orderDbHandler, 'findByNameForAccount')
+        .mockResolvedValue(mockOrder);
+      await expect(
+        service.getInternalOrderByName(mockArguments),
+      ).resolves.toEqual(mockOrder);
+    });
+    it('propagates any error thrown by orderDbHandler.findByNameForAccount', async () => {
+      const mockArguments = {
+        orderName: 'MOCK ORDER NAME',
+        accountId: 'MOCK ACCOUNT ID',
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest
+        .spyOn(orderDbHandler, 'findByNameForAccount')
+        .mockRejectedValue(mockError);
+      await expect(
+        service.getInternalOrderByName(mockArguments),
+      ).rejects.toThrow(mockError);
+    });
+  });
   afterEach(() => jest.resetAllMocks());
 });
+
+/**
+ * Now that you're at the end, refactor deleteOrders and change the last test
+ */

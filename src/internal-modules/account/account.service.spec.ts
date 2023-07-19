@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { InternalDatabaseModule } from '../external-interface-handlers/database/database.module';
 import { AccountService } from './account.service';
 
@@ -8,7 +7,7 @@ describe('AccountService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [InternalDatabaseModule, CustomLoggerModule],
+      imports: [InternalDatabaseModule],
       providers: [AccountService],
     }).compile();
 

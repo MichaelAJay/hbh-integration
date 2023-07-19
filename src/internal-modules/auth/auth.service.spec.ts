@@ -1,6 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -8,7 +7,6 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CustomLoggerModule],
       providers: [AuthService, JwtService],
     }).compile();
 

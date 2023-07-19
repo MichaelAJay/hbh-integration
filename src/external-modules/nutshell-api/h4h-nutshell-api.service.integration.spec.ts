@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CrmError } from 'src/common/classes/custom-error.class';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
-import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { NutshellApiService } from './nutshell-api.service';
 
 describe('H4H_NutshellApiService', () => {
@@ -95,11 +94,7 @@ describe('H4H_NutshellApiService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        CacheModule.register({}),
-        CustomLoggerModule,
-      ],
+      imports: [ConfigModule.forRoot(), CacheModule.register({})],
       providers: [NutshellApiService],
     }).compile();
 

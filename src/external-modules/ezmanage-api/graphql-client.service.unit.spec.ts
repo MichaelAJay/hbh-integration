@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderManagerError } from 'src/common/classes';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
-import { CustomLoggerModule } from 'src/support-modules/custom-logger/custom-logger.module';
 import { GraphqlClientService } from './graphql-client.service';
 
 describe('GraphqlClientService', () => {
@@ -11,7 +10,7 @@ describe('GraphqlClientService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot(), CustomLoggerModule],
+      imports: [ConfigModule.forRoot()],
       providers: [GraphqlClientService],
     }).compile();
 
