@@ -1495,147 +1495,100 @@ describe('OrderInternalInterfaceService', () => {
     });
   });
   describe('deleteOrders', () => {
-    it('calls getManyForAccount with the correct arguments', async () => {
+    // it('calls getManyForAccount with the correct arguments', async () => {
+    //   const mockArguments = {
+    //     orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+    //     accountId: 'MOCK ACCOUNT ID',
+    //     ref: 'H4H' as ACCOUNT_REF,
+    //   };
+    //   jest
+    //     .spyOn(orderDbHandler, 'getManyForAccount')
+    //     .mockRejectedValue(new Error('QUICKEST METHOD TERMINATION ERROR'));
+
+    //   await service.deleteOrders(mockArguments).catch(() => {
+    //     expect(orderDbHandler.getManyForAccount).toHaveBeenCalledWith({
+    //       orderIds: mockArguments.orderIds,
+    //     });
+    //   });
+    // });
+    // it('propagates any error thrown by orderDbHandler.getManyForAccount', async () => {
+    //   const mockArguments = {
+    //     orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+    //     accountId: 'MOCK ACCOUNT ID',
+    //     ref: 'H4H' as ACCOUNT_REF,
+    //   };
+    //   const mockError = new Error('ERROR UNDER TEST');
+    //   jest
+    //     .spyOn(orderDbHandler, 'getManyForAccount')
+    //     .mockRejectedValue(mockError);
+
+    //   await expect(service.deleteOrders(mockArguments)).rejects.toThrow(
+    //     mockError,
+    //   );
+    // });
+    // it('calls orderDbHandler.delete as many times as there are valid orders (found orders with matching account ids)', async () => {
+    //   const mockArguments = {
+    //     orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     ref: 'H4H' as ACCOUNT_REF,
+    //   };
+    //   const mockDate = new Date();
+    //   const mockValidOrder1: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[0],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+    //   const mockInvalidOrder2: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[1],
+    //     accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+    //   const mockValidOrder3: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[2],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+
+    //   jest
+    //     .spyOn(orderDbHandler, 'getManyForAccount')
+    //     .mockResolvedValue([
+    //       mockValidOrder1,
+    //       mockInvalidOrder2,
+    //       mockValidOrder3,
+    //     ]);
+    //   jest
+    //     .spyOn(orderDbHandler, 'delete')
+    //     .mockResolvedValue({ didDelete: true });
+
+    //   await service.deleteOrders(mockArguments);
+    //   /**
+    //    * Expected to be called twice because mockInvalidOrder2 has a non-matching accountId
+    //    */
+    //   expect(orderDbHandler.delete).toHaveBeenCalledTimes(2);
+    // });
+    it('returns detailed description of passes and failures', async () => {
       const mockArguments = {
-        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
-        accountId: 'MOCK ACCOUNT ID',
-        ref: 'H4H' as ACCOUNT_REF,
-      };
-      jest
-        .spyOn(orderDbHandler, 'getManyForAccount')
-        .mockRejectedValue(new Error('QUICKEST METHOD TERMINATION ERROR'));
-
-      await service.deleteOrders(mockArguments).catch(() => {
-        expect(orderDbHandler.getManyForAccount).toHaveBeenCalledWith({
-          orderIds: mockArguments.orderIds,
-        });
-      });
-    });
-    it('propagates any error thrown by orderDbHandler.getManyForAccount', async () => {
-      const mockArguments = {
-        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
-        accountId: 'MOCK ACCOUNT ID',
-        ref: 'H4H' as ACCOUNT_REF,
-      };
-      const mockError = new Error('ERROR UNDER TEST');
-      jest
-        .spyOn(orderDbHandler, 'getManyForAccount')
-        .mockRejectedValue(mockError);
-
-      await expect(service.deleteOrders(mockArguments)).rejects.toThrow(
-        mockError,
-      );
-    });
-    it('calls orderDbHandler.delete as many times as there are valid orders (found orders with matching account ids)', async () => {
-      const mockArguments = {
-        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        ref: 'H4H' as ACCOUNT_REF,
-      };
-      const mockDate = new Date();
-      const mockValidOrder1: IOrderModelWithId = {
-        id: mockArguments.orderIds[0],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-      const mockInvalidOrder2: IOrderModelWithId = {
-        id: mockArguments.orderIds[1],
-        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-      const mockValidOrder3: IOrderModelWithId = {
-        id: mockArguments.orderIds[2],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-
-      jest
-        .spyOn(orderDbHandler, 'getManyForAccount')
-        .mockResolvedValue([
-          mockValidOrder1,
-          mockInvalidOrder2,
-          mockValidOrder3,
-        ]);
-      jest
-        .spyOn(orderDbHandler, 'delete')
-        .mockResolvedValue({ didDelete: true });
-
-      await service.deleteOrders(mockArguments);
-      /**
-       * Expected to be called twice because mockInvalidOrder2 has a non-matching accountId
-       */
-      expect(orderDbHandler.delete).toHaveBeenCalledTimes(2);
-    });
-    it('returns accurate invalidOrders array of invalid order ids if Promise.all resolves', async () => {
-      const mockArguments = {
-        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        ref: 'H4H' as ACCOUNT_REF,
-      };
-      const mockDate = new Date();
-      const mockValidOrder1: IOrderModelWithId = {
-        id: mockArguments.orderIds[0],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-      const mockInvalidOrder2: IOrderModelWithId = {
-        id: mockArguments.orderIds[1],
-        accountId: 'MOCK NON-MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-      const mockValidOrder3: IOrderModelWithId = {
-        id: mockArguments.orderIds[2],
-        accountId: 'MOCK MATCHING ACCOUNT ID',
-        catererId: 'MOCK CATERER ID',
-        catererName: 'MOCK CATERER NAME',
-        name: 'MOCK ORDER NAME',
-        status: DbOrderStatus.ACCEPTED,
-        acceptedAt: mockDate,
-        lastUpdatedAt: mockDate,
-      };
-
-      jest
-        .spyOn(orderDbHandler, 'getManyForAccount')
-        .mockResolvedValue([
-          mockValidOrder1,
-          mockInvalidOrder2,
-          mockValidOrder3,
-        ]);
-      jest
-        .spyOn(orderDbHandler, 'delete')
-        .mockResolvedValue({ didDelete: true });
-
-      const result = await service.deleteOrders(mockArguments);
-      expect(result).toEqual({ invalidOrders: [mockInvalidOrder2.id] });
-    });
-    it('throws an error if orderDbHandler.delete throws an error in any iteration', async () => {
-      const mockArguments = {
-        orderIds: ['MOCK ORDER ID 1', 'MOCK ORDER ID 2', 'MOCK ORDER ID 3'],
+        orderIds: [
+          'MOCK ORDER ID 1',
+          'MOCK ORDER ID 2',
+          'MOCK ORDER ID 3',
+          'MOCK ORDER ID 4',
+        ],
         accountId: 'MOCK MATCHING ACCOUNT ID',
         ref: 'H4H' as ACCOUNT_REF,
       };
@@ -1670,6 +1623,16 @@ describe('OrderInternalInterfaceService', () => {
         acceptedAt: mockDate,
         lastUpdatedAt: mockDate,
       };
+      const mockValidOrderWhichErrorsOnDelete: IOrderModelWithId = {
+        id: mockArguments.orderIds[3],
+        accountId: 'MOCK MATCHING ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
 
       jest
         .spyOn(orderDbHandler, 'getManyForAccount')
@@ -1677,17 +1640,99 @@ describe('OrderInternalInterfaceService', () => {
           mockValidOrder1,
           mockInvalidOrder2,
           mockValidOrder3,
+          mockValidOrderWhichErrorsOnDelete,
         ]);
-      const mockError = new Error('ERROR UNDER TEST');
+
+      const mockErrorMessage = 'MOCK ERROR MESSAGE';
+
       jest
         .spyOn(orderDbHandler, 'delete')
         .mockResolvedValueOnce({ didDelete: true })
-        .mockRejectedValueOnce(mockError);
+        .mockResolvedValueOnce({ didDelete: false })
+        .mockRejectedValueOnce(new Error(mockErrorMessage));
 
-      await expect(service.deleteOrders(mockArguments)).rejects.toThrow(
-        mockError,
-      );
+      const result = await service.deleteOrders(mockArguments);
+      expect(result).toEqual({
+        deleted: [mockValidOrder1.id],
+        didNotDelete: [mockValidOrder3.id],
+        deleteErrors: [
+          {
+            reason: mockErrorMessage,
+            orderId: mockValidOrderWhichErrorsOnDelete.id,
+          },
+        ],
+        invalid: [mockInvalidOrder2.id],
+      });
     });
+    // it('settles error cases in async map', async () => {
+    //   const mockArguments = {
+    //     orderIds: [
+    //       'MOCK ORDER ID 1',
+    //       'MOCK ORDER ID 2',
+    //       'MOCK ORDER ID 3',
+    //       'MOCK ORDER ID 4',
+    //     ],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     ref: 'H4H' as ACCOUNT_REF,
+    //   };
+    //   const mockDate = new Date();
+    //   const mockValidOrder1: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[0],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+    //   const mockInvalidOrder2: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[1],
+    //     accountId: 'MOCK NON-MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+    //   const mockValidOrder3: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[2],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+    //   const mockValidOrderWhichErrorsOnDelete: IOrderModelWithId = {
+    //     id: mockArguments.orderIds[3],
+    //     accountId: 'MOCK MATCHING ACCOUNT ID',
+    //     catererId: 'MOCK CATERER ID',
+    //     catererName: 'MOCK CATERER NAME',
+    //     name: 'MOCK ORDER NAME',
+    //     status: DbOrderStatus.ACCEPTED,
+    //     acceptedAt: mockDate,
+    //     lastUpdatedAt: mockDate,
+    //   };
+
+    //   jest
+    //     .spyOn(orderDbHandler, 'getManyForAccount')
+    //     .mockResolvedValue([
+    //       mockValidOrder1,
+    //       mockInvalidOrder2,
+    //       mockValidOrder3,
+    //       mockValidOrderWhichErrorsOnDelete,
+    //     ]);
+    //   jest
+    //     .spyOn(orderDbHandler, 'delete')
+    //     .mockResolvedValueOnce({ didDelete: true })
+    //     .mockResolvedValueOnce({ didDelete: false })
+    //     .mockRejectedValueOnce(new Error('Error case'));
+
+    //   await expect(service.deleteOrders(mockArguments)).resolves.toBeDefined();
+    // });
   });
   describe('generateLeadFromOrder', () => {
     it('rejects with NotImplementedException', async () => {

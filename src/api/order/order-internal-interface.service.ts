@@ -165,13 +165,58 @@ export class OrderInternalInterfaceService {
       .filter((order) => order.accountId !== accountId)
       .map((order) => order.id);
 
-    await Promise.all(
+    const results = await Promise.allSettled(
       validOrders.map(async (order) =>
-        this.orderDbHandler.delete({ orderId: order.id }),
+        this.orderDbHandler
+          .delete({ orderId: order.id })
+          .then(({ didDelete }) => ({ didDelete, orderId: order.id }))
+          .catch((err) => {
+            throw {
+              reason: err.message,
+              orderId: order.id,
+            };
+          }),
       ),
     );
 
-    return { invalidOrders: invalidOrderIds };
+    const { deleteErrors, didDeleteOrderIds, didNotDeleteOrderIds } =
+      results.reduce(
+        (
+          acc: {
+            deleteErrors: string[];
+            didDeleteOrderIds: string[];
+            didNotDeleteOrderIds: string[];
+          },
+          result,
+        ) => {
+          if (result.status === 'fulfilled') {
+            const val = result.value;
+            if (typeof val === 'object') {
+              if (val.didDelete) {
+                acc.didDeleteOrderIds.push(val.orderId);
+              } else {
+                acc.didNotDeleteOrderIds.push(val.orderId);
+              }
+            }
+            /** Status is "rejected" */
+          } else {
+            acc.deleteErrors.push(result.reason);
+          }
+          return acc;
+        },
+        {
+          deleteErrors: [],
+          didDeleteOrderIds: [],
+          didNotDeleteOrderIds: [],
+        },
+      );
+
+    return {
+      deleted: didDeleteOrderIds,
+      didNotDelete: didNotDeleteOrderIds,
+      deleteErrors: deleteErrors,
+      invalid: invalidOrderIds,
+    };
   }
 
   async generateLeadFromOrder({
