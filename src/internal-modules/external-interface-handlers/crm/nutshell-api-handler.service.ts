@@ -107,10 +107,23 @@ export class NutshellApiHandlerService {
         });
 
         if (invalidKeys.length > 0) {
-          Sentry.captureMessage(
-            `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(', ')}`,
-            'warning',
-          );
+          Sentry.withScope((scope) => {
+            scope.setExtras({
+              service: 'nutshellApiHandler',
+              method: 'createLead',
+              case: 'H4H',
+              args: {
+                account,
+                order,
+              },
+            });
+            Sentry.captureMessage(
+              `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
+                ', ',
+              )}`,
+              'warning',
+            );
+          });
         }
 
         const requiredTags = account.newLeadTags
@@ -164,10 +177,25 @@ export class NutshellApiHandlerService {
         });
 
         if (invalidKeys.length > 0) {
-          Sentry.captureMessage(
-            `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(', ')}`,
-            'warning',
-          );
+          Sentry.withScope((scope) => {
+            scope.setExtras({
+              service: 'nutshellApiHandler',
+              method: 'updateLeadWithOrder',
+              case: 'H4H',
+              args: {
+                account,
+                order,
+                leadId,
+                additionalAndExistingTags,
+              },
+            });
+            Sentry.captureMessage(
+              `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
+                ', ',
+              )}`,
+              'warning',
+            );
+          });
         }
 
         const tagSet: Set<string> = new Set();

@@ -12,8 +12,17 @@ export class AdminAPIService {
     private readonly adminInternalInterface: AdminInternalInterfaceService,
   ) {}
 
-  async bulkSendEzManageOrdersToCrm(body: BulkSendOrdersToCrm) {
-    return await this.adminInternalInterface.bulkSendEzManageOrdersToCrm(body);
+  async bulkSendEzManageOrdersToCrm({
+    accountId,
+    orderNames,
+  }: {
+    accountId: string;
+    orderNames: string[];
+  }) {
+    return await this.adminInternalInterface.bulkSendEzManageOrdersToCrm({
+      accountId,
+      orderNames,
+    });
   }
 
   async createUser(body: AdminCreateUserBodyDto) {

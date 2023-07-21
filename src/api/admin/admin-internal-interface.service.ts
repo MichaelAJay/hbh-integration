@@ -123,9 +123,13 @@ export class AdminInternalInterfaceService {
     return result;
   }
 
-  async bulkSendEzManageOrdersToCrm(body: BulkSendOrdersToCrm) {
-    const { accountId, orderNames } = body;
-
+  async bulkSendEzManageOrdersToCrm({
+    accountId,
+    orderNames,
+  }: {
+    accountId: string;
+    orderNames: string[];
+  }) {
     const account = await this.accountDbHandler.getAccount(accountId);
     if (!account) throw new NotFoundException('Account not found');
 

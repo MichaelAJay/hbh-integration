@@ -64,6 +64,15 @@ export class AdminController {
 
   @Post('send-orders-to-crm')
   async sendOrdersToCrm(@Body() body: BulkSendOrdersToCrm) {
-    return this.adminService.bulkSendEzManageOrdersToCrm(body);
+    const orderNames: string[] = [];
+
+    for (const nm of body.orderNames.split(',').map((e) => e.trim())) {
+      orderNames.push(nm.split('-').join(''));
+    }
+
+    return this.adminService.bulkSendEzManageOrdersToCrm({
+      accountId: body.accountId,
+      orderNames,
+    });
   }
 }
