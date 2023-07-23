@@ -663,9 +663,6 @@ describe('UserInternalInterfaceService', () => {
         mockError,
       );
     });
-    /**
-     * TODO
-     */
     it('calls authService.hashValue with the correct arguments', async () => {
       const mockArguments: IResetPassword = {
         token: 'MOCK TOKEN',
@@ -699,10 +696,13 @@ describe('UserInternalInterfaceService', () => {
         .spyOn(authService, 'hashValue')
         .mockResolvedValue(mockHashValueResolvedValue);
       jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      await service.resetPassword(mockArguments);
+      expect(authService.hashValue).toHaveBeenCalledWith({
+        value: mockArguments.newPassword,
+        salt: mockUser.salt,
+      });
     });
-    /**
-     * TODO
-     */
     it('propagates any error thrown by authService.hashValue', async () => {
       const mockArguments: IResetPassword = {
         token: 'MOCK TOKEN',
@@ -725,21 +725,19 @@ describe('UserInternalInterfaceService', () => {
         hashedRt: 'MOCK HASHED REFRESH TOKEN',
       };
 
-      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+      const mockError = new Error('ERROR UNDER TEST');
 
       jest
         .spyOn(authService, 'verifyAcctToken')
         .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
       jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
       jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
-      jest
-        .spyOn(authService, 'hashValue')
-        .mockResolvedValue(mockHashValueResolvedValue);
-      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+      jest.spyOn(authService, 'hashValue').mockRejectedValue(mockError);
+
+      await expect(service.resetPassword(mockArguments)).rejects.toThrow(
+        mockError,
+      );
     });
-    /**
-     * TODO
-     */
     it('calls userDbHandler.updateOne with the correct arguments', async () => {
       const mockArguments: IResetPassword = {
         token: 'MOCK TOKEN',
@@ -773,10 +771,15 @@ describe('UserInternalInterfaceService', () => {
         .spyOn(authService, 'hashValue')
         .mockResolvedValue(mockHashValueResolvedValue);
       jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      await service.resetPassword(mockArguments);
+      expect(userDbHandler.updateOne).toHaveBeenCalledWith({
+        userId: mockVerifyAcctTokenResolvedValue.userId,
+        updates: {
+          hashedPassword: mockHashValueResolvedValue,
+        },
+      });
     });
-    /**
-     * TODO
-     */
     it('propagates any error thrown by userDbHandler.updateOne', async () => {
       const mockArguments: IResetPassword = {
         token: 'MOCK TOKEN',
@@ -809,7 +812,13 @@ describe('UserInternalInterfaceService', () => {
       jest
         .spyOn(authService, 'hashValue')
         .mockResolvedValue(mockHashValueResolvedValue);
-      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      const mockError = new Error('ERROR UNDER TEST');
+      jest.spyOn(userDbHandler, 'updateOne').mockRejectedValue(mockError);
+
+      await expect(service.resetPassword(mockArguments)).rejects.toThrow(
+        mockError,
+      );
     });
     /**
      * TODO
@@ -847,6 +856,9 @@ describe('UserInternalInterfaceService', () => {
         .spyOn(authService, 'hashValue')
         .mockResolvedValue(mockHashValueResolvedValue);
       jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      const result = await service.resetPassword(mockArguments);
+      expect(result).toBeUndefined();
     });
   });
   afterEach(() => jest.restoreAllMocks());
