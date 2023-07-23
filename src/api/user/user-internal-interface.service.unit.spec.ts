@@ -13,7 +13,7 @@ import {
 import { AuthService } from 'src/internal-modules/auth/auth.service';
 import { AccountDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/account-db-handler.service';
 import { UserDbHandlerService } from 'src/internal-modules/external-interface-handlers/database/user-db-handler/user-db-handler.service';
-import { ILogin } from './interfaces';
+import { ILogin, IResetPassword } from './interfaces';
 import { UserInternalInterfaceService } from './user-internal-interface.service';
 
 describe('UserInternalInterfaceService', () => {
@@ -47,6 +47,7 @@ describe('UserInternalInterfaceService', () => {
             signRefreshToken: jest.fn(),
             hashValue: jest.fn(),
             hashedValueGate: jest.fn(),
+            verifyAcctToken: jest.fn(),
           },
         },
       ],
@@ -257,9 +258,6 @@ describe('UserInternalInterfaceService', () => {
       );
     });
   });
-  /**
-   * TODO
-   */
   describe('refreshAuth', () => {
     it('calls userDbHandler.getOne with the correct arguments', async () => {
       const mockArguments = {
@@ -474,6 +472,382 @@ describe('UserInternalInterfaceService', () => {
 
   /**
    * TODO
-   */ describe('resetPassword', () => {});
+   */
+  describe('resetPassword', () => {
+    /**
+     * @TODO
+     */
+    it('calls authService.verifyAcctToken with the correct arguments', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      await service.resetPassword(mockArguments);
+      expect(authService.verifyAcctToken).toHaveBeenCalledWith(
+        mockArguments.token,
+      );
+    });
+    it('propagates any error thrown by authService.verifyAcctToken', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockError = new Error('ERROR UNDER TEST');
+      jest.spyOn(authService, 'verifyAcctToken').mockRejectedValue(mockError);
+      await expect(service.resetPassword(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('calls userDbHandler.getOne with the correct arguments', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+      await service.resetPassword(mockArguments);
+      expect(userDbHandler.getOne).toHaveBeenCalledWith(
+        mockVerifyAcctTokenResolvedValue.userId,
+      );
+    });
+    it('propagates any error thrown by userDbHandler.getOne', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockError = new Error('ERROR UNDER TEST');
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockRejectedValue(mockError);
+
+      await expect(service.resetPassword(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('calls authService.hashedValueGate with the correct arguments', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+
+      await service.resetPassword(mockArguments);
+      expect(authService.hashedValueGate).toHaveBeenCalledWith({
+        hashedValue: mockUser.hashedPassword,
+        valueToHash: mockVerifyAcctTokenResolvedValue.password,
+        salt: mockUser.salt,
+      });
+    });
+    it('propagates any error thrown by authService.hashedValueGate', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockError = new Error('ERROR UNDER TEST');
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockRejectedValue(mockError);
+
+      await expect(service.resetPassword(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    /**
+     * TODO
+     */
+    it('calls authService.hashValue with the correct arguments', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+    });
+    /**
+     * TODO
+     */
+    it('propagates any error thrown by authService.hashValue', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+    });
+    /**
+     * TODO
+     */
+    it('calls userDbHandler.updateOne with the correct arguments', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+    });
+    /**
+     * TODO
+     */
+    it('propagates any error thrown by userDbHandler.updateOne', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+    });
+    /**
+     * TODO
+     */
+    it('has void return', async () => {
+      const mockArguments: IResetPassword = {
+        token: 'MOCK TOKEN',
+        newPassword: 'MOCK PASSWORD',
+      };
+
+      const mockVerifyAcctTokenResolvedValue = {
+        userId: 'MOCK USER ID',
+        password: 'MOCK PASSWORD',
+      };
+
+      const mockUser: IUserModelWithId = {
+        id: mockVerifyAcctTokenResolvedValue.userId,
+        accountId: 'MOCK ACCOUNT ID',
+        firstName: 'MOCK FIRST NAME',
+        lastName: 'MOCK LAST NAME',
+        email: 'MOCK USER EMAIL',
+        hashedPassword: 'MOCK HASHED PASSWORD',
+        salt: 'MOCK SALT',
+        hashedRt: 'MOCK HASHED REFRESH TOKEN',
+      };
+
+      const mockHashValueResolvedValue = 'MOCK NEW HASHED PASSWORD';
+
+      jest
+        .spyOn(authService, 'verifyAcctToken')
+        .mockResolvedValue(mockVerifyAcctTokenResolvedValue);
+      jest.spyOn(userDbHandler, 'getOne').mockResolvedValue(mockUser);
+      jest.spyOn(authService, 'hashedValueGate').mockResolvedValue(undefined);
+      jest
+        .spyOn(authService, 'hashValue')
+        .mockResolvedValue(mockHashValueResolvedValue);
+      jest.spyOn(userDbHandler, 'updateOne').mockResolvedValue(undefined);
+    });
+  });
   afterEach(() => jest.restoreAllMocks());
 });
