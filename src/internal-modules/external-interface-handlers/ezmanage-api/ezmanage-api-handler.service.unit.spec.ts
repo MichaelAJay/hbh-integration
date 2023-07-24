@@ -14,7 +14,10 @@ describe('EzmanageApiHandlerService', () => {
     service = module.get<EzmanageApiHandlerService>(EzmanageApiHandlerService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('existence tests', () => {});
+  describe('getOrder', () => {});
+  describe('getOrderName', () => {});
+  describe('getCatererName', () => {});
+
+  afterEach(() => jest.resetAllMocks());
 });

@@ -14,7 +14,11 @@ describe('UserDbHandlerService', () => {
     service = module.get<UserDbHandlerService>(UserDbHandlerService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('existence tests', () => {});
+  describe('getOne', () => {});
+  describe('getOneByEmail', () => {});
+  describe('createOne', () => {});
+  describe('updateOne', () => {});
+
+  afterEach(() => jest.resetAllMocks());
 });

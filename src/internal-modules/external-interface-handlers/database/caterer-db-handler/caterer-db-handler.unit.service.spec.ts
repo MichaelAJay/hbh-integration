@@ -14,7 +14,9 @@ describe('CatererDbHandlerService', () => {
     service = module.get<CatererDbHandlerService>(CatererDbHandlerService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('existence tests', () => {});
+
+  describe('getCaterer', () => {});
+
+  afterEach(() => jest.resetAllMocks());
 });

@@ -1,12 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CrmError } from 'src/common/classes';
-import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { NutshellApiModule } from 'src/external-modules/nutshell-api/nutshell-api.module';
-import { AccountRecordWithId } from '../database/account-db-handler/types';
-import { CrmHandlerService } from './crm-handler.service';
 import { CrmModule } from './crm.module';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
-import { GeneratePrimaryNutshellEntityReturn } from './types/returns';
 
 describe('NutshellApiHandlerService unit tests', () => {
   let service: NutshellApiHandlerService;

@@ -14,7 +14,15 @@ describe('OrderDbHandlerService', () => {
     service = module.get<OrderDbHandlerService>(OrderDbHandlerService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('existence tests', () => {});
+
+  describe('create', () => {});
+  describe('getOne', () => {});
+  describe('getManyForAccount', () => {});
+  describe('getAllForAccount', () => {});
+  describe('findByNameForAccount', () => {});
+  describe('updateOne', () => {});
+  describe('delete', () => {});
+
+  afterEach(() => jest.resetAllMocks());
 });

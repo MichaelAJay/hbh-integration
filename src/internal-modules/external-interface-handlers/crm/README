@@ -3,3 +3,6 @@ It is the through-way for all CRM modules
 
 @TODO - move Nutshell API Service into this aggregator
 @TODO - delete Nutshell module
+
+Service classes could use refactoring to encapsulate the dependencies
+And then the tests would need rewriting

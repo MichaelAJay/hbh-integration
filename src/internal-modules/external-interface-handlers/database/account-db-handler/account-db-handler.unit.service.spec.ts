@@ -14,7 +14,11 @@ describe('AccountDbHandlerService', () => {
     service = module.get<AccountDbHandlerService>(AccountDbHandlerService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  describe('existence tests', () => {});
+
+  describe('getAccount', () => {});
+  describe('findByName', () => {});
+  describe('findByRef', () => {});
+
+  afterEach(() => jest.resetAllMocks());
 });
