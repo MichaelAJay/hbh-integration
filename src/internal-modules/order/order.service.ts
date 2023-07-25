@@ -92,6 +92,8 @@ export class OrderService {
         return undefined;
       });
 
+    if (crmEntity === undefined) return crmEntity;
+
     if (
       typeof crmEntity.isSubtotalMatch === 'boolean' &&
       crmEntity.isSubtotalMatch === false
@@ -144,6 +146,9 @@ export class OrderService {
     };
 
     if (crmEntity) {
+      /**
+       * What if 0 or ""?
+       */
       data.crmId = crmEntity.id || null;
       data.crmDescription = crmEntity.description || null;
 
