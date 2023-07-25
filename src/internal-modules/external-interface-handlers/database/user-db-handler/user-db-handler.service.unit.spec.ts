@@ -1,17 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
+import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
 import { UserDbHandlerService } from './user-db-handler.service';
 
 describe('UserDbHandlerService', () => {
   let service: UserDbHandlerService;
+  let dbClientService: DatabaseClientService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ExternalDatabaseModule],
-      providers: [UserDbHandlerService],
+      providers: [
+        UserDbHandlerService,
+        {
+          provide: DatabaseClientService,
+          useValue: {
+            getOne: jest.fn(),
+            getMany: jest.fn(),
+            getDocRef: jest.fn(),
+            add: jest.fn(),
+            update: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<UserDbHandlerService>(UserDbHandlerService);
+    dbClientService = module.get<DatabaseClientService>(DatabaseClientService);
   });
 
   describe('existence tests', () => {});

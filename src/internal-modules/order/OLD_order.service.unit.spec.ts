@@ -119,27 +119,25 @@ const validEzManageOrder: IEzManageOrder = {
 
 describe('OrderService', () => {
   let service: OrderService;
-  let crmHandler: CrmHandlerService;
-  let orderDbService: OrderDbHandlerService;
-  let ezManageApiHandler: EzmanageApiHandlerService;
+  let crmHandler;
+  let orderDbService;
+  let ezManageApiHandler;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot()],
-      providers: [
-        OrderService,
-        { provide: CrmHandlerService, useValue: {} },
-        { provide: OrderDbHandlerService, useValue: {} },
-        { provide: EzmanageApiHandlerService, useValue: {} },
+      imports: [
+        ConfigModule.forRoot(),
+        InternalDatabaseModule,
+        EzmanageApiHandlerModule,
+        CrmModule,
       ],
+      providers: [OrderService],
     }).compile();
 
     service = module.get<OrderService>(OrderService);
-    crmHandler = module.get<CrmHandlerService>(CrmHandlerService);
-    ezManageApiHandler = module.get<EzmanageApiHandlerService>(
-      EzmanageApiHandlerService,
-    );
-    orderDbService = module.get<OrderDbHandlerService>(OrderDbHandlerService);
+    crmHandler = module.get(CrmHandlerService);
+    ezManageApiHandler = module.get(EzmanageApiHandlerService);
+    orderDbService = module.get(OrderDbHandlerService);
   });
 
   afterEach(() => {

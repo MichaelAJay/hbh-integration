@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
+import { NutshellApiModule } from 'src/external-modules/nutshell-api/nutshell-api.module';
+import { CrmModule } from './crm.module';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
 
 describe('NutshellApiHandlerService unit tests', () => {
@@ -7,17 +8,8 @@ describe('NutshellApiHandlerService unit tests', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        NutshellApiHandlerService,
-        {
-          provide: NutshellApiService,
-          useValue: {
-            createLead: jest.fn(),
-            updateLead: jest.fn(),
-            getProducts: jest.fn(),
-          },
-        },
-      ],
+      imports: [CrmModule, NutshellApiModule],
+      providers: [NutshellApiHandlerService],
     }).compile();
 
     service = module.get<NutshellApiHandlerService>(NutshellApiHandlerService);
