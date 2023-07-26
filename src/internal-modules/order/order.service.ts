@@ -101,6 +101,7 @@ export class OrderService {
     if (crmEntity === undefined) return crmEntity;
 
     if (
+      typeof crmEntity.id === 'string' &&
       typeof crmEntity.isSubtotalMatch === 'boolean' &&
       crmEntity.isSubtotalMatch === false
     ) {
@@ -111,6 +112,9 @@ export class OrderService {
         : ([] as string[]);
       additionalAndExistingTags.push(crmTag);
 
+      /**
+       * This returns something useful - why isn't it being used?
+       */
       await this.crmHandler.updateCRMEntityWithOrder({
         account,
         order: ezManageOrder,
