@@ -1722,17 +1722,517 @@ describe('OrderService', () => {
         ).rejects.toThrow(mockError);
       });
     });
-    /**
-     * START HERE
-     */
+
     describe('crmEntity.id is not a string OR crmEntity.isSubtotalMatch is not boolean false', () => {
-      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.id is undefined', async () => {});
-      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.id is not a string', async () => {});
-      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.isSubtotalMatch is not a boolean', async () => {});
-      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.isSubtotalMatch is true', async () => {});
+      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.id is undefined', async () => {
+        const mockAccount: IAccountModelWithId = {
+          id: 'MOCK ACCOUNT ID',
+          ref: 'H4H',
+          name: 'MOCK ACCOUNT NAME',
+          contactEmail: 'MOCK ACCOUNT EMAIL',
+          isActive: true,
+        };
+
+        const mockEzManageOrder = {
+          orderNumber: 'FW8M2X',
+          uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+          event: {
+            timestamp: '2023-06-29T15:15:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Watkinsville',
+              name: 'Piedmont Heart',
+              state: 'GA',
+              street: '1305 Jennings Mill Rd',
+              street2: 'Suite 250',
+              street3: null,
+              zip: '30677',
+            },
+            contact: {
+              name: 'Frank Sullivan',
+              phone: '2298943785',
+            },
+          },
+          orderCustomer: {
+            firstName: null,
+            lastName: null,
+          },
+          totals: {
+            subTotal: {
+              subunits: 16920,
+            },
+            tip: {
+              subunits: 0,
+            },
+          },
+          caterer: {
+            address: {
+              city: 'Athens',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Delivery Fee',
+                cost: {
+                  subunits: 2500,
+                },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 15,
+                name: 'Signature Sandwich Boxed Lunches',
+                totalInSubunits: {
+                  subunits: 16920,
+                },
+                customizations: [
+                  {
+                    customizationTypeName: 'Signature Sandwiches',
+                    name: 'Assorted',
+                    quantity: 15,
+                  },
+                  {
+                    customizationTypeName: 'Add Drinks',
+                    name: 'Assorted Canned Sodas',
+                    quantity: 15,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 154.22,
+            },
+          },
+          orderSourceType: 'MARKETPLACE',
+        };
+
+        const mockArguments = {
+          account: mockAccount,
+          ezManageOrder: mockEzManageOrder,
+        };
+
+        const mockFullCrmEntity = {
+          description: 'MOCK CRM DESCRIPTION',
+          isSubtotalMatch: false,
+        };
+
+        jest
+          .spyOn(crmHandler, 'generateCRMEntity')
+          .mockResolvedValue(mockFullCrmEntity);
+
+        await service.generateCRMEntityFromOrder(mockArguments);
+        expect(crmHandler.updateCRMEntityWithOrder).not.toHaveBeenCalled();
+      });
+      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.id is not a string', async () => {
+        const mockAccount: IAccountModelWithId = {
+          id: 'MOCK ACCOUNT ID',
+          ref: 'H4H',
+          name: 'MOCK ACCOUNT NAME',
+          contactEmail: 'MOCK ACCOUNT EMAIL',
+          isActive: true,
+        };
+
+        const mockEzManageOrder = {
+          orderNumber: 'FW8M2X',
+          uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+          event: {
+            timestamp: '2023-06-29T15:15:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Watkinsville',
+              name: 'Piedmont Heart',
+              state: 'GA',
+              street: '1305 Jennings Mill Rd',
+              street2: 'Suite 250',
+              street3: null,
+              zip: '30677',
+            },
+            contact: {
+              name: 'Frank Sullivan',
+              phone: '2298943785',
+            },
+          },
+          orderCustomer: {
+            firstName: null,
+            lastName: null,
+          },
+          totals: {
+            subTotal: {
+              subunits: 16920,
+            },
+            tip: {
+              subunits: 0,
+            },
+          },
+          caterer: {
+            address: {
+              city: 'Athens',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Delivery Fee',
+                cost: {
+                  subunits: 2500,
+                },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 15,
+                name: 'Signature Sandwich Boxed Lunches',
+                totalInSubunits: {
+                  subunits: 16920,
+                },
+                customizations: [
+                  {
+                    customizationTypeName: 'Signature Sandwiches',
+                    name: 'Assorted',
+                    quantity: 15,
+                  },
+                  {
+                    customizationTypeName: 'Add Drinks',
+                    name: 'Assorted Canned Sodas',
+                    quantity: 15,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 154.22,
+            },
+          },
+          orderSourceType: 'MARKETPLACE',
+        };
+
+        const mockArguments = {
+          account: mockAccount,
+          ezManageOrder: mockEzManageOrder,
+        };
+
+        const mockFullCrmEntity = {
+          id: 1234,
+          description: 'MOCK CRM DESCRIPTION',
+          isSubtotalMatch: false,
+        };
+
+        jest
+          .spyOn(crmHandler, 'generateCRMEntity')
+          .mockResolvedValue(mockFullCrmEntity);
+
+        await service.generateCRMEntityFromOrder(mockArguments);
+        expect(crmHandler.updateCRMEntityWithOrder).not.toHaveBeenCalled();
+      });
+      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.isSubtotalMatch is not a boolean', async () => {
+        const mockAccount: IAccountModelWithId = {
+          id: 'MOCK ACCOUNT ID',
+          ref: 'H4H',
+          name: 'MOCK ACCOUNT NAME',
+          contactEmail: 'MOCK ACCOUNT EMAIL',
+          isActive: true,
+        };
+
+        const mockEzManageOrder = {
+          orderNumber: 'FW8M2X',
+          uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+          event: {
+            timestamp: '2023-06-29T15:15:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Watkinsville',
+              name: 'Piedmont Heart',
+              state: 'GA',
+              street: '1305 Jennings Mill Rd',
+              street2: 'Suite 250',
+              street3: null,
+              zip: '30677',
+            },
+            contact: {
+              name: 'Frank Sullivan',
+              phone: '2298943785',
+            },
+          },
+          orderCustomer: {
+            firstName: null,
+            lastName: null,
+          },
+          totals: {
+            subTotal: {
+              subunits: 16920,
+            },
+            tip: {
+              subunits: 0,
+            },
+          },
+          caterer: {
+            address: {
+              city: 'Athens',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Delivery Fee',
+                cost: {
+                  subunits: 2500,
+                },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 15,
+                name: 'Signature Sandwich Boxed Lunches',
+                totalInSubunits: {
+                  subunits: 16920,
+                },
+                customizations: [
+                  {
+                    customizationTypeName: 'Signature Sandwiches',
+                    name: 'Assorted',
+                    quantity: 15,
+                  },
+                  {
+                    customizationTypeName: 'Add Drinks',
+                    name: 'Assorted Canned Sodas',
+                    quantity: 15,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 154.22,
+            },
+          },
+          orderSourceType: 'MARKETPLACE',
+        };
+
+        const mockArguments = {
+          account: mockAccount,
+          ezManageOrder: mockEzManageOrder,
+        };
+
+        const mockFullCrmEntity = {
+          id: 'MOCK CRM ID',
+          description: 'MOCK CRM DESCRIPTION',
+          isSubtotalMatch: 'false',
+        };
+
+        jest
+          .spyOn(crmHandler, 'generateCRMEntity')
+          .mockResolvedValue(mockFullCrmEntity);
+
+        await service.generateCRMEntityFromOrder(mockArguments);
+        expect(crmHandler.updateCRMEntityWithOrder).not.toHaveBeenCalled();
+      });
+      it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.isSubtotalMatch is true', async () => {
+        const mockAccount: IAccountModelWithId = {
+          id: 'MOCK ACCOUNT ID',
+          ref: 'H4H',
+          name: 'MOCK ACCOUNT NAME',
+          contactEmail: 'MOCK ACCOUNT EMAIL',
+          isActive: true,
+        };
+
+        const mockEzManageOrder = {
+          orderNumber: 'FW8M2X',
+          uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+          event: {
+            timestamp: '2023-06-29T15:15:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Watkinsville',
+              name: 'Piedmont Heart',
+              state: 'GA',
+              street: '1305 Jennings Mill Rd',
+              street2: 'Suite 250',
+              street3: null,
+              zip: '30677',
+            },
+            contact: {
+              name: 'Frank Sullivan',
+              phone: '2298943785',
+            },
+          },
+          orderCustomer: {
+            firstName: null,
+            lastName: null,
+          },
+          totals: {
+            subTotal: {
+              subunits: 16920,
+            },
+            tip: {
+              subunits: 0,
+            },
+          },
+          caterer: {
+            address: {
+              city: 'Athens',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Delivery Fee',
+                cost: {
+                  subunits: 2500,
+                },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 15,
+                name: 'Signature Sandwich Boxed Lunches',
+                totalInSubunits: {
+                  subunits: 16920,
+                },
+                customizations: [
+                  {
+                    customizationTypeName: 'Signature Sandwiches',
+                    name: 'Assorted',
+                    quantity: 15,
+                  },
+                  {
+                    customizationTypeName: 'Add Drinks',
+                    name: 'Assorted Canned Sodas',
+                    quantity: 15,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 154.22,
+            },
+          },
+          orderSourceType: 'MARKETPLACE',
+        };
+
+        const mockArguments = {
+          account: mockAccount,
+          ezManageOrder: mockEzManageOrder,
+        };
+
+        const mockFullCrmEntity = {
+          id: 'MOCK CRM ID',
+          description: 'MOCK CRM DESCRIPTION',
+          isSubtotalMatch: true,
+        };
+
+        jest
+          .spyOn(crmHandler, 'generateCRMEntity')
+          .mockResolvedValue(mockFullCrmEntity);
+
+        await service.generateCRMEntityFromOrder(mockArguments);
+        expect(crmHandler.updateCRMEntityWithOrder).not.toHaveBeenCalled();
+      });
     });
-    it('returns crmEntity on success', async () => {});
+    it('returns crmEntity on success', async () => {
+      const mockAccount: IAccountModelWithId = {
+        id: 'MOCK ACCOUNT ID',
+        ref: 'H4H',
+        name: 'MOCK ACCOUNT NAME',
+        contactEmail: 'MOCK ACCOUNT EMAIL',
+        isActive: true,
+      };
+
+      const mockEzManageOrder = {
+        orderNumber: 'FW8M2X',
+        uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+        event: {
+          timestamp: '2023-06-29T15:15:00Z',
+          timeZoneOffset: '-04:00',
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        orderCustomer: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: {
+            subunits: 16920,
+          },
+          tip: {
+            subunits: 0,
+          },
+        },
+        caterer: {
+          address: {
+            city: 'Athens',
+          },
+        },
+        catererCart: {
+          feesAndDiscounts: [
+            {
+              name: 'Delivery Fee',
+              cost: {
+                subunits: 2500,
+              },
+            },
+          ],
+          orderItems: [
+            {
+              quantity: 15,
+              name: 'Signature Sandwich Boxed Lunches',
+              totalInSubunits: {
+                subunits: 16920,
+              },
+              customizations: [
+                {
+                  customizationTypeName: 'Signature Sandwiches',
+                  name: 'Assorted',
+                  quantity: 15,
+                },
+                {
+                  customizationTypeName: 'Add Drinks',
+                  name: 'Assorted Canned Sodas',
+                  quantity: 15,
+                },
+              ],
+            },
+          ],
+          totals: {
+            catererTotalDue: 154.22,
+          },
+        },
+        orderSourceType: 'MARKETPLACE',
+      };
+
+      const mockArguments = {
+        account: mockAccount,
+        ezManageOrder: mockEzManageOrder,
+      };
+
+      const mockFullCrmEntity = {
+        id: 'MOCK CRM ID',
+        description: 'MOCK CRM DESCRIPTION',
+        isSubtotalMatch: true,
+      };
+
+      jest
+        .spyOn(crmHandler, 'generateCRMEntity')
+        .mockResolvedValue(mockFullCrmEntity);
+
+      const result = await service.generateCRMEntityFromOrder(mockArguments);
+      expect(result).toEqual(mockFullCrmEntity);
+    });
   });
+  /**
+   * START HERE
+   */
   describe('updateOrder', () => {
     it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {});
     it('propagates any error from ezManageApiHandler.getOrder', async () => {});
