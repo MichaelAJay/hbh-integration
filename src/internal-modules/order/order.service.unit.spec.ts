@@ -15,6 +15,7 @@ import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
+import { OrderHelperService } from './order-helper.service';
 import { OrderService } from './order.service';
 
 const validAccount: IAccountModelWithId = {
@@ -119,6 +120,7 @@ describe('OrderService', () => {
   let crmHandler: CrmHandlerService;
   let orderDbService: OrderDbHandlerService;
   let ezManageApiHandler: EzmanageApiHandlerService;
+  let orderHelperService: OrderHelperService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -128,6 +130,7 @@ describe('OrderService', () => {
         { provide: CrmHandlerService, useValue: {} },
         { provide: OrderDbHandlerService, useValue: {} },
         { provide: EzmanageApiHandlerService, useValue: {} },
+        { provide: OrderHelperService, useValue: {} },
       ],
     }).compile();
 
@@ -137,6 +140,7 @@ describe('OrderService', () => {
       EzmanageApiHandlerService,
     );
     orderDbService = module.get<OrderDbHandlerService>(OrderDbHandlerService);
+    orderHelperService = module.get<OrderHelperService>(OrderHelperService);
   });
 
   describe('existence tests', () => {
@@ -144,10 +148,15 @@ describe('OrderService', () => {
     test('crmHandler is defined', () => expect(crmHandler).toBeDefined());
     test('ezManageApiHandler is defined', () =>
       expect(ezManageApiHandler).toBeDefined());
-    test('expect orderDbService to be defined', () =>
+    test('orderDbService is defined', () =>
       expect(orderDbService).toBeDefined());
+    test('orderHelperService is defined', () =>
+      expect(orderHelperService).toBeDefined());
   });
 
+  /**
+   * CHECK
+   */
   describe('createOrder', () => {
     it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {});
     it('propagates any error thrown by ezManageApiHandler.getOrder', async () => {});
@@ -159,6 +168,9 @@ describe('OrderService', () => {
     it('propagates any error thrown by orderDbService.create', async () => {});
     it('returns void', async () => {});
   });
+  /**
+   * CHECK
+   */
   describe('generateCRMEntityFromOrder', () => {
     it('calls crmHandler.generateCRMEntity with the correct arguments', async () => {});
     it('catches any error thrown by crmHandler.generateCRMEntity and returns undefined instead of throwing error', async () => {});
@@ -171,28 +183,67 @@ describe('OrderService', () => {
     it('does not call crmHandler.updateCRMEntityWithOrder if crmEntity.isSubtotalMatch is true', async () => {});
     it('returns crmEntity on success', async () => {});
   });
-  describe('generateIOrderModelFromCrmEntity', () => {
-    describe('crmEntity arg is falsy', () => {
-      it('returns IOrderModel without crm properties', () => {});
+  /**
+   * This is going to be moved to the OrderHelperService
+   */
+  // describe('generateIOrderModelFromCrmEntity', () => {
+  //   describe('crmEntity arg is falsy', () => {
+  //     it('returns IOrderModel without crm properties', () => {});
+  //   });
+  //   describe('crmEntity arg is truthy', () => {
+  //     it('returns IOrderModel with crmId string if crmEntity.id is truthy', () => {});
+  //     it('returns IOrderModel without crmId string if crmEntity.id is falsy', () => {});
+  //     it('returns IOrderModel with crmDescription string if crmEntity.description is truthy', () => {});
+  //     it('returns IOrderModel without crmDescription string if crmEntity.description is falsy', () => {});
+  //     describe('crmEntity.isSubtotalMatch is boolean false', () => {
+  //       it('returns IOrderModel with warnings string array', () => {});
+  //     });
+  //     describe('crmEntity.isSubtotalMatch is not boolean false', () => {
+  //       it('returns IOrderModel without warnings string array', () => {});
+  //     });
+  //   });
+  // });
+  describe('updateOrder', () => {
+    it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {});
+    it('propagates any error from ezManageApiHandler.getOrder', async () => {});
+    describe('internalOrder.crmId is undefined', () => {
+      it('calls service generateCRMEntityFromOrder with the correct arguments', async () => {});
+      it('propagates any error thrown from service generateCRMEntityFromOrder', async () => {});
+      it('calls orderHelperService.tryAppendCrmDataToOrder with the correct arguments', async () => {});
+      it('propagates any error thrown by orderHelperService.tryAppendCrmDataToOrder', async () => {});
     });
-    describe('crmEntity arg is truthy', () => {
-      it('returns IOrderModel with crmId string if crmEntity.id is truthy', () => {});
-      it('returns IOrderModel without crmId string if crmEntity.id is falsy', () => {});
-      it('returns IOrderModel with crmDescription string if crmEntity.description is truthy', () => {});
-      it('returns IOrderModel without crmDescription string if crmEntity.description is falsy', () => {});
-      describe('crmEntity.isSubtotalMatch is boolean false', () => {
-        it('returns IOrderModel with warnings string array', () => {});
-      });
-      describe('crmEntity.isSubtotalMatch is not boolean false', () => {
-        it('returns IOrderModel without warnings string array', () => {});
-      });
+    describe('internalOrder.crmId is defined', () => {
+      it('calls crmHandler.updateCRMEntityWithOrder with the correct arguments', async () => {});
     });
+    it('calls orderDbService.updateOne with the correct arguments', async () => {});
+    it('propagates any error thrown by orderDbService.updateOne', async () => {});
+    it('resolves to void on success', async () => {});
   });
-  describe('updateOrder', () => {});
-  describe('handleCancelledOrder', () => {});
-  describe('doesOrderBelongToAccount', () => {});
-  describe('getEzManageOrder', () => {});
-  describe('getOrderName', () => {});
+  describe('handleCancelledOrder', () => {
+    it('throws NotImplementedException', async () => {});
+  });
+  describe('doesOrderBelongToAccount', () => {
+    describe('"input" argument is string', () => {
+      it('calls orderDbService.getOne with the correct arguments', async () => {});
+      it('propagates any error thrown by orderDbService.getOne', async () => {});
+    });
+    describe('"input" argument is not string', () => {
+      it('does not call orderDbService.getOne if input argument is not string', async () => {});
+    });
+    it('throws NotFoundException if order is null', async () => {});
+    it('returns true if order.accountId equals "accountId" argument', async () => {});
+    it('returns false if order.AccountId does not equal "accountId" argument', async () => {});
+  });
+  describe('getEzManageOrder', () => {
+    it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {});
+    it('propagates any error thrown by ezManageApiHandler.getOrder', async () => {});
+    it('resolves to the return from ezManageApiHandler.getOrder', async () => {});
+  });
+  describe('getOrderName', () => {
+    it('calls ezManageApihandler.getOrderName with the correct arguments', async () => {});
+    it('propagates any error thrown by ezManageApiHandler.getOrderName', async () => {});
+    it('resolves to the return from ezManageApiHandler.getOrderName');
+  });
 
   afterEach(() => {
     jest.restoreAllMocks();

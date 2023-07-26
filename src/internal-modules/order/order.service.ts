@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,
@@ -12,6 +16,7 @@ import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmana
 import * as Sentry from '@sentry/node';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
+import { OrderHelperService } from './order-helper.service';
 
 @Injectable()
 export class OrderService {
@@ -19,6 +24,7 @@ export class OrderService {
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
     private readonly crmHandler: CrmHandlerService,
+    private readonly orderHelperService: OrderHelperService,
   ) {}
 
   async createOrder({
@@ -56,7 +62,7 @@ export class OrderService {
       ezManageOrder,
     });
 
-    const data = this.generateIOrderModelFromCrmEntity({
+    const data = this.orderHelperService.generateIOrderModelFromCrmEntity({
       account,
       catererId,
       ezManageOrderNumber: ezManageOrder.orderNumber,
@@ -116,54 +122,6 @@ export class OrderService {
     return crmEntity;
   }
 
-  generateIOrderModelFromCrmEntity({
-    account,
-    catererId,
-    ezManageOrderNumber,
-    status,
-    crmEntity,
-    catererName,
-  }: {
-    account: IAccountModelWithId;
-    crmEntity: any;
-    catererId: string;
-    catererName: string;
-    ezManageOrderNumber: string;
-    status: DbOrderStatus;
-  }) {
-    /**
-     * @TODO fix the date issue
-     */
-    const now = new Date();
-    const data: IOrderModel = {
-      accountId: account.id,
-      catererId,
-      catererName,
-      name: ezManageOrderNumber,
-      status,
-      acceptedAt: now,
-      lastUpdatedAt: now,
-    };
-
-    if (crmEntity) {
-      /**
-       * What if 0 or ""?
-       */
-      data.crmId = crmEntity.id || null;
-      data.crmDescription = crmEntity.description || null;
-
-      if (
-        typeof crmEntity.isSubtotalMatch === 'boolean' &&
-        crmEntity.isSubtotalMatch === false
-      ) {
-        const { message } = H4HWarnings.SUBTOTAL_MISMATCH;
-        data.warnings = [message];
-      }
-    }
-
-    return data;
-  }
-
   async updateOrder({
     account,
     catererId,
@@ -180,42 +138,41 @@ export class OrderService {
     const { id: orderId, crmId } = internalOrder;
     const { ref } = account;
 
-    /**
-     * If CRM ID doesn't exist, this needs to be treated as a new order
-     */
-    if (crmId === undefined) {
-      return await this.createOrder({
-        account,
-        catererId,
-        orderId,
-        status: DbOrderStatus.ACCEPTED,
-        occurredAt,
-        catererName,
-      });
-    }
-
     const ezManageOrder = await this.ezManageApiHandler.getOrder({
       orderId,
       ref,
     });
 
-    const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
-      account,
-      order: ezManageOrder,
-      crmEntityId: crmId,
-    });
-
-    const updates: Partial<
+    let updates: Partial<
       Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
     > = { lastUpdatedAt: new Date() };
-    if (
-      updateResult &&
-      typeof updateResult === 'object' &&
-      typeof updateResult.crmDescription === 'string' &&
-      updateResult.crmDescription !== internalOrder.crmDescription
-    ) {
-      updates.crmDescription = updateResult.crmDescription;
+
+    if (crmId === undefined) {
+      const crmEntity = await this.generateCRMEntityFromOrder({
+        account,
+        ezManageOrder,
+      });
+      updates = this.orderHelperService.tryAppendCrmDataToOrder(
+        updates,
+        crmEntity,
+      );
+    } else {
+      const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
+        account,
+        order: ezManageOrder,
+        crmEntityId: crmId,
+      });
+
+      if (
+        updateResult &&
+        typeof updateResult === 'object' &&
+        typeof updateResult.crmDescription === 'string' &&
+        updateResult.crmDescription !== internalOrder.crmDescription
+      ) {
+        updates.crmDescription = updateResult.crmDescription;
+      }
     }
+
     await this.orderDbService.updateOne({
       orderId,
       updates,
@@ -223,10 +180,10 @@ export class OrderService {
   }
 
   async handleCancelledOrder(orderId: string) {
+    throw new NotImplementedException();
     /**
      * This should interface with the Nutshell API and do some undetermined number of things
      */
-    return;
   }
 
   async doesOrderBelongToAccount({
@@ -258,7 +215,7 @@ export class OrderService {
     order: IOrderModelWithId;
     ref: ACCOUNT_REF;
   }) {
-    return await this.ezManageApiHandler.getOrder({
+    return this.ezManageApiHandler.getOrder({
       orderId: order.id,
       ref,
     });
