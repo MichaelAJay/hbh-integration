@@ -38,22 +38,6 @@ export class OrderHelperService {
     };
 
     if (crmEntity) {
-      /**
-       * What if 0 or ""?
-       */
-      // data.crmId = typeof crmEntity.id === 'string' ? crmEntity.id : null;
-      // data.crmDescription =
-      //   typeof crmEntity.description === 'string'
-      //     ? crmEntity.description
-      //     : null;
-
-      // if (
-      //   typeof crmEntity.isSubtotalMatch === 'boolean' &&
-      //   crmEntity.isSubtotalMatch === false
-      // ) {
-      //   const { message } = H4HWarnings.SUBTOTAL_MISMATCH;
-      //   data.warnings = [message];
-      // }
       order = this.tryAppendCrmDataToOrder({ order, crmEntity });
     }
 

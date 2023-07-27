@@ -22,7 +22,7 @@ const validAccount: IAccountModelWithId = {
   ref: 'H4H',
   name: '',
   contactEmail: '',
-  isActive: false,
+  isActive: true,
   crmUsers: [
     {
       assignFor: 'Gainesville',
