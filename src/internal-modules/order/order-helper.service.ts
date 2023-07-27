@@ -27,7 +27,7 @@ export class OrderHelperService {
      * @TODO fix the date issue
      */
     const now = new Date();
-    let data: IOrderModel = {
+    let order: IOrderModel = {
       accountId: account.id,
       catererId,
       catererName,
@@ -54,15 +54,18 @@ export class OrderHelperService {
       //   const { message } = H4HWarnings.SUBTOTAL_MISMATCH;
       //   data.warnings = [message];
       // }
-      data = this.tryAppendCrmDataToOrder(data, crmEntity);
+      order = this.tryAppendCrmDataToOrder({ order, crmEntity });
     }
 
-    return data;
+    return order;
   }
 
+  /**
+   * Conditionally append crmId, crmDescription, and/or warnings properties onto partial IOrderModel
+   */
   tryAppendCrmDataToOrder<
     T extends Pick<IOrderModel, 'crmId' | 'crmDescription' | 'warnings'>,
-  >(order: T, crmEntity: any): T {
+  >({ order, crmEntity }: { order: T; crmEntity: any }): T {
     const output = { ...order };
 
     if (typeof crmEntity === 'object' && crmEntity !== null) {

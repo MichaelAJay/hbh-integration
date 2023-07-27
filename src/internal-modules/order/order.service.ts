@@ -150,16 +150,21 @@ export class OrderService {
     let updates: Partial<
       Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
     > = { lastUpdatedAt: new Date() };
+    let requiresUpdate = false;
 
     if (crmId === undefined) {
       const crmEntity = await this.generateCRMEntityFromOrder({
         account,
         ezManageOrder,
       });
-      updates = this.orderHelperService.tryAppendCrmDataToOrder(
-        updates,
+      updates = this.orderHelperService.tryAppendCrmDataToOrder({
+        order: updates,
         crmEntity,
-      );
+      });
+      requiresUpdate =
+        'crmId' in updates ||
+        'crmDescription' in updates ||
+        'warnings' in updates;
     } else {
       const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
         account,
@@ -174,13 +179,16 @@ export class OrderService {
         updateResult.crmDescription !== internalOrder.crmDescription
       ) {
         updates.crmDescription = updateResult.crmDescription;
+        requiresUpdate = true;
       }
     }
 
-    await this.orderDbService.updateOne({
-      orderId,
-      updates,
-    });
+    if (requiresUpdate) {
+      await this.orderDbService.updateOne({
+        orderId,
+        updates,
+      });
+    }
   }
 
   async handleCancelledOrder(orderId: string) {
@@ -202,7 +210,9 @@ export class OrderService {
         ? await this.orderDbService.getOne(input)
         : input;
 
-    if (!order) throw new NotFoundException();
+    if (!order) {
+      throw new NotFoundException();
+    }
 
     // console.log('Order ID: ', order.id);
     return order.accountId === accountId;
