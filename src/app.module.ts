@@ -4,7 +4,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthGuard } from './guards';
 import { AccountModule } from './internal-modules/account/account.module';
-import { CatererModule } from './internal-modules/caterer/caterer.module';
 import { EzmanageSubscriberAPIModule } from './api/ezmanage-subscriber/ezmanage-subscriber.module';
 import { UserApiModule } from './api/user/user.module';
 import { ExternalDatabaseModule } from './external-modules/database/database.module';
@@ -27,7 +26,6 @@ import { OrderAPIModule } from './api/order/order.module';
      * they're just here to make sure the dependencies are clear
      */
     AccountModule,
-    CatererModule,
     OrderAPIModule,
     UserApiModule,
     AdminAPIModule,
