@@ -11,6 +11,7 @@ import {
 import { H4HWarnings } from 'src/external-modules/database/models/H4H';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
+import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
 import { OrderHelperService } from './order-helper.service';
@@ -144,6 +145,7 @@ describe('OrderService', () => {
           provide: EzmanageApiHandlerService,
           useValue: {
             getOrder: jest.fn(),
+            getOrderName: jest.fn(),
           },
         },
         {
@@ -4308,14 +4310,262 @@ describe('OrderService', () => {
     });
   });
   describe('getEzManageOrder', () => {
-    it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {});
-    it('propagates any error thrown by ezManageApiHandler.getOrder', async () => {});
-    it('resolves to the return from ezManageApiHandler.getOrder', async () => {});
+    it('calls ezManageApiHandler.getOrder with the correct arguments', async () => {
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockArguments = {
+        order: mockOrder,
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockEzManageOrder = {
+        orderNumber: 'FW8M2X',
+        uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+        event: {
+          timestamp: '2023-06-29T15:15:00Z',
+          timeZoneOffset: '-04:00',
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        orderCustomer: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: {
+            subunits: 16920,
+          },
+          tip: {
+            subunits: 0,
+          },
+        },
+        caterer: {
+          address: {
+            city: 'Athens',
+          },
+        },
+        catererCart: {
+          feesAndDiscounts: [
+            {
+              name: 'Delivery Fee',
+              cost: {
+                subunits: 2500,
+              },
+            },
+          ],
+          orderItems: [
+            {
+              quantity: 15,
+              name: 'Signature Sandwich Boxed Lunches',
+              totalInSubunits: {
+                subunits: 16920,
+              },
+              customizations: [
+                {
+                  customizationTypeName: 'Signature Sandwiches',
+                  name: 'Assorted',
+                  quantity: 15,
+                },
+                {
+                  customizationTypeName: 'Add Drinks',
+                  name: 'Assorted Canned Sodas',
+                  quantity: 15,
+                },
+              ],
+            },
+          ],
+          totals: {
+            catererTotalDue: 154.22,
+          },
+        },
+        orderSourceType: 'MARKETPLACE',
+      };
+      jest
+        .spyOn(ezManageApiHandler, 'getOrder')
+        .mockResolvedValue(mockEzManageOrder);
+      await service.getEzManageOrder(mockArguments);
+      expect(ezManageApiHandler.getOrder).toHaveBeenCalledWith({
+        orderId: mockArguments.order.id,
+        ref: mockArguments.ref,
+      });
+    });
+    it('propagates any error thrown by ezManageApiHandler.getOrder', async () => {
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockArguments = {
+        order: mockOrder,
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest.spyOn(ezManageApiHandler, 'getOrder').mockRejectedValue(mockError);
+      await expect(service.getEzManageOrder(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('resolves to the return from ezManageApiHandler.getOrder', async () => {
+      const mockDate = new Date();
+      const mockOrder: IOrderModelWithId = {
+        id: 'MOCK ORDER ID',
+        accountId: 'MOCK ACCOUNT ID',
+        catererId: 'MOCK CATERER ID',
+        catererName: 'MOCK CATERER NAME',
+        name: 'MOCK ORDER NAME',
+        status: DbOrderStatus.ACCEPTED,
+        acceptedAt: mockDate,
+        lastUpdatedAt: mockDate,
+      };
+      const mockArguments = {
+        order: mockOrder,
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockEzManageOrder = {
+        orderNumber: 'FW8M2X',
+        uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+        event: {
+          timestamp: '2023-06-29T15:15:00Z',
+          timeZoneOffset: '-04:00',
+          address: {
+            city: 'Watkinsville',
+            name: 'Piedmont Heart',
+            state: 'GA',
+            street: '1305 Jennings Mill Rd',
+            street2: 'Suite 250',
+            street3: null,
+            zip: '30677',
+          },
+          contact: {
+            name: 'Frank Sullivan',
+            phone: '2298943785',
+          },
+        },
+        orderCustomer: {
+          firstName: null,
+          lastName: null,
+        },
+        totals: {
+          subTotal: {
+            subunits: 16920,
+          },
+          tip: {
+            subunits: 0,
+          },
+        },
+        caterer: {
+          address: {
+            city: 'Athens',
+          },
+        },
+        catererCart: {
+          feesAndDiscounts: [
+            {
+              name: 'Delivery Fee',
+              cost: {
+                subunits: 2500,
+              },
+            },
+          ],
+          orderItems: [
+            {
+              quantity: 15,
+              name: 'Signature Sandwich Boxed Lunches',
+              totalInSubunits: {
+                subunits: 16920,
+              },
+              customizations: [
+                {
+                  customizationTypeName: 'Signature Sandwiches',
+                  name: 'Assorted',
+                  quantity: 15,
+                },
+                {
+                  customizationTypeName: 'Add Drinks',
+                  name: 'Assorted Canned Sodas',
+                  quantity: 15,
+                },
+              ],
+            },
+          ],
+          totals: {
+            catererTotalDue: 154.22,
+          },
+        },
+        orderSourceType: 'MARKETPLACE',
+      };
+      jest
+        .spyOn(ezManageApiHandler, 'getOrder')
+        .mockResolvedValue(mockEzManageOrder);
+      const result = await service.getEzManageOrder(mockArguments);
+      expect(result).toEqual(mockEzManageOrder);
+    });
   });
   describe('getOrderName', () => {
-    it('calls ezManageApihandler.getOrderName with the correct arguments', async () => {});
-    it('propagates any error thrown by ezManageApiHandler.getOrderName', async () => {});
-    it('resolves to the return from ezManageApiHandler.getOrderName', async () => {});
+    it('calls ezManageApihandler.getOrderName with the correct arguments', async () => {
+      const mockArguments = {
+        orderId: 'MOCK ORDER ID',
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockOrderName = 'MOCK ORDER NAME';
+      jest
+        .spyOn(ezManageApiHandler, 'getOrderName')
+        .mockResolvedValue(mockOrderName);
+      await service.getOrderName(mockArguments);
+      expect(ezManageApiHandler.getOrderName).toHaveBeenCalledWith(
+        mockArguments,
+      );
+    });
+    it('propagates any error thrown by ezManageApiHandler.getOrderName', async () => {
+      const mockArguments = {
+        orderId: 'MOCK ORDER ID',
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest
+        .spyOn(ezManageApiHandler, 'getOrderName')
+        .mockRejectedValue(mockError);
+      await expect(service.getOrderName(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('resolves to the return from ezManageApiHandler.getOrderName', async () => {
+      const mockArguments = {
+        orderId: 'MOCK ORDER ID',
+        ref: 'ADMIN' as ACCOUNT_REF,
+      };
+      const mockOrderName = 'MOCK ORDER NAME';
+      jest
+        .spyOn(ezManageApiHandler, 'getOrderName')
+        .mockResolvedValue(mockOrderName);
+      const result = await service.getOrderName(mockArguments);
+      expect(result).toEqual(mockOrderName);
+    });
   });
 
   afterEach(() => {
