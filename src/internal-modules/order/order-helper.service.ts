@@ -47,9 +47,13 @@ export class OrderHelperService {
   /**
    * Conditionally append crmId, crmDescription, and/or warnings properties onto partial IOrderModel
    */
-  tryAppendCrmDataToOrder<
-    T extends Pick<IOrderModel, 'crmId' | 'crmDescription' | 'warnings'>,
-  >({ order, crmEntity }: { order: T; crmEntity: any }): T {
+  tryAppendCrmDataToOrder<T extends Partial<IOrderModel>>({
+    order,
+    crmEntity,
+  }: {
+    order: T;
+    crmEntity: any;
+  }): T {
     const output = { ...order };
 
     if (typeof crmEntity === 'object' && crmEntity !== null) {

@@ -85,6 +85,8 @@ export class DatabaseClientService {
 
   /**
    * Updates included fields
+   *
+   * Whatever calls this should really be the one logging the error
    */
   async update({
     collectionName,
