@@ -23,7 +23,17 @@ describe('AccountDbHandlerService', () => {
 
   describe('existence tests', () => {});
 
-  describe('getAccount', () => {});
+  describe('getAccount', () => {
+    it('calls dbClientService.getOne with the correct arguments', async () => {});
+    it('propagates any error thrown by dbClientService.getOne', async () => {});
+    it('returns null if account is null & does not call isIAccountModelWithId validator', async () => {});
+    describe('returned account from dbClientService.getOne passes isIAccountModelWithId validation', () => {
+      it('returns account returned by dbclientService.getOne', async () => {});
+    });
+    describe('returned account from dbClientService.getOne does not pass isIAccountModelWithId validation', () => {
+      it('throws UnprocessableEntityException error', async () => {});
+    });
+  });
   describe('findByName', () => {});
   describe('findByRef', () => {});
 

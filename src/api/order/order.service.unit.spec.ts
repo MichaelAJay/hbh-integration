@@ -342,7 +342,10 @@ describe('OrderService', () => {
         ref: 'H4H' as ACCOUNT_REF,
       };
       const mockResolvedValue = {
-        invalidOrders: [] as string[],
+        deleted: [] as string[],
+        didNotDelete: [] as string[],
+        deleteErrors: [] as string[],
+        invalid: [] as string[],
       };
       const target = jest
         .spyOn(orderInternalInterface, 'deleteOrders')
@@ -357,7 +360,10 @@ describe('OrderService', () => {
         ref: 'H4H' as ACCOUNT_REF,
       };
       const mockResolvedValue = {
-        invalidOrders: [] as string[],
+        deleted: [] as string[],
+        didNotDelete: [] as string[],
+        deleteErrors: [] as string[],
+        invalid: [] as string[],
       };
       jest
         .spyOn(orderInternalInterface, 'deleteOrders')

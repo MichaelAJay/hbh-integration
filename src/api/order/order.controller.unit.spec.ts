@@ -336,7 +336,10 @@ describe('OrderController', () => {
       } as IAuthenticatedRequest;
 
       const mockResolvedValue = {
-        invalidOrders: [] as string[],
+        deleted: [] as string[],
+        didNotDelete: [] as string[],
+        deleteErrors: [] as string[],
+        invalid: [] as string[],
       };
       const target = jest
         .spyOn(orderService, 'deleteOrders')
@@ -358,7 +361,10 @@ describe('OrderController', () => {
       } as IAuthenticatedRequest;
 
       const mockResolvedValue = {
-        invalidOrders: [] as string[],
+        deleted: [] as string[],
+        didNotDelete: [] as string[],
+        deleteErrors: [] as string[],
+        invalid: [] as string[],
       };
       jest
         .spyOn(orderService, 'deleteOrders')

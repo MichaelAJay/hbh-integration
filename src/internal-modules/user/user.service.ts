@@ -1,14 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class UserService {
   constructor(private readonly authService: AuthService) {}
-  async generateSaltAndHashedPassword(password?: string) {
+  async generateSaltAndHashedPassword(inputPassword?: string) {
     const salt = this.authService.createSalt();
 
-    if (!password) {
-      password = this.authService.generateRandomPassword();
+    const password = inputPassword
+      ? inputPassword
+      : this.authService.generateRandomPassword();
+
+    if (typeof password !== 'string') {
+      const err = new InternalServerErrorException();
+      Sentry.withScope((scope) => {
+        scope.setExtra('password', password);
+        Sentry.captureException(err);
+      });
+      throw err;
     }
 
     const hashedPassword = await this.authService.hashValue({
