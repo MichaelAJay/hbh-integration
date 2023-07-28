@@ -28,7 +28,14 @@ describe('UserDbHandlerService', () => {
   });
 
   describe('existence tests', () => {});
-  describe('getOne', () => {});
+  describe('getOne', () => {
+    it('calls dbClientService.getOne with the correct arguments', async () => {});
+    it('propagates any error thrown by dbClientService.getOne', async () => {});
+    it('throws UnprocessableEntityException if dbClientService.getOne returns null', async () => {});
+    it('throws UnprocessableEntityException if dbClientService.getOne returns a record which fails isIUserRecordWithId validation', async () => {});
+    it('returns a user object which adheres to the IUserModelWithId interface on success', async () => {});
+    it('throws UnprocessableEntityException if created user object does not pass isIUserModelWithId validation', async () => {});
+  });
   describe('getOneByEmail', () => {});
   describe('createOne', () => {});
   describe('updateOne', () => {});

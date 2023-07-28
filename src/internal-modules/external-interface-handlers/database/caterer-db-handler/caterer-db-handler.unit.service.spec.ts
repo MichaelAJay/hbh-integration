@@ -20,7 +20,12 @@ describe('CatererDbHandlerService', () => {
 
   describe('existence tests', () => {});
 
-  describe('getCaterer', () => {});
+  describe('getCaterer', () => {
+    it('calls dbClientService.getOne with the correct arguments', async () => {});
+    it('returns null if dbClientService.getOne returns null', async () => {});
+    it('throws UnprocessableEntityException if dbclientService.getOne returns a record which fails the isICatererRecord validation', async () => {});
+    it('returns an object that adheres to the ICatererModelWithId interface on success', async () => {});
+  });
 
   afterEach(() => jest.resetAllMocks());
 });

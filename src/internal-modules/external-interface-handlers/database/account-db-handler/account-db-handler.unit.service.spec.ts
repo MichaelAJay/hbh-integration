@@ -34,8 +34,24 @@ describe('AccountDbHandlerService', () => {
       it('throws UnprocessableEntityException error', async () => {});
     });
   });
-  describe('findByName', () => {});
-  describe('findByRef', () => {});
+  describe('findByName', () => {
+    it('calls service findMany with the correct arguments', async () => {});
+    it('propagates any error thrown by service findMany', async () => {});
+    it('returns the result from service findMany on success', async () => {});
+  });
+  describe('findByRef', () => {
+    it('calls service findMany with the correct arguments', async () => {});
+    it('propagates any error thrown by service findMany', async () => {});
+    it('returns the result from service findMany on success', async () => {});
+  });
+  describe('findMany', () => {
+    it('calls dbClientService.getMany with the correct arguments', async () => {});
+    it('throws NotFoundexception if querySnapshot.empty', async () => {});
+    it('throws UnprocessableEntityException if returned record fails isAccountRecordWithId validation', async () => {});
+    it('throws UnprocessableEntityException if returned record fails isAccountModelWithId validation', async () => {});
+    it('returns an object with id matching input on success', async () => {});
+    it('returns an object which adheres to the IAccountModelWithId interface on success', async () => {});
+  });
 
   afterEach(() => jest.resetAllMocks());
 });
