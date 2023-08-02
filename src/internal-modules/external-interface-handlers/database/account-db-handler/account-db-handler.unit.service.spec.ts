@@ -21,7 +21,11 @@ describe('AccountDbHandlerService', () => {
     dbClientService = module.get<DatabaseClientService>(DatabaseClientService);
   });
 
-  describe('existence tests', () => {});
+  describe('existence tests', () => {
+    test('service is defined', () => expect(service).toBeDefined());
+    test('dbClientService is defined', () =>
+      expect(dbClientService).toBeDefined());
+  });
 
   describe('getAccount', () => {
     it('calls dbClientService.getOne with the correct arguments', async () => {});

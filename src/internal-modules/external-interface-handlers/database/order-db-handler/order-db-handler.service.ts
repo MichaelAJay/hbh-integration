@@ -1,4 +1,3 @@
-import { WhereFilterOp } from '@google-cloud/firestore';
 import {
   Injectable,
   NotFoundException,
@@ -12,18 +11,18 @@ import {
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
-import {
-  IOrderRecordWithId,
-  isIOrderRecord,
-  OrderRecordInput,
-} from './interfaces';
+import { isIOrderRecord, OrderRecordInput } from './interfaces';
 import { UpdateableOrderModel } from './types';
 import * as Sentry from '@sentry/node';
+import { OrderDbHandlerHelperService } from './order.db-handler.helper.service';
 
 @Injectable()
 export class OrderDbHandlerService {
   private collectionName: CollectionName;
-  constructor(private readonly dbClientService: DatabaseClientService) {
+  constructor(
+    private readonly orderDbHandlerHelperService: OrderDbHandlerHelperService,
+    private readonly dbClientService: DatabaseClientService,
+  ) {
     this.collectionName = CollectionName.ORDERS;
   }
 
@@ -104,7 +103,7 @@ export class OrderDbHandlerService {
   }
 
   async getManyForAccount({ orderIds }: { orderIds: string[] }) {
-    const orders = await this.findMany({
+    const orders = await this.orderDbHandlerHelperService.findMany({
       fieldPath: 'id',
       filterOp: 'in',
       value: orderIds,
@@ -118,7 +117,7 @@ export class OrderDbHandlerService {
       docId: accountId,
     });
 
-    const orders = await this.findMany({
+    const orders = await this.orderDbHandlerHelperService.findMany({
       fieldPath: 'accountId',
       filterOp: '==',
       value: accountRef,
@@ -138,7 +137,9 @@ export class OrderDbHandlerService {
         { fieldPath: 'accountId', opStr: '==', value: accountRef },
       ],
     };
-    const records = await this.findManyIntersection(filter);
+    const records = await this.orderDbHandlerHelperService.findManyIntersection(
+      filter,
+    );
 
     if (records.length === 0) {
       throw new NotFoundException('No records found matching criteria');
@@ -216,77 +217,5 @@ export class OrderDbHandlerService {
       docId,
     });
     return { didDelete: !!result };
-  }
-
-  private async findMany(filter: {
-    fieldPath: string;
-    filterOp: WhereFilterOp;
-    value: any;
-  }) {
-    const querySnapshot = await this.dbClientService.getMany({
-      collectionName: this.collectionName,
-      filter,
-    });
-
-    if (querySnapshot.empty) throw new NotFoundException('No records found');
-
-    const records = querySnapshot.docs.reduce(
-      (acc: IOrderModelWithId[], doc) => {
-        const record = { id: doc.id, ...doc.data() };
-        if (isIOrderRecord(record)) {
-          acc.push(this.convertOrderRecordWithIdToOrderModelWithId(record));
-        } else {
-          /**
-           * FAIL
-           */
-        }
-        return acc;
-      },
-      [],
-    );
-    return records;
-  }
-
-  private async findManyIntersection(filter: ICompositeAndFilter) {
-    const querySnapshot = await this.dbClientService.getManyIntersection({
-      collectionName: this.collectionName,
-      filter,
-    });
-
-    if (querySnapshot.empty) throw new NotFoundException('No records found');
-
-    const records = querySnapshot.docs.reduce(
-      (acc: IOrderModelWithId[], doc) => {
-        const record = { id: doc.id, ...doc.data() };
-        if (isIOrderRecord(record)) {
-          acc.push(this.convertOrderRecordWithIdToOrderModelWithId(record));
-        } else {
-          /**
-           * FAIL
-           */
-          console.error('FAIL');
-        }
-        return acc;
-      },
-      [],
-    );
-    return records;
-  }
-
-  private convertOrderRecordWithIdToOrderModelWithId(
-    record: IOrderRecordWithId,
-  ): IOrderModelWithId {
-    return {
-      id: record.id,
-      accountId: record.accountId.id,
-      catererId: record.catererId.id,
-      catererName: record.catererName,
-      name: record.name,
-      status: record.status,
-      crmId: record.crmId,
-      crmDescription: record.crmDescription,
-      acceptedAt: record.acceptedAt.toDate(),
-      lastUpdatedAt: record.lastUpdatedAt.toDate(),
-    };
   }
 }

@@ -5,6 +5,7 @@ import { CatererDbHandlerService } from './caterer-db-handler/caterer-db-handler
 import { OrderDbHandlerService } from './order-db-handler/order-db-handler.service';
 import { ExternalDatabaseModule } from 'src/external-modules/database/database.module';
 import { DatabaseClientService } from 'src/external-modules/database/database-client.service';
+import { OrderDbHandlerHelperService } from './order-db-handler/order.db-handler.helper.service';
 
 @Module({
   imports: [ExternalDatabaseModule],
@@ -13,6 +14,7 @@ import { DatabaseClientService } from 'src/external-modules/database/database-cl
     UserDbHandlerService,
     CatererDbHandlerService,
     OrderDbHandlerService,
+    OrderDbHandlerHelperService,
     DatabaseClientService,
   ],
   exports: [
