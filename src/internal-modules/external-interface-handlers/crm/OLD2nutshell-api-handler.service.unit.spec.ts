@@ -32,10 +32,14 @@ describe('NutshellApiHandlerService unit tests', () => {
       expect(service.nutshellApiService).toBeDefined());
   });
   describe('generatePrimaryEntity', () => {
+    it('rejects with CrmError if account.crmPrimaryType is undefined', async () => {});
+    it('rejects with CrmError if account.crmPrimaryType is not supported by switch', async () => {});
     describe('switch case "LEAD"', () => {
-      it('throws OrderManagerError if input order fails validateEzManageOrder validator', async () => {});
-      it('calls service createLead with the correct arguments', async () => {});
-      it('propagates any error thrown by service createLead', async () => {});
+      it('rejects with OrderManagerError if order argument does not pass validation', async () => {});
+      it('calls createLead once', async () => {});
+      it('calls createLead with the correct arguments', async () => {});
+      it('returns result from createLead', async () => {});
+      it('propagates any error thrown by createLead', async () => {});
     });
   });
   describe('updatePrimaryEntityWithOrder', () => {

@@ -39,7 +39,6 @@ export class NutshellApiHandlerService {
           order: order as IEzManageOrder,
         });
       default:
-        /** LOG */
         const err = new CrmError(
           `Invalid account crmPrimaryType ${account.crmPrimaryType}`,
         );
