@@ -36,23 +36,31 @@ describe('NutshellApiHandlerService unit tests', () => {
       it('throws OrderManagerError if input order fails validateEzManageOrder validator', async () => {});
       it('calls service createLead with the correct arguments', async () => {});
       it('propagates any error thrown by service createLead', async () => {});
+      it('returns the result of service createLead on success', async () => {});
+    });
+    describe('switch case default', () => {
+      it('throws CrmError if account.crmPrimaryEntity is undefined', async () => {});
+      it('throws CrmError if accountcrmPrimaryEntity is valid value but has no switch case', async () => {});
     });
   });
   describe('updatePrimaryEntityWithOrder', () => {
-    it('rejects with CrmError if account.crmPrimaryType is undefined', async () => {});
-    it('rejects with CrmError if account.crmPrimaryType is not supported by switch', async () => {});
     describe('switch case "LEAD"', () => {
-      it('rejects with OrderManagerError if order argument does not pass validation', async () => {});
-      it('calls updateLeadWithOrder once', async () => {});
-      it('calls updateLeadWithOrder with the correct arguments', async () => {});
-      it('returns result from updateLeadWithOrder', async () => {});
-      it('propagates any error thrown by updateLeadWithOrder', async () => {});
+      describe('incoming order fails validateEzManageOrder validation', () => {
+        it('throws OrderManagerError', async () => {});
+      });
+      describe('incoming order passes validateEzManageOrder validation', () => {
+        it('calls service updateLeadWithOrder with the correct arguments', async () => {});
+        it('propagates any error thrown by service updateLeadWithOrder', async () => {});
+        it('returns the result of service updateLeadWithOrder on success', async () => {});
+      });
+    });
+    describe('switch case default', () => {
+      it('throws CrmError', async () => {});
     });
   });
   describe('getProducts', () => {
-    it('calls nutshellApiService.getProducts once', async () => {});
     it('calls nutshellApiService.getProducts with the correct arguments', async () => {});
-    it('returns result from nutshellApiService.getProducts directly', async () => {});
     it('propagates any error thrown by nutshellApiService.getProducts', async () => {});
+    it('returns the result of nutshellApiService.getProducts on success', async () => {});
   });
 });

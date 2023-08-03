@@ -9,3 +9,6 @@ And then the tests would need rewriting
 
 crm-handler.service.unit.spec.ts is fresh as of 3 Aug 23
 stubbed out
+
+todo:
+pull out private methods into new class for nutshell api handler

@@ -49,7 +49,8 @@ describe('CrmHandlerService', () => {
       it('returns the result of nutshellApiHandler.generatePrimaryEntity on success', async () => {});
     });
     describe('switch case default', () => {
-      it('throws CrmError', async () => {});
+      it('throws CrmError if account.crm is undefined', async () => {});
+      it('throws CrmError if account.crm is valid but not supported by switch', async () => {});
     });
   });
   /**
@@ -62,7 +63,8 @@ describe('CrmHandlerService', () => {
       it('returns an object with { crmDescription: string } on success', async () => {});
     });
     describe('switch case default', () => {
-      it('throws CrmError', async () => {});
+      it('throws CrmError if account.crm is undefined', async () => {});
+      it('throws CrmError if account.crm is valid but not supported by switch', async () => {});
     });
   });
   /**
@@ -75,7 +77,8 @@ describe('CrmHandlerService', () => {
       it('returns the result of nutshellApihandler.getProducts on success', async () => {});
     });
     describe('switch case default', () => {
-      it('throws CrmError', async () => {});
+      it('throws CrmError if account.crm is undefined', async () => {});
+      it('throws CrmError if account.crm is valid but not supported by switch', async () => {});
     });
   });
 });
