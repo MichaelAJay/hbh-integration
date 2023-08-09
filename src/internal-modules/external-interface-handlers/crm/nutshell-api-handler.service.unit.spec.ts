@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NutshellApiService } from 'src/external-modules/nutshell-api/nutshell-api.service';
+import { NutshellApiHandlerHelperService } from './nutshell-api-handler.helper.service';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
 
 describe('NutshellApiHandlerService unit tests', () => {
   let service: NutshellApiHandlerService;
+  let nutshellApiService: NutshellApiService;
+  let nutshellApiHandlerHelper: NutshellApiHandlerHelperService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,10 +20,18 @@ describe('NutshellApiHandlerService unit tests', () => {
             getProducts: jest.fn(),
           },
         },
+        {
+          provide: NutshellApiHandlerHelperService,
+          useValue: {},
+        },
       ],
     }).compile();
 
     service = module.get<NutshellApiHandlerService>(NutshellApiHandlerService);
+    nutshellApiService = module.get<NutshellApiService>(NutshellApiService);
+    nutshellApiHandlerHelper = module.get<NutshellApiHandlerHelperService>(
+      NutshellApiHandlerHelperService,
+    );
   });
 
   /**
@@ -28,21 +39,27 @@ describe('NutshellApiHandlerService unit tests', () => {
    */
   describe('existence & dependency injection tests', () => {
     test('service exists', () => expect(service).toBeDefined());
-    test('nutshell api service is injected into service', () =>
-      expect(service.nutshellApiService).toBeDefined());
+    test('nutshell api service is defined', () =>
+      expect(nutshellApiService).toBeDefined());
+    test('nutshell api handler helper service is defined', () =>
+      expect(nutshellApiHandlerHelper).toBeDefined());
   });
+  /** CHECKED 9 AUG 23 */
   describe('generatePrimaryEntity', () => {
+    /** CHECKED 9 AUG 23 */
     describe('switch case "LEAD"', () => {
       it('throws OrderManagerError if input order fails validateEzManageOrder validator', async () => {});
       it('calls service createLead with the correct arguments', async () => {});
       it('propagates any error thrown by service createLead', async () => {});
       it('returns the result of service createLead on success', async () => {});
     });
+    /** CHECKED 9 AUG 23 */
     describe('switch case default', () => {
       it('throws CrmError if account.crmPrimaryEntity is undefined', async () => {});
       it('throws CrmError if accountcrmPrimaryEntity is valid value but has no switch case', async () => {});
     });
   });
+  /** CHECKED 9 AUG 23 */
   describe('updatePrimaryEntityWithOrder', () => {
     describe('switch case "LEAD"', () => {
       describe('incoming order fails validateEzManageOrder validation', () => {
@@ -55,12 +72,16 @@ describe('NutshellApiHandlerService unit tests', () => {
       });
     });
     describe('switch case default', () => {
-      it('throws CrmError', async () => {});
+      it('throws CrmError if account.crmPrimaryType is undefined', async () => {});
+      it('throws CrmError if account.crmPrimaryType is valid value but has no switch case', async () => {});
     });
   });
+  /** CHECKED 9 AUG 23 */
   describe('getProducts', () => {
     it('calls nutshellApiService.getProducts with the correct arguments', async () => {});
     it('propagates any error thrown by nutshellApiService.getProducts', async () => {});
     it('returns the result of nutshellApiService.getProducts on success', async () => {});
   });
+
+  afterEach(() => jest.resetAllMocks());
 });

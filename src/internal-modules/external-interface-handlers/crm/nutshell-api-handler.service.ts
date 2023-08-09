@@ -38,7 +38,7 @@ export class NutshellApiHandlerService {
           err.isLogged = true;
           throw err;
         }
-        return await this.createLead({
+        return await this.nutshellApiHandlerHelper.createLead({
           account,
           order: order as IEzManageOrder,
         });

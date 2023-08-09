@@ -1,10 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CrmError } from 'src/common/classes';
-import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
-import { AccountRecordWithId } from '../database/account-db-handler/types';
 import { CrmHandlerService } from './crm-handler.service';
 import { NutshellApiHandlerService } from './nutshell-api-handler.service';
-import { GeneratePrimaryNutshellEntityReturn } from './types/returns';
 
 describe('CrmHandlerService', () => {
   let service: CrmHandlerService;
@@ -68,7 +64,7 @@ describe('CrmHandlerService', () => {
     });
   });
   /**
-   * todo
+   * CHECKED 9 AUG 23
    */
   describe('getProducts', () => {
     describe('switch case "NUTSHELL"', () => {
