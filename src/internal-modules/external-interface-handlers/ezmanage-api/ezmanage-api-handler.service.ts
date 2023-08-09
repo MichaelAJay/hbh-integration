@@ -8,14 +8,14 @@ export class EzmanageApiHandlerService {
 
   async getOrder({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
     try {
-      return await this.ezManageApiService.getOrder(orderId, ref);
+      return this.ezManageApiService.getOrder(orderId, ref);
     } catch (err) {
       throw err;
     }
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
-    return await this.ezManageApiService.getOrderName({
+    return this.ezManageApiService.getOrderName({
       orderId,
       ref,
     });

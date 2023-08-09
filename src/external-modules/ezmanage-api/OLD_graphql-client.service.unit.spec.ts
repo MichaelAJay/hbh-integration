@@ -1,209 +1,191 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { GraphQLClient } from 'graphql-request';
 import { OrderManagerError } from 'src/common/classes';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import { GraphqlClientService } from './graphql-client.service';
 
 describe('GraphqlClientService', () => {
   let service: GraphqlClientService;
-  let client: GraphQLClient;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot()],
-      providers: [
-        GraphqlClientService,
-        {
-          provide: GraphQLClient,
-          useValue: {
-            request: jest.fn(),
-          },
-        },
-      ],
+      providers: [GraphqlClientService],
     }).compile();
 
     service = module.get<GraphqlClientService>(GraphqlClientService);
-    client = module.get<GraphQLClient>(GraphQLClient);
   });
 
   describe('initialization tests', () => {
     test('service is defined', async () => expect(service).toBeDefined());
-    test('graphql client exists', async () => expect(client).toBeDefined());
+    test('graphql client exists', async () =>
+      expect(service.client).toBeDefined());
   });
   describe('queryOrder', () => {
-    it('calls service setAuthHeaderOnClient with the correct arguments', async () => {});
-    it('calls client.request with the correct arguments', async () => {});
-    it("throws OrderManagerError if order isn't found with matching id by client.request", async () => {});
-    it('propagates any other error thrown by client.request', async () => {});
-    it('throws OrderManagerError if return from client.request is not an object with "order" property', async () => {});
-    it('throws OrderManagerError if order returned by client.request does not pass validatezManageOrder validation', async () => {});
-    it('returns order adhering to the IEzManageOrder interface on success', async () => {});
+    it('propagates Bad Config error for missing auth token due to invalid ref', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'INCONSEQUENTIAL ORDER ID',
+        ref: 'INVALID_TEST',
+      };
+      const expectedError = new InternalServerErrorException('Bad config');
+      await expect(service.queryOrder(mockArguments)).rejects.toThrow(
+        expectedError,
+      );
+    });
+    it("calls service.client's request once", async () => {
+      jest.spyOn(service.client, 'request').mockRejectedValue(new Error());
+      await service
+        .queryOrder({ orderId: 'order id', ref: 'H4H' })
+        .catch((reason) => {});
+      expect(service.client.request).toHaveBeenCalledTimes(1);
+    });
+    it('throws OrderManagerError if order not found with id for account', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'NONEXISTENT ORDER ID',
+        ref: 'H4H',
+      };
+      const mockReason = {
+        response: {
+          data: {
+            order: null,
+          },
+        },
+      };
+      jest.spyOn(service.client, 'request').mockRejectedValue(mockReason);
+      await service.queryOrder(mockArguments).catch((reason) => {
+        expect(reason).toBeInstanceOf(OrderManagerError);
+        expect(reason.message).toBe('Order not found with id for account');
+        expect(reason.isLogged).toBe(true);
+      });
+    });
+    it('propagates through any error other than if the order is not found with id for account', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'INCONSEQUENTIAL ORDER ID',
+        ref: 'H4H',
+      };
+      const mockError = new Error('ERROR UNDER TEST');
+      jest.spyOn(service.client, 'request').mockRejectedValue(mockError);
+      await expect(service.queryOrder(mockArguments)).rejects.toThrow(
+        mockError,
+      );
+    });
+    it('throws OrderManagerError with "Malformed GQL response" if client does not return response with object property', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'INCONSEQUENTIAL ORDER ID',
+        ref: 'H4H',
+      };
 
-    // it('propagates Bad Config error for missing auth token due to invalid ref', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'INCONSEQUENTIAL ORDER ID',
-    //     ref: 'INVALID_TEST',
-    //   };
-    //   const expectedError = new InternalServerErrorException('Bad config');
-    //   await expect(service.queryOrder(mockArguments)).rejects.toThrow(
-    //     expectedError,
-    //   );
-    // });
-    // it("calls service.client's request once", async () => {
-    //   jest.spyOn(service.client, 'request').mockRejectedValue(new Error());
-    //   await service
-    //     .queryOrder({ orderId: 'order id', ref: 'H4H' })
-    //     .catch((reason) => {});
-    //   expect(service.client.request).toHaveBeenCalledTimes(1);
-    // });
-    // it('throws OrderManagerError if order not found with id for account', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'NONEXISTENT ORDER ID',
-    //     ref: 'H4H',
-    //   };
-    //   const mockReason = {
-    //     response: {
-    //       data: {
-    //         order: null,
-    //       },
-    //     },
-    //   };
-    //   jest.spyOn(service.client, 'request').mockRejectedValue(mockReason);
-    //   await service.queryOrder(mockArguments).catch((reason) => {
-    //     expect(reason).toBeInstanceOf(OrderManagerError);
-    //     expect(reason.message).toBe('Order not found with id for account');
-    //     expect(reason.isLogged).toBe(true);
-    //   });
-    // });
-    // it('propagates through any error other than if the order is not found with id for account', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'INCONSEQUENTIAL ORDER ID',
-    //     ref: 'H4H',
-    //   };
-    //   const mockError = new Error('ERROR UNDER TEST');
-    //   jest.spyOn(service.client, 'request').mockRejectedValue(mockError);
-    //   await expect(service.queryOrder(mockArguments)).rejects.toThrow(
-    //     mockError,
-    //   );
-    // });
-    // it('throws OrderManagerError with "Malformed GQL response" if client does not return response with object property', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'INCONSEQUENTIAL ORDER ID',
-    //     ref: 'H4H',
-    //   };
+      jest
+        .spyOn(service.client, 'request')
+        .mockResolvedValue('Not an object with order property');
 
-    //   jest
-    //     .spyOn(service.client, 'request')
-    //     .mockResolvedValue('Not an object with order property');
+      const expectedError = new OrderManagerError('Malformed GQL response');
+      await expect(service.queryOrder(mockArguments)).rejects.toThrow(
+        expectedError,
+      );
+    });
+    it('throws OrderManagerError with "Malformed GQL order response" if returned order fails validation', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'MOCK VALID ORDER ID',
+        ref: 'H4H',
+      };
 
-    //   const expectedError = new OrderManagerError('Malformed GQL response');
-    //   await expect(service.queryOrder(mockArguments)).rejects.toThrow(
-    //     expectedError,
-    //   );
-    // });
-    // it('throws OrderManagerError with "Malformed GQL order response" if returned order fails validation', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'MOCK VALID ORDER ID',
-    //     ref: 'H4H',
-    //   };
+      jest
+        .spyOn(service.client, 'request')
+        .mockResolvedValue({ order: 'INVALID ORDER' });
+      const expectedError = new OrderManagerError(
+        'Malformed GQL order response',
+      );
+      await expect(service.queryOrder(mockArguments)).rejects.toThrow(
+        expectedError,
+      );
+    });
+    it('returns validated order', async () => {
+      const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
+        orderId: 'MOCK VALID ORDER ID',
+        ref: 'H4H',
+      };
+      const mockResponse = {
+        order: {
+          orderNumber: 'FW8M2X',
+          uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
+          event: {
+            timestamp: '2023-06-29T15:15:00Z',
+            timeZoneOffset: '-04:00',
+            address: {
+              city: 'Watkinsville',
+              name: 'Piedmont Heart',
+              state: 'GA',
+              street: '1305 Jennings Mill Rd',
+              street2: 'Suite 250',
+              street3: null,
+              zip: '30677',
+            },
+            contact: {
+              name: 'Frank Sullivan',
+              phone: '2298943785',
+            },
+          },
+          orderCustomer: {
+            firstName: null,
+            lastName: null,
+          },
+          totals: {
+            subTotal: {
+              subunits: 16920,
+            },
+            tip: {
+              subunits: 0,
+            },
+          },
+          caterer: {
+            address: {
+              city: 'Athens',
+            },
+          },
+          catererCart: {
+            feesAndDiscounts: [
+              {
+                name: 'Delivery Fee',
+                cost: {
+                  subunits: 2500,
+                },
+              },
+            ],
+            orderItems: [
+              {
+                quantity: 15,
+                name: 'Signature Sandwich Boxed Lunches',
+                totalInSubunits: {
+                  subunits: 16920,
+                },
+                customizations: [
+                  {
+                    customizationTypeName: 'Signature Sandwiches',
+                    name: 'Assorted',
+                    quantity: 15,
+                  },
+                  {
+                    customizationTypeName: 'Add Drinks',
+                    name: 'Assorted Canned Sodas',
+                    quantity: 15,
+                  },
+                ],
+              },
+            ],
+            totals: {
+              catererTotalDue: 154.22,
+            },
+          },
+          orderSourceType: 'MARKETPLACE',
+        },
+      };
 
-    //   jest
-    //     .spyOn(service.client, 'request')
-    //     .mockResolvedValue({ order: 'INVALID ORDER' });
-    //   const expectedError = new OrderManagerError(
-    //     'Malformed GQL order response',
-    //   );
-    //   await expect(service.queryOrder(mockArguments)).rejects.toThrow(
-    //     expectedError,
-    //   );
-    // });
-    // it('returns validated order', async () => {
-    //   const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
-    //     orderId: 'MOCK VALID ORDER ID',
-    //     ref: 'H4H',
-    //   };
-    //   const mockResponse = {
-    //     order: {
-    //       orderNumber: 'FW8M2X',
-    //       uuid: '31d569b3-f7c8-4507-b7aa-d239ba456dac',
-    //       event: {
-    //         timestamp: '2023-06-29T15:15:00Z',
-    //         timeZoneOffset: '-04:00',
-    //         address: {
-    //           city: 'Watkinsville',
-    //           name: 'Piedmont Heart',
-    //           state: 'GA',
-    //           street: '1305 Jennings Mill Rd',
-    //           street2: 'Suite 250',
-    //           street3: null,
-    //           zip: '30677',
-    //         },
-    //         contact: {
-    //           name: 'Frank Sullivan',
-    //           phone: '2298943785',
-    //         },
-    //       },
-    //       orderCustomer: {
-    //         firstName: null,
-    //         lastName: null,
-    //       },
-    //       totals: {
-    //         subTotal: {
-    //           subunits: 16920,
-    //         },
-    //         tip: {
-    //           subunits: 0,
-    //         },
-    //       },
-    //       caterer: {
-    //         address: {
-    //           city: 'Athens',
-    //         },
-    //       },
-    //       catererCart: {
-    //         feesAndDiscounts: [
-    //           {
-    //             name: 'Delivery Fee',
-    //             cost: {
-    //               subunits: 2500,
-    //             },
-    //           },
-    //         ],
-    //         orderItems: [
-    //           {
-    //             quantity: 15,
-    //             name: 'Signature Sandwich Boxed Lunches',
-    //             totalInSubunits: {
-    //               subunits: 16920,
-    //             },
-    //             customizations: [
-    //               {
-    //                 customizationTypeName: 'Signature Sandwiches',
-    //                 name: 'Assorted',
-    //                 quantity: 15,
-    //               },
-    //               {
-    //                 customizationTypeName: 'Add Drinks',
-    //                 name: 'Assorted Canned Sodas',
-    //                 quantity: 15,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //         totals: {
-    //           catererTotalDue: 154.22,
-    //         },
-    //       },
-    //       orderSourceType: 'MARKETPLACE',
-    //     },
-    //   };
-
-    //   jest.spyOn(service.client, 'request').mockResolvedValue(mockResponse);
-    //   const ret = await service.queryOrder(mockArguments);
-    //   expect(ret).toBe(mockResponse['order']);
-    // });
+      jest.spyOn(service.client, 'request').mockResolvedValue(mockResponse);
+      const ret = await service.queryOrder(mockArguments);
+      expect(ret).toBe(mockResponse['order']);
+    });
   });
   describe('queryOrderName', () => {
     it('propagates Bad Config error for missing auth token due to invalid ref', async () => {

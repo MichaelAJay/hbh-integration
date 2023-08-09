@@ -1,3 +1,4 @@
+/** FINISHED 9 AUG 23 */
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EzmanageApiService } from 'src/external-modules/ezmanage-api/ezmanage-api.service';
@@ -38,8 +39,16 @@ describe('EzmanageApiHandlerService', () => {
     it('propagates any error thrown by ezManageApiService.getOrder', async () => {});
     it('returns the result of ezManageApiService.getOrder on success', async () => {});
   });
-  describe('getOrderName', () => {});
-  describe('getCatererName', () => {});
+  describe('getOrderName', () => {
+    it('calls ezManageapiService.getOrderName with the correct arguments', async () => {});
+    it('propagates any error thrown by ezManageApiService.getOrderName', async () => {});
+    it('returns the result of ezManageApiService.getOrderName on success', async () => {});
+  });
+  describe('getCatererName', () => {
+    it('calls ezManageApiService.getCatererMenu with the correct arguments', async () => {});
+    it('propagates any error thrown by ezManageApiService.getCatererMenu', async () => {});
+    it('returns a string array from ezManageApiService.getCatererMenu return on success', async () => {});
+  });
 
   afterEach(() => jest.resetAllMocks());
 });

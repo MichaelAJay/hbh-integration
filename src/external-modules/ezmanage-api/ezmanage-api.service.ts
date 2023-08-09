@@ -4,20 +4,20 @@ import { GraphqlClientService } from './graphql-client.service';
 
 @Injectable()
 export class EzmanageApiService {
-  constructor(public readonly graphqlService: GraphqlClientService) {}
+  constructor(private readonly graphqlService: GraphqlClientService) {}
 
   async getOrder(orderId: string, ref: ACCOUNT_REF) {
-    return await this.graphqlService.queryOrder({ orderId, ref });
+    return this.graphqlService.queryOrder({ orderId, ref });
   }
 
   async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
-    return await this.graphqlService.queryOrderName({
+    return this.graphqlService.queryOrderName({
       orderId,
       ref,
     });
   }
 
   async getCatererMenu({ catererId, ref }: { catererId: string; ref }) {
-    return await this.graphqlService.getCatererMenu({ catererId, ref });
+    return this.graphqlService.getCatererMenu({ catererId, ref });
   }
 }

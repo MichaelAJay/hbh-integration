@@ -1,41 +1,28 @@
-/** COMPLETED 9 AUG 23 */
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderManagerError } from 'src/common/classes';
 import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
 import { ExternalEzmanageApiModule } from './ezmanage-api.module';
 import { EzmanageApiService } from './ezmanage-api.service';
-import { GraphqlClientService } from './graphql-client.service';
 import { IGetH4HCatererMenu } from './interfaces/gql';
 import { IEzManageOrder } from './interfaces/gql/responses';
 
 describe('EzmanageApiService', () => {
   let service: EzmanageApiService;
-  let graphqlService: GraphqlClientService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot(), ExternalEzmanageApiModule],
-      providers: [
-        EzmanageApiService,
-        {
-          provide: GraphqlClientService,
-          useValue: {
-            queryOrderName: jest.fn(),
-            getCatererMenu: jest.fn(),
-          },
-        },
-      ],
+      providers: [EzmanageApiService],
     }).compile();
 
     service = module.get<EzmanageApiService>(EzmanageApiService);
-    graphqlService = module.get<GraphqlClientService>(GraphqlClientService);
   });
 
   describe('existence tests', () => {
     test('service exists', async () => expect(service).toBeDefined());
-    test('graphql service is defined', async () =>
-      expect(graphqlService).toBeDefined());
+    test('graphql service is injected on service', async () =>
+      expect(service.graphqlService).toBeDefined());
   });
   describe('getOrder', () => {
     it('calls graphql service queryOrder with the correct arguments', async () => {
@@ -45,10 +32,12 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = {} as IEzManageOrder;
       jest
-        .spyOn(graphqlService, 'queryOrder')
+        .spyOn(service.graphqlService, 'queryOrder')
         .mockResolvedValue(mockResolvedValue);
       await service.getOrder(mockArguments.orderId, mockArguments.ref);
-      expect(graphqlService.queryOrder).toHaveBeenCalledWith(mockArguments);
+      expect(service.graphqlService.queryOrder).toHaveBeenCalledWith(
+        mockArguments,
+      );
     });
     it('passes through any non-error return', async () => {
       const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
@@ -57,7 +46,7 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = {} as IEzManageOrder;
       jest
-        .spyOn(graphqlService, 'queryOrder')
+        .spyOn(service.graphqlService, 'queryOrder')
         .mockResolvedValue(mockResolvedValue);
       const result = await service.getOrder(
         mockArguments.orderId,
@@ -72,7 +61,7 @@ describe('EzmanageApiService', () => {
       };
       const mockRejectedValue = new OrderManagerError('ERROR UNDER TEST');
       jest
-        .spyOn(graphqlService, 'queryOrder')
+        .spyOn(service.graphqlService, 'queryOrder')
         .mockRejectedValue(mockRejectedValue);
       await expect(
         service.getOrder(mockArguments.orderId, mockArguments.ref),
@@ -87,10 +76,12 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = 'MOCK ORDER NAME';
       jest
-        .spyOn(graphqlService, 'queryOrderName')
+        .spyOn(service.graphqlService, 'queryOrderName')
         .mockResolvedValue(mockResolvedValue);
       await service.getOrderName(mockArguments);
-      expect(graphqlService.queryOrderName).toHaveBeenCalledWith(mockArguments);
+      expect(service.graphqlService.queryOrderName).toHaveBeenCalledWith(
+        mockArguments,
+      );
     });
     it('passes through any non-error return', async () => {
       const mockArguments: { orderId: string; ref: ACCOUNT_REF } = {
@@ -99,7 +90,7 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = 'MOCK ORDER NAME';
       jest
-        .spyOn(graphqlService, 'queryOrderName')
+        .spyOn(service.graphqlService, 'queryOrderName')
         .mockResolvedValue(mockResolvedValue);
       const orderName = await service.getOrderName(mockArguments);
       expect(orderName).toBe(mockResolvedValue);
@@ -111,7 +102,7 @@ describe('EzmanageApiService', () => {
       };
       const mockRejectedValue = new OrderManagerError('ERROR UNDER TEST');
       jest
-        .spyOn(graphqlService, 'queryOrderName')
+        .spyOn(service.graphqlService, 'queryOrderName')
         .mockRejectedValue(mockRejectedValue);
       await expect(service.getOrderName(mockArguments)).rejects.toThrow(
         mockRejectedValue,
@@ -126,10 +117,12 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = {} as IGetH4HCatererMenu;
       jest
-        .spyOn(graphqlService, 'getCatererMenu')
+        .spyOn(service.graphqlService, 'getCatererMenu')
         .mockResolvedValue(mockResolvedValue);
       await service.getCatererMenu(mockArguments);
-      expect(graphqlService.getCatererMenu).toHaveBeenCalledWith(mockArguments);
+      expect(service.graphqlService.getCatererMenu).toHaveBeenCalledWith(
+        mockArguments,
+      );
     });
     it('passes through any non-error return', async () => {
       const mockArguments: { catererId: string; ref: ACCOUNT_REF } = {
@@ -138,7 +131,7 @@ describe('EzmanageApiService', () => {
       };
       const mockResolvedValue = {} as IGetH4HCatererMenu;
       jest
-        .spyOn(graphqlService, 'getCatererMenu')
+        .spyOn(service.graphqlService, 'getCatererMenu')
         .mockResolvedValue(mockResolvedValue);
       const result = await service.getCatererMenu(mockArguments);
       expect(result).toBe(mockResolvedValue);
@@ -150,7 +143,7 @@ describe('EzmanageApiService', () => {
       };
       const mockRejectedValue = new OrderManagerError('ERROR UNDER TEST');
       jest
-        .spyOn(graphqlService, 'getCatererMenu')
+        .spyOn(service.graphqlService, 'getCatererMenu')
         .mockRejectedValue(mockRejectedValue);
       await expect(service.getCatererMenu(mockArguments)).rejects.toThrow(
         mockRejectedValue,

@@ -1,6 +1,6 @@
 import { Firestore, Query, WhereFilterOp } from '@google-cloud/firestore';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DatabaseClientError, InternalError } from 'src/common/classes';
+import { DatabaseClientError } from 'src/common/classes';
 import { CollectionName } from './enum';
 import { ICompositeAndFilter } from './interfaces';
 import * as Sentry from '@sentry/node';

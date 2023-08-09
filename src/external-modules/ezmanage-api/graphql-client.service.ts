@@ -9,7 +9,7 @@ import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/da
 
 @Injectable()
 export class GraphqlClientService {
-  public readonly client: GraphQLClient;
+  private readonly client: GraphQLClient;
 
   constructor() {
     const { EZMANAGE_API_URL: apiUrl } = process.env;
