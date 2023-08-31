@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { networkInterfaces } from 'os';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
   IAccountModelWithId,

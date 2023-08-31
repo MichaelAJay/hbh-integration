@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class CrmHandlerService {
-  constructor(public readonly nutshellApiHandler: NutshellApiHandlerService) {}
+  constructor(private readonly nutshellApiHandler: NutshellApiHandlerService) {}
 
   /**
    * Need to think about a supertype
@@ -28,7 +28,7 @@ export class CrmHandlerService {
   }): Promise<any> {
     switch (account.crm) {
       case 'NUTSHELL':
-        return await this.nutshellApiHandler.generatePrimaryEntity({
+        return this.nutshellApiHandler.generatePrimaryEntity({
           account,
           order,
         });
