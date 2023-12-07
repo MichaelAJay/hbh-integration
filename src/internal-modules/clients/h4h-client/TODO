@@ -1,1 +1,10 @@
 Replace loose methods with H4H client service
+
+Create primary H4H Client service
+Write primary H4H Client service tests
+
+Create H4H Client helper service
+Write H4H Client helper service tests
+
+Replace stand-alone methods with H4H Client service methods
+Write initial tests

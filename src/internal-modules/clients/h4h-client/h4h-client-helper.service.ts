@@ -70,6 +70,10 @@ export class H4HClientHelperService {
             } else {
               invalidKeys.push(item.name);
             }
+          } else {
+            /**
+             * What, if anything, does this need to do?
+             */
           }
         }
       }
