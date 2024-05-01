@@ -9,6 +9,7 @@ import { EzmanageApiHandlerModule } from 'src/internal-modules/external-interfac
 import { AccountModule } from 'src/internal-modules/account/account.module';
 import { CrmModule } from 'src/internal-modules/external-interface-handlers/crm/crm.module';
 import { OrderModule } from 'src/internal-modules/order/order.module';
+import { InvoiceflowModule } from 'src/external-modules/invoiceflow/invoiceflow.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OrderModule } from 'src/internal-modules/order/order.module';
     EzmanageApiHandlerModule,
     CrmModule,
     OrderModule,
+    InvoiceflowModule,
   ],
   providers: [AdminAPIService, AdminInternalInterfaceService],
   controllers: [AdminController],

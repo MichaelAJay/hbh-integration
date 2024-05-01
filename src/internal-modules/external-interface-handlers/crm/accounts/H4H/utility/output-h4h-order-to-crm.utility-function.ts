@@ -50,7 +50,7 @@ export function outputH4HOrderToCrm({
     );
 
     const id = mapH4HMenuItemToCrmProductId('EZCater/EZOrder Commission');
-    if (id) {
+    if (id && order.orderSourceType !== 'DIRECT_ENTRY') {
       const commissionInCents = getH4HCommissionInCents(order);
       const commission = ConvertCentsToDollarsAndCents(commissionInCents);
       products.push({
@@ -62,7 +62,7 @@ export function outputH4HOrderToCrm({
 
     const lead: IUpsertLeadEntity<IH4HCreateLeadCustomFields> = {
       products,
-      description: getLeadName(order),
+      description: getLeadName(order), // Change this?
       customFields: {
         'Lead description': `This lead was generated from the EzManage order ${FormatOrderName(
           order.orderNumber,
@@ -140,6 +140,7 @@ function aggregateLeadProducts(items: IEzManageOrderItem[]): {
           if (id !== undefined && typeof customization.quantity === 'number') {
             aggregator[id] = (aggregator[id] || 0) + customization.quantity;
           } else {
+            console.log('Invalid key', item.name);
             invalidKeys.push(item.name);
           }
         }

@@ -25,6 +25,19 @@ export class AdminAPIService {
     });
   }
 
+  async bulkGenerateInvoices({
+    accountId,
+    orderNames,
+  }: {
+    accountId: string;
+    orderNames: string[];
+  }) {
+    return await this.adminInternalInterface.bulkGenerateInvoices({
+      accountId,
+      orderNames,
+    });
+  }
+
   async createUser(body: AdminCreateUserBodyDto) {
     const val = await this.adminInternalInterface.createUser(body);
     return { msg: 'User created', ...val };

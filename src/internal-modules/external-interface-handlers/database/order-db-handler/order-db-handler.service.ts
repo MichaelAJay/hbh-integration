@@ -194,6 +194,10 @@ export class OrderDbHandlerService {
     }
 
     try {
+      if (Object.keys(targetUpdates).length === 0) {
+        return { updated: false };
+      }
+
       await this.dbClientService.update({
         collectionName: this.collectionName,
         docId,

@@ -28,6 +28,10 @@ import {
   AccountRecordWithId,
   ACCOUNT_REF,
 } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+import { createInvoiceTemplate } from './create-invoice-template';
+import { InvoiceflowService } from 'src/external-modules/invoiceflow/invoiceflow.service';
+import { InvoiceFlowInvoiceData } from 'src/external-modules/invoiceflow/generate-invoice.type';
+import { UpdateableOrderModel } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/types';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -41,6 +45,7 @@ export class AdminInternalInterfaceService {
     private readonly ezManagerApiHandler: EzmanageApiHandlerService,
     private readonly crmHandler: CrmHandlerService,
     private readonly orderService: OrderService,
+    private readonly invoiceFlowService: InvoiceflowService,
   ) {}
 
   async createUser(body: AdminCreateUserBodyDto) {
@@ -173,6 +178,44 @@ export class AdminInternalInterfaceService {
     return res;
   }
 
+  async bulkGenerateInvoices({
+    accountId,
+    orderNames,
+  }: {
+    accountId: string;
+    orderNames: string[];
+  }) {
+    const account = await this.accountDbHandler.getAccount(accountId);
+    if (!account) throw new NotFoundException('Account not found');
+
+    const orders = await this.orderDbHandler.getAllForAccount(accountId);
+    const { internalOrders, rejects, badAccounts } = orderNames.reduce(
+      (acc, cur) => {
+        const matchingOrder = orders.find((order) => order.name === cur);
+        if (matchingOrder) {
+          if (matchingOrder.accountId === accountId)
+            acc.internalOrders.push(matchingOrder);
+          else acc.badAccounts.push(matchingOrder.id);
+        } else {
+          acc.rejects.push(cur);
+        }
+        return acc;
+      },
+      {
+        internalOrders: [] as IOrderModelWithId[],
+        rejects: [] as string[],
+        badAccounts: [] as string[],
+      },
+    );
+
+    const promiseResults = await Promise.all(
+      internalOrders.map(async (internalOrder) => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const result = await this.generateInvoice({ internalOrder, account });
+      }),
+    );
+  }
+
   /**
    * Helpers
    */
@@ -246,9 +289,34 @@ export class AdminInternalInterfaceService {
     const { ref } = account;
     const { id: orderId } = internalOrder;
     const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
-    return await this.orderService.generateCRMEntityFromOrder({
+    await this.orderService.generateCRMEntityFromOrder({
       account,
       ezManageOrder,
     });
+    // if (ezManageOrder.orderSourceType === 'DIRECT_ENTRY') {
+    //   const data = createInvoiceTemplate(ezManageOrder);
+    //   await this.invoiceFlowService.generateInvoice(data);
+    // }
+
+    return 'TURN CRM GENERATOR BACK ON' as any;
+  }
+
+  private async generateInvoice({
+    internalOrder,
+    account,
+  }: {
+    internalOrder: IOrderModelWithId;
+    account: AccountRecordWithId;
+  }) {
+    const { ref } = account;
+    const { id: orderId } = internalOrder;
+    const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
+    if (ezManageOrder.orderSourceType === 'DIRECT_ENTRY') {
+      console.log('Sending ', ezManageOrder.orderNumber);
+      const data = createInvoiceTemplate(ezManageOrder);
+      await this.invoiceFlowService.generateInvoice(data);
+    }
+
+    return 'success';
   }
 }

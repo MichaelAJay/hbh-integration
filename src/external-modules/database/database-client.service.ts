@@ -100,7 +100,9 @@ export class DatabaseClientService {
     try {
       await this.firestore.collection(collectionName).doc(docId).update(data);
     } catch (err: any) {
-      const outErr = new DatabaseClientError('DB update operation failed');
+      const outErr = new DatabaseClientError(
+        `DB update operation failed - ${docId}`,
+      );
       if (
         err !== null &&
         typeof err === 'object' &&

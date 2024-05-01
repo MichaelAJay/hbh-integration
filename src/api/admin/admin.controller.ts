@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { AdminAPIService } from './admin.service';
-import { AdminCreateUserBodyDto, BulkSendOrdersToCrm } from './dtos/body';
+import {
+  AdminCreateUserBodyDto,
+  BulkGenerateInvoices,
+  BulkSendOrdersToCrm,
+} from './dtos/body';
 import {
   AdminOrderNameWithAccountScopeQueryDto,
   GetCrmProductsQueryDto,
@@ -74,5 +78,26 @@ export class AdminController {
       accountId: body.accountId,
       orderNames,
     });
+  }
+
+  @Post('generate-invoices')
+  async generateInvoices(@Body() body: BulkGenerateInvoices) {
+    const orderNames: string[] = [];
+    console.log(body.orderNames);
+
+    for (const nm of body.orderNames.split(',').map((e) => e.trim())) {
+      orderNames.push(nm.split('-').join(''));
+    }
+
+    try {
+      const res = await this.adminService.bulkGenerateInvoices({
+        accountId: body.accountId,
+        orderNames,
+      });
+      return res;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 }

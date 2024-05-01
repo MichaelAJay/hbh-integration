@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 
-type OrderSourceType = 'MARKETPLACE' | 'EZ_ORDERING';
+type OrderSourceType = 'MARKETPLACE' | 'EZ_ORDERING' | 'DIRECT_ENTRY';
 
 /** See findStagesets */
 export const EzManageSourceTypeToCrmValues: Record<
@@ -15,6 +15,11 @@ export const EzManageSourceTypeToCrmValues: Record<
   EZ_ORDERING: {
     pipelineId: '1',
     crmName: 'EZ_ORDER',
+    pipelineName: 'Catering',
+  },
+  DIRECT_ENTRY: {
+    pipelineId: '1',
+    crmName: 'Catering',
     pipelineName: 'Catering',
   },
   /**

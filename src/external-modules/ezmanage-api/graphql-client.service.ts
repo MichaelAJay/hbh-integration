@@ -64,6 +64,15 @@ export class GraphqlClientService {
               lastName
           }
           totals {
+              customerTotalDue {
+                subunits
+              }
+              salesTax {
+                subunits
+              }
+              salesTaxRemittance {
+                subunits
+              }
               subTotal {
                   subunits
               }
@@ -100,6 +109,7 @@ export class GraphqlClientService {
               }
           }
           orderSourceType
+          isTaxExempt
       }
       }
       `;

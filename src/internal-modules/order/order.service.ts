@@ -241,4 +241,8 @@ export class OrderService {
       ref,
     });
   }
+
+  private async generateCSV(order: IEzManageOrder): Promise<'butt'> {
+    return 'butt';
+  }
 }

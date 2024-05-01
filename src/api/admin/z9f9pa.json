@@ -1,0 +1,106 @@
+{
+  "orderNumber": "Z9F9PA",
+  "uuid": "2546b9b8-ab88-4044-bbfb-785111b0e785",
+  "event": {
+    "timestamp": "2024-05-08T14:15:00Z",
+    "timeZoneOffset": "-04:00",
+    "address": {
+      "city": "Monroe",
+      "name": "Monroe Area High School",
+      "state": "GA",
+      "street": "300 Double Springs Church Rd",
+      "street2": "Front Office",
+      "street3": null,
+      "zip": "30656"
+    },
+    "contact": {
+      "name": null,
+      "phone": null
+    }
+  },
+  "orderCustomer": {
+    "firstName": "Gloria",
+    "lastName": "Hyde"
+  },
+  "totals": {
+    "customerTotalDue": {
+      "subunits": 126137
+    },
+    "salesTax": {
+      "subunits": 0
+    },
+    "salesTaxRemittance": {
+      "subunits": 0
+    },
+    "subTotal": {
+      "subunits": 137375
+    },
+    "tip": {
+      "subunits": 0
+    }
+  },
+  "caterer": {
+    "address": {
+      "city": "Athens"
+    }
+  },
+  "catererCart": {
+    "feesAndDiscounts": [
+      {
+        "name": "Delivery Fee",
+        "cost": {
+          "subunits": 2500
+        }
+      }
+    ],
+    "orderItems": [
+      {
+        "quantity": 55,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 60445
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Ham Classic Sandwich",
+            "quantity": 55
+          }
+        ]
+      },
+      {
+        "quantity": 55,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 60445
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Roasted Turkey Classic Sandwich",
+            "quantity": 55
+          }
+        ]
+      },
+      {
+        "quantity": 15,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 16485
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Mediterranean Veggie Sandwich",
+            "quantity": 15
+          }
+        ]
+      }
+    ],
+    "totals": {
+      "catererTotalDue": 1261.37
+    }
+  },
+  "orderSourceType": "DIRECT_ENTRY",
+  "isTaxExempt": true
+}

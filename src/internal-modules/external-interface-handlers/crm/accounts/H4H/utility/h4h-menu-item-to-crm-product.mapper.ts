@@ -141,6 +141,8 @@ export const ProductMap_H4H = {
   'Whole Boneless - B2B': { name: 'Whole Boneless - B2B', id: '187' },
   'Whole Frozen Turkey': { name: 'Whole Frozen Turkey', id: '207' },
   'Build-Your-Own Yogurt Parfait': { name: 'Yogurt Parfait', id: '35' },
+  // 'Gluten - Friendly Box Lunch': { name: '', id: '' },
+  // 'Thank you 2024 Cert- 10 Signature boxes': { name: '', id: '' },
 };
 
 export function mapH4HMenuItemToCrmProductId(

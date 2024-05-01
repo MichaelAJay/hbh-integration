@@ -11,6 +11,6 @@ import { NutshellApiHandlerService } from './nutshell-api-handler.service';
     NutshellApiHandlerService,
     NutshellApiHandlerHelperService,
   ],
-  exports: [CrmHandlerService, NutshellApiHandlerService],
+  exports: [CrmHandlerService],
 })
 export class CrmModule {}
