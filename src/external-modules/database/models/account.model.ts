@@ -1,8 +1,30 @@
+import {
+  CRM_NAME,
+  CRM_PRIMARY_ENTITY,
+} from 'src/internal-modules/external-interface-handlers/crm/types';
+import { ACCOUNT_REF } from 'src/internal-modules/external-interface-handlers/database/account-db-handler/types';
+
 export interface IAccountModel {
-  ref: string;
+  ref: ACCOUNT_REF;
   name: string;
   contactEmail: string;
   isActive: boolean;
+  crm?: CRM_NAME;
+  crmPrimaryType?: CRM_PRIMARY_ENTITY;
+  crmUsers?: ICrmUser[];
+  newLeadTags?: INewLeadTag[];
+  newLeadTasks?: string[];
+}
+
+export interface INewLeadTag {
+  value: string;
+  isRequired: boolean;
+}
+
+export interface ICrmUser {
+  id: number;
+  name: string;
+  assignFor?: string;
 }
 
 export interface IAccountModelWithId extends IAccountModel {

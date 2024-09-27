@@ -41,3 +41,8 @@ The primary project modules are found in the following directories, and represen
 - Modules in the external module layer represent exactly one interface with an external source, such as a database, a third-party provider, storage, etc.
 - Each external module has exactly one interface provider
 - Each interface provider must be used in exactly one internal layer external interface handler service provider.
+
+
+
+*** Test Notes ***
+All API tests are finished & passing

@@ -9,7 +9,9 @@ export interface IOrderRecord {
   catererName: string;
   name: string;
   status: DbOrderStatus;
-  crmId: string | null;
+  warnings?: string[];
+  crmId?: string;
+  crmDescription?: string;
   acceptedAt: Timestamp;
   lastUpdatedAt: Timestamp;
 }

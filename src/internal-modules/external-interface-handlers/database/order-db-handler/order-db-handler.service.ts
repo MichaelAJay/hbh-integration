@@ -1,4 +1,3 @@
-import { WhereFilterOp } from '@google-cloud/firestore';
 import {
   Injectable,
   NotFoundException,
@@ -12,19 +11,17 @@ import {
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
-import {
-  IOrderRecordWithId,
-  isIOrderRecord,
-  OrderRecordInput,
-} from './interfaces';
+import { isIOrderRecord, OrderRecordInput } from './interfaces';
+import { UpdateableOrderModel } from './types';
+import * as Sentry from '@sentry/node';
+import { OrderDbHandlerHelperService } from './order.db-handler.helper.service';
 
 @Injectable()
 export class OrderDbHandlerService {
   private collectionName: CollectionName;
   constructor(
+    private readonly orderDbHandlerHelperService: OrderDbHandlerHelperService,
     private readonly dbClientService: DatabaseClientService,
-    private readonly logger: CustomLoggerService,
   ) {
     this.collectionName = CollectionName.ORDERS;
   }
@@ -33,6 +30,10 @@ export class OrderDbHandlerService {
    * **********
    * * CREATE *
    * **********
+   */
+
+  /**
+   * @TODO Requires validation since Firestore does not validate
    */
   async create({ orderId, data }: { orderId: UUID; data: IOrderModel }) {
     try {
@@ -101,13 +102,22 @@ export class OrderDbHandlerService {
     }
   }
 
-  async getManyForAccount(accountId: string) {
+  async getManyForAccount({ orderIds }: { orderIds: string[] }) {
+    const orders = await this.orderDbHandlerHelperService.findMany({
+      fieldPath: 'id',
+      filterOp: 'in',
+      value: orderIds,
+    });
+    return orders;
+  }
+
+  async getAllForAccount(accountId: string) {
     const accountRef = this.dbClientService.getDocRef({
       collectionName: CollectionName.ACCOUNTS,
       docId: accountId,
     });
 
-    const orders = await this.findMany({
+    const orders = await this.orderDbHandlerHelperService.findMany({
       fieldPath: 'accountId',
       filterOp: '==',
       value: accountRef,
@@ -127,16 +137,21 @@ export class OrderDbHandlerService {
         { fieldPath: 'accountId', opStr: '==', value: accountRef },
       ],
     };
-    const records = await this.findManyIntersection(filter);
+    const records = await this.orderDbHandlerHelperService.findManyIntersection(
+      filter,
+    );
 
     if (records.length === 0) {
       throw new NotFoundException('No records found matching criteria');
     }
 
     if (records.length > 1) {
-      this.logger.error('More than one order found matching specification', {
-        orderName,
-        accountId,
+      Sentry.withScope((scope) => {
+        scope.setExtras({ orderName, accountId });
+        Sentry.captureMessage(
+          'More than one order found matching specification',
+          'warning',
+        );
       });
     }
 
@@ -153,15 +168,40 @@ export class OrderDbHandlerService {
     updates,
   }: {
     orderId: UUID;
-    updates: Partial<
-      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
-    >;
+    updates: UpdateableOrderModel;
   }) {
+    /**
+     * Ensure updates don't include accountId, catererId, catererName
+     */
+    // const { id, accountId, catererId, catererName, ...targetUpdates } =
+    //   updates as Partial<IOrderModelWithId>;
+
+    const UPDATEABLE_PROPERTIES = [
+      'name',
+      'status',
+      'crmId',
+      'crmDescription',
+      'warnings',
+      'acceptedAt',
+      'lastUpdatedAt',
+    ];
+
+    const targetUpdates: UpdateableOrderModel = {};
+    for (const property in updates) {
+      if (UPDATEABLE_PROPERTIES.includes(property)) {
+        targetUpdates[property] = updates[property];
+      }
+    }
+
     try {
+      if (Object.keys(targetUpdates).length === 0) {
+        return { updated: false };
+      }
+
       await this.dbClientService.update({
         collectionName: this.collectionName,
         docId,
-        data: updates,
+        data: targetUpdates,
       });
 
       return { updated: true };
@@ -170,74 +210,16 @@ export class OrderDbHandlerService {
     }
   }
 
-  private async findMany(filter: {
-    fieldPath: string;
-    filterOp: WhereFilterOp;
-    value: any;
-  }) {
-    const querySnapshot = await this.dbClientService.getMany({
+  /**
+   * **********
+   * * DELETE *
+   * **********
+   */
+  async delete({ orderId: docId }: { orderId: string }) {
+    const result = await this.dbClientService.delete({
       collectionName: this.collectionName,
-      filter,
+      docId,
     });
-
-    if (querySnapshot.empty) throw new NotFoundException('No records found');
-
-    const records = querySnapshot.docs.reduce(
-      (acc: IOrderModelWithId[], doc) => {
-        const record = { id: doc.id, ...doc.data() };
-        if (isIOrderRecord(record)) {
-          acc.push(this.convertOrderRecordWithIdToOrderModelWithId(record));
-        } else {
-          /**
-           * FAIL
-           */
-        }
-        return acc;
-      },
-      [],
-    );
-    return records;
-  }
-
-  private async findManyIntersection(filter: ICompositeAndFilter) {
-    const querySnapshot = await this.dbClientService.getManyIntersection({
-      collectionName: this.collectionName,
-      filter,
-    });
-
-    if (querySnapshot.empty) throw new NotFoundException('No records found');
-
-    const records = querySnapshot.docs.reduce(
-      (acc: IOrderModelWithId[], doc) => {
-        const record = { id: doc.id, ...doc.data() };
-        if (isIOrderRecord(record)) {
-          acc.push(this.convertOrderRecordWithIdToOrderModelWithId(record));
-        } else {
-          /**
-           * FAIL
-           */
-          console.error('FAIL');
-        }
-        return acc;
-      },
-      [],
-    );
-    return records;
-  }
-
-  private convertOrderRecordWithIdToOrderModelWithId(
-    record: IOrderRecordWithId,
-  ): IOrderModelWithId {
-    return {
-      id: record.id,
-      accountId: record.accountId.id,
-      catererId: record.catererId.id,
-      catererName: record.catererName,
-      name: record.name,
-      status: record.status,
-      crmId: record.crmId,
-      acceptedAt: record.acceptedAt.toDate(),
-      lastUpdatedAt: record.lastUpdatedAt.toDate(),
-    };
+    return { didDelete: !!result };
   }
 }

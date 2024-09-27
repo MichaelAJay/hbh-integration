@@ -1,0 +1,14 @@
+This is an aggregator module.
+It is the through-way for all CRM modules
+
+@TODO - move Nutshell API Service into this aggregator
+@TODO - delete Nutshell module
+
+Service classes could use refactoring to encapsulate the dependencies
+And then the tests would need rewriting
+
+crm-handler.service.unit.spec.ts is fresh as of 3 Aug 23
+stubbed out
+
+todo:
+pull out private methods into new class for nutshell api handler

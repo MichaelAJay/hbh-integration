@@ -97,7 +97,7 @@ export class UserDbHandlerService {
       });
 
       const data: UserRecordInput = { ...user, accountId: accountRef };
-      return await this.dbClientService.add({
+      return this.dbClientService.add({
         collectionName: this.collectionName,
         data,
       });
@@ -114,7 +114,7 @@ export class UserDbHandlerService {
     updates: UpdateUser;
   }) {
     try {
-      await this.dbClientService.update({
+      return this.dbClientService.update({
         collectionName: this.collectionName,
         docId,
         data: updates,

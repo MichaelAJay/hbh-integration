@@ -7,7 +7,9 @@ export interface IOrderModel {
   catererName: string;
   name: string;
   status: DbOrderStatus;
-  crmId: string | null;
+  crmId?: string;
+  crmDescription?: string;
+  warnings?: string[];
   acceptedAt: Date; // Firestore calls this the "timestamp" field type
   lastUpdatedAt: Date;
 }
@@ -26,3 +28,8 @@ export function isIOrderModelWithId(obj: any): obj is IOrderModelWithId {
     Object.values(DbOrderStatus).includes(obj.status)
   );
 }
+
+export type OrderModelCRMProperties = Pick<
+  IOrderModel,
+  'crmId' | 'crmDescription'
+>;

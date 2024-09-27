@@ -1,0 +1,15 @@
+HTTP/1.1 400 Bad Request
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: Authorization
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 99
+X-RateLimit-Reset: 60
+Content-Type: application/json; charset=utf-8
+Content-Length: 150
+ETag: W/"96-c64kXMINcFjsK4amxwRJWueW+DE"
+Date: Fri, 19 Apr 2024 02:13:04 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

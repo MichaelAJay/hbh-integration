@@ -40,3 +40,6 @@ lerna-debug.log*
 
 # env
 *.env
+run-me.sh
+credentials.txt
+*.sh

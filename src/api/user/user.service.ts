@@ -4,7 +4,7 @@ import { ILogin } from './interfaces/login.interface';
 import { UserInternalInterfaceService } from './user-internal-interface.service';
 
 @Injectable()
-export class UserService {
+export class UserAPIService {
   constructor(
     private readonly userInternalInterface: UserInternalInterfaceService,
   ) {}

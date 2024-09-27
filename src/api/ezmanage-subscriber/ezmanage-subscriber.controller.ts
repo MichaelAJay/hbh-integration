@@ -1,19 +1,19 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { Public } from 'src/decorators';
+import { Public } from '../../decorators';
 import { EzManageWebhookGuard } from 'src/guards';
-import { EzmanageSubscriberService } from './ezmanage-subscriber.service';
-import { IEventNotificationPayload } from './interfaces';
+import { EzmanageSubscriberAPIService } from './ezmanage-subscriber.service';
+import { EzManageWebhookPayloadBodyDto } from './dtos/body';
 
 @UseGuards(EzManageWebhookGuard)
 @Controller('ezmanage-subscriber')
 export class EzmanageSubscriberController {
   constructor(
-    private readonly ezManageSubscriberService: EzmanageSubscriberService,
+    private readonly ezManageSubscriberService: EzmanageSubscriberAPIService,
   ) {}
 
   @Public()
   @Post('hams-for-Him')
-  async handleWebhook(@Body() payload: IEventNotificationPayload) {
+  async handleH4HWebhook(@Body() payload: EzManageWebhookPayloadBodyDto) {
     return this.ezManageSubscriberService.handleWebhook(payload);
   }
 }

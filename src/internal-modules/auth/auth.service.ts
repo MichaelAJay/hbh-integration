@@ -5,7 +5,6 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
 import { VerifyJwtErrorMsg } from './enums';
 import {
   AccessJWTPayload,
@@ -13,13 +12,11 @@ import {
   RefreshJWTPayload,
 } from './types';
 import { pbkdf2, randomBytes } from 'crypto';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly logger: CustomLoggerService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   createSalt() {
     return this.generateRandomBytes(16);
@@ -86,9 +83,9 @@ export class AuthService {
     duration: string,
   ): Promise<string> {
     if (!secret) {
-      const msg = 'Missing JWT secret';
-      this.logger.error(msg, {});
-      throw new InternalServerErrorException('Missing JWT secret');
+      const err = new InternalServerErrorException('Missing JWT secret');
+      Sentry.captureException(err);
+      throw err;
     }
 
     return await this.jwtService.signAsync(payload, {

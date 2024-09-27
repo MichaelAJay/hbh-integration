@@ -1,92 +1,201 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  IGetOrderOutput,
-  IGetOrderOutputItem,
-} from 'src/api/order/interfaces/output';
+  Injectable,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { DbOrderStatus } from 'src/external-modules/database/enum';
 import {
+  IAccountModelWithId,
   IOrderModel,
   IOrderModelWithId,
 } from 'src/external-modules/database/models';
-import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import { H4HWarnings } from 'src/external-modules/database/models/H4H';
+import { CrmHandlerService } from '../external-interface-handlers/crm/crm-handler.service';
 import { OrderDbHandlerService } from '../external-interface-handlers/database/order-db-handler/order-db-handler.service';
 import { EzmanageApiHandlerService } from '../external-interface-handlers/ezmanage-api/ezmanage-api-handler.service';
-import { ConvertOrderStatusDbToUi } from './converters';
-import { outputH4HOrderToCrm } from './utility';
+import * as Sentry from '@sentry/node';
+import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
+import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
+import { OrderHelperService } from './order-helper.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     private readonly orderDbService: OrderDbHandlerService,
     private readonly ezManageApiHandler: EzmanageApiHandlerService,
-    private readonly logger: CustomLoggerService,
+    private readonly crmHandler: CrmHandlerService,
+    private readonly orderHelperService: OrderHelperService,
   ) {}
 
   async createOrder({
-    accountId,
+    account,
     catererId,
     orderId,
     status,
     occurredAt,
-    ref,
     catererName,
   }: {
-    accountId: string;
+    account: IAccountModelWithId;
     catererId: string;
     orderId: string;
     status: DbOrderStatus;
     occurredAt: string;
-    ref: string;
     catererName: string;
   }) {
-    /**
-     * Need order name for db
-     */
-    /**
-     * We should actually get the whole order and add it to Nutshell here.
-     */
-    const ezManageOrderName = await this.ezManageApiHandler
-      .getOrderName({
-        orderId,
-        ref,
-      })
+    const { ref } = account;
+    const ezManageOrder = await this.ezManageApiHandler
+      .getOrder({ orderId, ref })
       .catch((reason) => {
-        const msg = 'Failed to retrieve order name';
-        this.logger.error(msg, reason);
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            account,
+            orderId,
+            message: `Failed to retrieve order ${orderId}`,
+          });
+          Sentry.captureException(reason);
+        });
+        throw reason;
       });
 
-    /**
-     * Create Nutshell Lead
-     */
+    const crmEntity = await this.generateCRMEntityFromOrder({
+      account,
+      ezManageOrder,
+    });
 
-    /**
-     * @TODO fix the date issue
-     */
-    const now = new Date();
-    const data: IOrderModel = {
-      accountId,
+    const data = this.orderHelperService.generateIOrderModelFromCrmEntity({
+      account,
       catererId,
-      catererName,
-      name: ezManageOrderName || 'PLACEHOLDER NAME',
+      ezManageOrderNumber: ezManageOrder.orderNumber,
       status,
-      /**
-       * @TODO fix
-       */
-      crmId: null,
-      acceptedAt: now,
-      lastUpdatedAt: now,
-    };
+      crmEntity,
+      catererName,
+    });
 
     await this.orderDbService.create({ orderId, data });
     return;
   }
 
+  async generateCRMEntityFromOrder({
+    account,
+    ezManageOrder,
+  }: {
+    account: IAccountModelWithId;
+    ezManageOrder: IEzManageOrder;
+  }): Promise<any> {
+    /**
+     * Create Nutshell Lead
+     */
+    const crmEntity = await this.crmHandler
+      .generateCRMEntity({
+        account,
+        order: ezManageOrder,
+      })
+      .catch((reason) => {
+        if (typeof reason.isLogged === 'boolean' && reason.isLogged === false) {
+          Sentry.captureException(reason);
+          reason.isLogged = true;
+        }
+        return undefined;
+      });
+
+    if (crmEntity === undefined) return crmEntity;
+
+    if (
+      typeof crmEntity.id === 'string' &&
+      typeof crmEntity.isSubtotalMatch === 'boolean' &&
+      crmEntity.isSubtotalMatch === false
+    ) {
+      const { crmTag } = H4HWarnings.SUBTOTAL_MISMATCH;
+
+      const additionalAndExistingTags: string[] = Array.isArray(crmEntity.tags)
+        ? crmEntity.tags.filter((tag) => typeof tag === 'string')
+        : ([] as string[]);
+      additionalAndExistingTags.push(crmTag);
+
+      /**
+       * This returns something useful - why isn't it being used?
+       */
+      await this.crmHandler.updateCRMEntityWithOrder({
+        account,
+        order: ezManageOrder,
+        crmEntityId: crmEntity.id,
+        additionalAndExistingTags,
+      });
+    }
+
+    return crmEntity;
+  }
+
+  async updateOrder({
+    account,
+    catererId,
+    occurredAt,
+    catererName,
+    internalOrder,
+  }: {
+    account: IAccountModelWithId;
+    catererId: string;
+    occurredAt: string;
+    catererName: string;
+    internalOrder: IOrderModelWithId;
+  }) {
+    const { id: orderId, crmId } = internalOrder;
+    const { ref } = account;
+
+    const ezManageOrder = await this.ezManageApiHandler.getOrder({
+      orderId,
+      ref,
+    });
+
+    let updates: Partial<
+      Omit<IOrderModel, 'accountId' | 'catererId' | 'catererName'>
+    > = { lastUpdatedAt: new Date() };
+    let requiresUpdate = false;
+
+    if (crmId === undefined) {
+      const crmEntity = await this.generateCRMEntityFromOrder({
+        account,
+        ezManageOrder,
+      });
+      updates = this.orderHelperService.tryAppendCrmDataToOrder({
+        order: updates,
+        crmEntity,
+      });
+      requiresUpdate =
+        'crmId' in updates ||
+        'crmDescription' in updates ||
+        'warnings' in updates;
+    } else {
+      const updateResult = await this.crmHandler.updateCRMEntityWithOrder({
+        account,
+        order: ezManageOrder,
+        crmEntityId: crmId,
+      });
+
+      if (
+        updateResult &&
+        typeof updateResult === 'object' &&
+        typeof updateResult.crmDescription === 'string' &&
+        updateResult.crmDescription !== internalOrder.crmDescription
+      ) {
+        updates.crmDescription = updateResult.crmDescription;
+        requiresUpdate = true;
+      }
+    }
+
+    if (requiresUpdate) {
+      await this.orderDbService.updateOne({
+        orderId,
+        updates,
+      });
+    }
+  }
+
   async handleCancelledOrder(orderId: string) {
+    throw new NotImplementedException();
     /**
      * This should interface with the Nutshell API and do some undetermined number of things
      */
-    return;
   }
 
   async doesOrderBelongToAccount({
@@ -101,7 +210,9 @@ export class OrderService {
         ? await this.orderDbService.getOne(input)
         : input;
 
-    if (!order) throw new NotFoundException();
+    if (!order) {
+      throw new NotFoundException();
+    }
 
     // console.log('Order ID: ', order.id);
     return order.accountId === accountId;
@@ -111,114 +222,27 @@ export class OrderService {
    * Implementation note:
    * It would be good if whatever called this had access to the whole order - is that possible?
    */
-  async getOrder({ order, ref }: { order: IOrderModelWithId; ref: string }) {
-    const ezManageOrder = await this.ezManageApiHandler.getOrder({
+  async getEzManageOrder({
+    order,
+    ref,
+  }: {
+    order: IOrderModelWithId;
+    ref: ACCOUNT_REF;
+  }) {
+    return this.ezManageApiHandler.getOrder({
       orderId: order.id,
       ref,
     });
-
-    return this.convertEzManageOrderForOutput({
-      ...ezManageOrder,
-      status: order.status,
-    });
   }
 
-  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
+  async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
     return this.ezManageApiHandler.getOrderName({
       orderId,
       ref,
     });
   }
 
-  async generateLeadFromOrder(ezManageOrder: IGetOrderOutput) {
-    const { lead, invalidKeys } = outputH4HOrderToCrm(ezManageOrder);
-    return { lead, invalidKeys };
-  }
-
-  outputOrderToCRM({
-    ref,
-    order,
-  }: {
-    ref: string;
-    order: Omit<IGetOrderOutput, 'catererName'>;
-  }) {}
-
-  /**
-   * Should use order status
-   * 1) Should put OrderStatus "Accepted" or "Canceled" directly on the Order.
-   * 2) Should check all "Accepted" orders for this condition:
-   * If the delivery date has passed, then change to "Pending Review" - which is an EXTERNAL status
-   */
-  private convertEzManageOrderForOutput(
-    order: IEzManageOrder & { status: DbOrderStatus },
-  ): Omit<IGetOrderOutput, 'catererName'> {
-    // Extract the delivery fee (in cents)
-    let deliveryFeeInCents = 0;
-    for (const fee of order.catererCart.feesAndDiscounts) {
-      if (fee.name === 'Delivery Fee') {
-        deliveryFeeInCents = fee.cost.subunits;
-        break;
-      }
-    }
-
-    const subTotalInCents = order.totals.subTotal.subunits;
-    const catererTotalDueInCents =
-      order.catererCart.totals.catererTotalDue * 100;
-    const tipInCents = order.totals.tip.subunits;
-
-    // Stubbed commission (in cents)
-    const commissionInCents =
-      catererTotalDueInCents -
-      (subTotalInCents + deliveryFeeInCents + tipInCents);
-
-    function centsToDollars(cents: number): number {
-      return Number((cents / 100).toFixed(2));
-    }
-
-    const items = order.catererCart.orderItems.map((item) => ({
-      quantity: item.quantity,
-      name: item.name,
-      cost: centsToDollars(item.totalInSubunits.subunits),
-      customizations: item.customizations,
-    }));
-
-    return {
-      status: ConvertOrderStatusDbToUi({
-        status: order.status,
-        dueTime: order.event.timestamp,
-      }),
-      orderNumber: order.orderNumber,
-      sourceType: order.orderSourceType,
-      event: {
-        deliveryTime: new Date(order.event.timestamp),
-        address: order.event.address,
-        contact: order.event.contact,
-      },
-      contact: {
-        firstName: order.orderCustomer.firstName,
-        lastName: order.orderCustomer.lastName,
-      },
-      totals: {
-        subTotal: centsToDollars(subTotalInCents),
-        catererTotalDue: order.catererCart.totals.catererTotalDue,
-        tip: centsToDollars(tipInCents),
-        deliveryFee: centsToDollars(deliveryFeeInCents),
-        commission: centsToDollars(commissionInCents),
-      },
-      items,
-      itemsAggregate: this.aggregateOrder(items),
-    };
-  }
-
-  private aggregateOrder(items: IGetOrderOutputItem[]) {
-    const itemsAggregate: { [key: string]: number } = {};
-    for (const item of items) {
-      if (itemsAggregate[item.name]) {
-        itemsAggregate[item.name] += item.quantity;
-      } else {
-        itemsAggregate[item.name] = item.quantity;
-      }
-    }
-    return itemsAggregate;
+  private async generateCSV(order: IEzManageOrder): Promise<'butt'> {
+    return 'butt';
   }
 }

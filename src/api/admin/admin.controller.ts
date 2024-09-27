@@ -1,20 +1,29 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from 'src/guards/admin.guard';
-import { AdminService } from './admin.service';
-import { AdminCreateUserBodyDto } from './dtos/body';
+import { AdminAPIService } from './admin.service';
+import {
+  AdminCreateUserBodyDto,
+  BulkGenerateInvoices,
+  BulkSendOrdersToCrm,
+} from './dtos/body';
+import {
+  AdminOrderNameWithAccountScopeQueryDto,
+  GetCrmProductsQueryDto,
+  SentOrderToCrmQueryDto,
+} from './dtos/query';
 
 @UseGuards(AdminGuard)
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminAPIService) {}
 
   @Post('create-user')
   async createUser(@Body() body: AdminCreateUserBodyDto) {
@@ -26,22 +35,69 @@ export class AdminController {
     return this.adminService.getOrderNamesForAccount(accountId);
   }
 
-  @Post('test-nutshell-integration')
-  async testNutshellIntegration(
-    @Body() { ref, a, b }: { ref: string; a: number; b: number },
+  @Get('get-crm-products')
+  async getCrmProducts(
+    @Query() { 'account-id': accountId }: GetCrmProductsQueryDto,
   ) {
-    if (!(Number.isInteger(a) && Number.isInteger(b)))
-      throw new BadRequestException('Both parameters must be integers');
-    return this.adminService.testNutshellIntegration({ ref, a, b });
-  }
-
-  @Get('get-nutshell-products')
-  async getNutshellProducts(@Body() { ref }: { ref: string }) {
-    return this.adminService.getNutshellProducts({ ref });
+    return this.adminService.getCrmProducts({ accountId });
   }
 
   @Get('caterer-menu/:catererId')
   async getCatererMenu(@Param('catererId') catererId: string) {
     return this.adminService.getCatererMenu({ catererId });
+  }
+
+  @Get('crm-entity-from-order-name')
+  async getCrmEntityFromOrderName(
+    @Query() query: AdminOrderNameWithAccountScopeQueryDto,
+  ) {
+    return this.adminService.getCrmEntityFromOrderName(query);
+  }
+
+  /**
+   * Thoughts:  While writing this route, always be mindful that there may be configurable
+   * CRM options
+   *
+   * Also, note that whatever is available in the authenticated user's JWT should be sent
+   * as query parameters, along with the order-id
+   */
+  @Post('send-order-to-crm')
+  async sendOrderToCrm(@Query() query: SentOrderToCrmQueryDto) {
+    return this.adminService.sendEzManageOrderToCrm(query);
+  }
+
+  @Post('send-orders-to-crm')
+  async sendOrdersToCrm(@Body() body: BulkSendOrdersToCrm) {
+    const orderNames: string[] = [];
+
+    for (const nm of body.orderNames.split(',').map((e) => e.trim())) {
+      orderNames.push(nm.split('-').join(''));
+    }
+
+    return this.adminService.bulkSendEzManageOrdersToCrm({
+      accountId: body.accountId,
+      orderNames,
+    });
+  }
+
+  @Post('generate-invoices')
+  async generateInvoices(@Body() body: BulkGenerateInvoices) {
+    const orderNames: string[] = [];
+    console.log(body.orderNames);
+
+    for (const nm of body.orderNames.split(',').map((e) => e.trim())) {
+      orderNames.push(nm.split('-').join(''));
+    }
+
+    try {
+      const res = await this.adminService.bulkGenerateInvoices({
+        accountId: body.accountId,
+        orderNames,
+      });
+      return res;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 }

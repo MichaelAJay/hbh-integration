@@ -5,17 +5,15 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { SentryError } from '@sentry/utils';
 import { createHmac } from 'crypto';
 import { EventNotificationPayloadParentType } from 'src/api/ezmanage-subscriber/enums';
 import { AccountService } from 'src/internal-modules/account/account.service';
-import { CustomLoggerService } from 'src/support-modules/custom-logger/custom-logger.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class EzManageWebhookGuard implements CanActivate {
-  constructor(
-    private readonly accountService: AccountService,
-    private readonly logger: CustomLoggerService,
-  ) {}
+  constructor(private readonly accountService: AccountService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -27,9 +25,9 @@ export class EzManageWebhookGuard implements CanActivate {
        * @CHECKED
        */
       if (!req.headers) {
-        const msg = 'Request is missing headers';
-        this.logger.error(msg, {});
-        throw new BadRequestException(msg);
+        const err = new BadRequestException('Request is missing headers');
+        Sentry.captureException(err);
+        throw err;
       }
 
       /**
@@ -44,9 +42,12 @@ export class EzManageWebhookGuard implements CanActivate {
        * @CHECKED
        */
       if (!(body && typeof body === 'object' && Object.keys(body).length > 0)) {
-        const msg = 'Payload is not object with keys';
-        this.logger.error(msg, { payload: JSON.stringify(body) });
-        throw new BadRequestException(msg);
+        const err = new BadRequestException('Payload is not object with keys');
+        Sentry.withScope((scope) => {
+          scope.setExtra('payload', JSON.stringify(body));
+          Sentry.captureException(err);
+        });
+        throw err;
       }
 
       /**
@@ -62,9 +63,17 @@ export class EzManageWebhookGuard implements CanActivate {
       try {
         computed_signature_payload = `${timestamp}.${JSON.stringify(body)}`;
       } catch (err) {
-        const msg = `Computed signature payload not created successfully`;
-        this.logger.error(msg, { computed_signature_payload });
-        throw new InternalServerErrorException(msg);
+        const error = new InternalServerErrorException(
+          `Computed signature payload not created successfully`,
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtra(
+            'computedSignaturePayload',
+            computed_signature_payload,
+          );
+          Sentry.captureException(error);
+        });
+        throw error;
       }
 
       /**
@@ -75,22 +84,29 @@ export class EzManageWebhookGuard implements CanActivate {
           .update(computed_signature_payload)
           .digest('hex');
       } catch (err) {
-        const msg = `Internal computed signature failed`;
-        this.logger.error(msg, { computedSignature });
-        throw new InternalServerErrorException(msg);
+        const error = new InternalServerErrorException(
+          `Internal computed signature failed`,
+        );
+        Sentry.captureException(error);
+        throw error;
       }
 
       /**
        * 3) Compare the provided signature with the computed one
        */
       if (signature !== computedSignature) {
-        const msg = 'Incoming signature did not match computed signature';
-        this.logger.error(msg, {
-          signature,
-          computedSignature,
-          computed_signature_payload,
+        const err = new BadRequestException(
+          'Incoming signature did not match computed signature',
+        );
+        Sentry.withScope((scope) => {
+          scope.setExtras({
+            signature,
+            computedSignature,
+            computed_signature_payload,
+          });
+          Sentry.captureException(err);
         });
-        throw new BadRequestException(msg);
+        throw err;
       }
 
       return true;
@@ -109,9 +125,9 @@ export class EzManageWebhookGuard implements CanActivate {
      * @CHECKED
      */
     if (!ezCaterSignatureHeader) {
-      const msg = `Missing ${headerName} header`;
-      this.logger.error(msg, {});
-      throw new BadRequestException(msg);
+      const err = new BadRequestException(`Missing ${headerName} header`);
+      Sentry.captureException(err);
+      throw err;
     }
 
     /** Form should be <timestamp>.<signature> */
@@ -123,11 +139,12 @@ export class EzManageWebhookGuard implements CanActivate {
     if (!timestamp) missingData.push('timestamp');
     if (!signature) missingData.push('signature');
     if (missingData.length > 0) {
-      const msg = `Missing data: ${missingData}`;
-      this.logger.error(msg, {
-        'x-ezcater-signature': ezCaterSignatureHeader,
+      const err = new BadRequestException(`Missing data: ${missingData}`);
+      Sentry.withScope((scope) => {
+        scope.setExtra('x-ezcater-signature header', ezCaterSignatureHeader);
+        Sentry.captureException(err);
       });
-      throw new BadRequestException(msg);
+      throw err;
     }
     return { timestamp, signature };
   }
@@ -148,15 +165,19 @@ export class EzManageWebhookGuard implements CanActivate {
      * @CHECKED
      */
     if (missingData.length > 0) {
-      const msg = `The following fields are missing from the payload body: ${missingData}`;
-      this.logger.error(msg, {});
-      throw new BadRequestException(msg);
+      const err = new BadRequestException(
+        `The following fields are missing from the payload body: ${missingData}`,
+      );
+      Sentry.captureException(err);
+      throw err;
     }
 
     if (parent_type !== EventNotificationPayloadParentType.CATERER) {
-      const msg = `Incorrect parent_type.  Was expecting ${EventNotificationPayloadParentType.CATERER}, but received ${parent_type}`;
-      this.logger.error(msg, {});
-      throw new BadRequestException(msg);
+      const err = new BadRequestException(
+        `Incorrect parent_type.  Was expecting ${EventNotificationPayloadParentType.CATERER}, but received ${parent_type}`,
+      );
+      Sentry.captureException(err);
+      throw err;
     }
 
     const webhookEnvVarPrefix =
@@ -169,18 +190,21 @@ export class EzManageWebhookGuard implements CanActivate {
      * @CHECKED
      */
     if (!webhookEnvVarPostfix) {
-      const msg =
-        'Missing EZMANAGE_WEBHOOK_SECRET_POSTFIX environment variable';
-      this.logger.error(msg, {});
-      throw new InternalServerErrorException(msg);
+      const err = new InternalServerErrorException(
+        'Missing EZMANAGE_WEBHOOK_SECRET_POSTFIX environment variable',
+      );
+      Sentry.captureException(err);
+      throw err;
     }
 
     const webhookSecretName = `${webhookEnvVarPrefix}_${webhookEnvVarPostfix}`;
     const webhookSecret = process.env[webhookSecretName];
     if (!webhookSecret) {
-      const msg = `Missing account specific environment variable with reference ${webhookEnvVarPrefix}`;
-      this.logger.error(msg, {});
-      throw new InternalServerErrorException(msg);
+      const err = new InternalServerErrorException(
+        `Missing account specific environment variable with reference ${webhookEnvVarPrefix}`,
+      );
+      Sentry.captureException(err);
+      throw err;
     }
     return webhookSecret;
   }

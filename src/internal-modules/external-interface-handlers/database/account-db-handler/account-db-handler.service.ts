@@ -69,7 +69,7 @@ export class AccountDbHandlerService {
    * @TODO this really shouldn't be pulling one record
    * See Order Db Handler findMany
    */
-  private async findMany(filter: {
+  async findMany(filter: {
     fieldPath: string;
     filterOp: WhereFilterOp;
     value: any;

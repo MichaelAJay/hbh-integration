@@ -1,16 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { EzmanageApiService } from 'src/external-modules/ezmanage-api/ezmanage-api.service';
+import { ACCOUNT_REF } from '../database/account-db-handler/types';
 
 @Injectable()
 export class EzmanageApiHandlerService {
   constructor(private readonly ezManageApiService: EzmanageApiService) {}
 
-  async getOrder({ orderId, ref }: { orderId: string; ref: string }) {
-    return await this.ezManageApiService.getOrder(orderId, ref);
+  async getOrder({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
+    try {
+      return this.ezManageApiService.getOrder(orderId, ref);
+    } catch (err) {
+      throw err;
+    }
   }
 
-  async getOrderName({ orderId, ref }: { orderId: string; ref: string }) {
-    return await this.ezManageApiService.getOrderName({
+  async getOrderName({ orderId, ref }: { orderId: string; ref: ACCOUNT_REF }) {
+    return this.ezManageApiService.getOrderName({
       orderId,
       ref,
     });

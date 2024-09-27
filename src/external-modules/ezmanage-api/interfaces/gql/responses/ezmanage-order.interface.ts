@@ -1,11 +1,12 @@
 import { UUID } from 'src/common/types';
 
 export interface IEzManageOrder {
-  orderNumber: string;
+  orderNumber: string; // EX: 45HGZ3
   uuid: UUID;
   event: IEzManageOrderEvent;
   orderCustomer: IEzManageOrderCustomer;
   totals: IEzManageOrderTotals;
+  caterer: ICaterer /** @TODO add to validator */;
   catererCart: ICatererCart;
   orderSourceType: string;
 }
@@ -39,11 +40,18 @@ interface IEzManageOrderCustomer {
 
 interface IEzManageOrderTotals {
   subTotal: ISubunits;
+  salesTax: ISubunits;
   tip: ISubunits;
 }
 
 interface ISubunits {
   subunits: number;
+}
+
+interface ICaterer {
+  address: {
+    city: string;
+  };
 }
 
 interface ICatererCart {

@@ -8,11 +8,11 @@ import { ClaimAccountBodyDto } from './dtos/body';
 import { LoginBodyDto } from './dtos/body/login.body-dto';
 import { IResetPassword } from './interfaces';
 import { ILogin } from './interfaces/login.interface';
-import { UserService } from './user.service';
+import { UserAPIService } from './user.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserAPIService) {}
 
   @Public()
   @Post('login')

@@ -1,0 +1,15 @@
+1. Format orders into batches (3-5)
+   Open utility/order-splitter.js and paste your input string into it. In the console, the orders will be split into rows of 3.
+   Run:
+   node utility/order-splitter.js
+
+I usually take those rows and add them to the 'to-run.txt' file in the utility directory.
+
+2. Start Python server (see README in InvoiceFlow directory)
+3. Add the orders to the 'run-me.sh' script on line 27, 'csv-string'.
+
+4. Run:
+   ./run-leads.sh
+
+   or
+   ./run-invoices.sh
