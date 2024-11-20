@@ -57,6 +57,7 @@ export function convertEzManageOrderForOutput(
     },
     items,
     itemsAggregate: aggregateOrder(items),
+    orderId: order.uuid,
   };
 }
 function aggregateOrder(items: IGetOrderOutputItem[]) {

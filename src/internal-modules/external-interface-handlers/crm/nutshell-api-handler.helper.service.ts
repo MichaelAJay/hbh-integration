@@ -41,7 +41,9 @@ export class NutshellApiHandlerHelperService {
               },
             });
             Sentry.captureMessage(
-              `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
+              `${
+                order.orderNumber
+              } - Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
                 ', ',
               )}`,
               'warning',
@@ -113,7 +115,9 @@ export class NutshellApiHandlerHelperService {
               },
             });
             Sentry.captureMessage(
-              `Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
+              `${
+                order.orderNumber
+              } - Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
                 ', ',
               )}`,
               'warning',

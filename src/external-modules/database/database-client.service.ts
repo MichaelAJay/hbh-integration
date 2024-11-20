@@ -258,4 +258,12 @@ export class DatabaseClientService {
         throw err;
       });
   }
+
+  // async deleteDocumentsBefore(
+  //   collectionName: CollectionName,
+  //   beforeDate: Date,
+  // ) {
+  //   try {
+  //   } catch (err) {}
+  // }
 }

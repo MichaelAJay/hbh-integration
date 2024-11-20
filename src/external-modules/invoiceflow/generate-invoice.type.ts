@@ -39,4 +39,5 @@ export type InvoiceFlowInvoiceData = {
   company_address_str: string;
   company_address_city_st_zip: string;
   company_phone: string;
+  // other_billing: { name: string; price: string }[];
 };

@@ -31,6 +31,7 @@ export interface IGetOrderOutput {
   items: IGetOrderOutputItem[];
   sourceType: string;
   itemsAggregate: { [key: string]: number };
+  orderId: string;
 }
 
 export interface IGetOrderOutputItem {

@@ -58,7 +58,8 @@ function buildInvoiceData(order: IEzManageOrder): InvoiceFlowInvoiceData {
   const { company_address_str, company_address_city_st_zip } =
     getAddressObject(order);
 
-  const { subtotal, tax, deliveryFee, tip, total } = buildBilling(order);
+  const { subtotal, tax, deliveryFee, tip, otherBilling, total } =
+    buildBilling(order);
   // const subtotal = billing.find((bill) => bill.name === 'Subtotal');
   // const tax = billing.find((bill) => bill.name === 'Tax');
   // const delivery = billing.find((bill) => bill.name === 'Delivery fee');
@@ -82,13 +83,13 @@ function buildInvoiceData(order: IEzManageOrder): InvoiceFlowInvoiceData {
       amount: 0,
       price: tax,
     },
-    {
-      name: 'Delivery Fee',
-      description: '',
-      quantity: 0,
-      amount: 0,
-      price: deliveryFee || MISSING_PRICE,
-    },
+    // {
+    //   name: 'Delivery Fee',
+    //   description: '',
+    //   quantity: 0,
+    //   amount: 0,
+    //   price: deliveryFee || MISSING_PRICE,
+    // },
     {
       name: 'Tip',
       description: '',
@@ -96,13 +97,20 @@ function buildInvoiceData(order: IEzManageOrder): InvoiceFlowInvoiceData {
       amount: 0,
       price: tip || MISSING_PRICE,
     },
-    {
-      name: 'Discounts, Fees, Etc',
+    // {
+    //   name: 'Discounts, Fees, Etc',
+    //   description: '',
+    //   quantity: 0,
+    //   amount: 0,
+    //   price: MISSING_PRICE,
+    // },
+    ...(otherBilling || []).map(({ name, price }) => ({
+      name,
       description: '',
       quantity: 0,
       amount: 0,
-      price: MISSING_PRICE,
-    },
+      price,
+    })),
     {
       name: 'Total',
       description: '',
@@ -292,7 +300,10 @@ function buildItemsForInvoiceflow2(
       description: 'A beautiful sandwich',
       quantity: cartItem.quantity,
       amount: price,
-      price: formatPrice(cartItem.totalInSubunits.subunits),
+      price:
+        cartItem.totalInSubunits.subunits === 0
+          ? '$0.00'
+          : formatPrice(cartItem.totalInSubunits.subunits),
     };
   });
 
@@ -329,10 +340,17 @@ function buildItemsForInvoiceFlow(
 }
 
 function formatPrice(cents: number) {
-  const centsStr = cents.toString();
+  if (cents === 0) {
+    return '$0.00';
+  }
+
+  const absoluteCents = Math.abs(cents);
+  const centsStr = absoluteCents.toString();
   const dollars = centsStr.slice(0, -2);
   const centsOnly = centsStr.slice(-2);
-  return `$${dollars}.${centsOnly}`;
+  const absoluteAmount = `$${dollars}.${centsOnly}`;
+
+  return cents > 0 ? `${absoluteAmount}` : `-${absoluteAmount}`;
 }
 
 function formatPriceForInvoiceFlow(cents: number): number {
@@ -356,6 +374,11 @@ type InvoiceBilling = {
   total: string;
   deliveryFee?: string | null;
   tip?: string | null;
+  discounts_fees?: string | null;
+  otherBilling?: {
+    name: string;
+    price: string;
+  }[];
 };
 
 function buildBilling(order: IEzManageOrder) {
@@ -363,9 +386,16 @@ function buildBilling(order: IEzManageOrder) {
 
   const retObj: InvoiceBilling = {
     subtotal: formatPrice(totals.subTotal.subunits),
-    tax: formatPrice(totals.salesTax.subunits),
+    tax:
+      totals.salesTax.subunits === 0
+        ? '$0.00'
+        : formatPrice(totals.salesTax.subunits),
     // total: formatPrice(getTotal(order)),
-    total: `$${order.catererCart.totals.catererTotalDue.toString()}`,
+    /**
+     * Apparently the wrong way to get total due
+     */
+    // total: `$${order.catererCart.totals.catererTotalDue.toString()}`,
+    total: `${formatPrice(totals.customerTotalDue.subunits)}`,
   };
 
   const deliveryFeeRecord = catererCart.feesAndDiscounts.find(
@@ -377,6 +407,24 @@ function buildBilling(order: IEzManageOrder) {
 
   const tip =
     totals.tip.subunits > 0 ? formatPrice(totals.tip.subunits) : undefined;
+
+  // let discounts = 0;
+  // if (Array.isArray(catererCart.feesAndDiscounts)) {
+  //   for (const fod of catererCart.feesAndDiscounts) {
+  //     if (fod.cost.subunits < 0) {
+  //       discounts += fod.cost.subunits;
+  //     }
+  //   }
+  // }
+  // console.log('discounts', discounts);
+
+  // This could be how InvoiceBilling sections could be handled. "Other Billing"
+  if (catererCart.feesAndDiscounts.length > 0) {
+    retObj.otherBilling = catererCart.feesAndDiscounts.map((fd) => ({
+      name: fd.name,
+      price: formatPrice(fd.cost.subunits),
+    }));
+  }
 
   if (deliveryFee) retObj.deliveryFee = deliveryFee;
   if (tip) retObj.tip = tip;

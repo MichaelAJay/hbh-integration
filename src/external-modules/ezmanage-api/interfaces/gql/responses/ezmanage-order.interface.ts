@@ -42,6 +42,7 @@ interface IEzManageOrderTotals {
   subTotal: ISubunits;
   salesTax: ISubunits;
   tip: ISubunits;
+  customerTotalDue: ISubunits;
 }
 
 interface ISubunits {

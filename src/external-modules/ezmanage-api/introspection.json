@@ -1,0 +1,2839 @@
+{
+  "data": {
+    "__schema": {
+      "types": [
+        {
+          "name": "AcceptOrderPayload",
+          "fields": [
+            {
+              "name": "order",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Order",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Address",
+          "fields": [
+            {
+              "name": "city",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deliveryInstructions",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "state",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "stateName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "street",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "street2",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "street3",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "zip",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "String",
+          "fields": null
+        },
+        {
+          "name": "BigInt",
+          "fields": null
+        },
+        {
+          "name": "Category",
+          "fields": [
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "items",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "originalCategoryId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "CategoryInput",
+          "fields": null
+        },
+        {
+          "name": "Int",
+          "fields": null
+        },
+        {
+          "name": "Caterer",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "name": "Address",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "live",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "storeNumber",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uuid",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Boolean",
+          "fields": null
+        },
+        {
+          "name": "CatererCart",
+          "fields": [
+            {
+              "name": "feesAndDiscounts",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "orderItems",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "tableware",
+              "type": {
+                "name": "Tableware",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "totals",
+              "type": {
+                "name": "CatererTotals",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "CatererTotals",
+          "fields": [
+            {
+              "name": "catererTotalDue",
+              "type": {
+                "name": "Float",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "Float",
+          "fields": null
+        },
+        {
+          "name": "Channel",
+          "fields": null
+        },
+        {
+          "name": "ChoiceInput",
+          "fields": null
+        },
+        {
+          "name": "ChoiceSelectionInput",
+          "fields": null
+        },
+        {
+          "name": "ComboComponent",
+          "fields": [
+            {
+              "name": "constituentItems",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "servingsPerConstituentItem",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "CoordinatesInput",
+          "fields": null
+        },
+        {
+          "name": "CourierAssignInput",
+          "fields": null
+        },
+        {
+          "name": "ID",
+          "fields": null
+        },
+        {
+          "name": "CourierAssignPayload",
+          "fields": [
+            {
+              "name": "clientMutationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "delivery",
+              "type": {
+                "name": "Delivery",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "userErrors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CourierAssignUserError",
+          "fields": null
+        },
+        {
+          "name": "CourierEventCreateInput",
+          "fields": null
+        },
+        {
+          "name": "CourierEventCreateInputEventType",
+          "fields": null
+        },
+        {
+          "name": "CourierEventCreatePayload",
+          "fields": [
+            {
+              "name": "clientMutationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "delivery",
+              "type": {
+                "name": "Delivery",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "userErrors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CourierEventCreateUserError",
+          "fields": null
+        },
+        {
+          "name": "CourierImagesCreateInput",
+          "fields": null
+        },
+        {
+          "name": "CourierImagesCreatePayload",
+          "fields": [
+            {
+              "name": "clientMutationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "userErrors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CourierImagesCreateUserError",
+          "fields": null
+        },
+        {
+          "name": "CourierInput",
+          "fields": null
+        },
+        {
+          "name": "CourierTrackingEventCreateInput",
+          "fields": null
+        },
+        {
+          "name": "CourierTrackingEventCreatePayload",
+          "fields": [
+            {
+              "name": "clientMutationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "userErrors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CourierTrackingEventCreateUserError",
+          "fields": null
+        },
+        {
+          "name": "CourierUnassignInput",
+          "fields": null
+        },
+        {
+          "name": "CourierUnassignPayload",
+          "fields": [
+            {
+              "name": "clientMutationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "delivery",
+              "type": {
+                "name": "Delivery",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "userErrors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CourierUnassignUserError",
+          "fields": null
+        },
+        {
+          "name": "CourierVehicleInput",
+          "fields": null
+        },
+        {
+          "name": "CreateSubscriberFields",
+          "fields": null
+        },
+        {
+          "name": "CreateSubscriberPayload",
+          "fields": [
+            {
+              "name": "subscriber",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "NewSubscriber",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CreateSubscriptionFields",
+          "fields": null
+        },
+        {
+          "name": "CreateSubscriptionPayload",
+          "fields": [
+            {
+              "name": "subscription",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "EventSubscription",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Currency",
+          "fields": null
+        },
+        {
+          "name": "CustomizationType",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "originalCustomizationTypeId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "selectionRangeEnd",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "selectionRangeStart",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "values",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "CustomizationValue",
+          "fields": [
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "originalCustomizationValueId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "CustomizationValueStatus",
+          "fields": null
+        },
+        {
+          "name": "Date",
+          "fields": null
+        },
+        {
+          "name": "DatetimeRangeInput",
+          "fields": null
+        },
+        {
+          "name": "Delivery",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "DeliveryValidationError",
+          "fields": [
+            {
+              "name": "message",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "path",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Error",
+          "fields": [
+            {
+              "name": "description",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "location",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Event",
+          "fields": [
+            {
+              "name": "address",
+              "type": {
+                "name": "Address",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "catererHandoffFoodTime",
+              "type": {
+                "name": "UTCTimestamp",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "contact",
+              "type": {
+                "name": "EventContact",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "customerProvidedName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "headcount",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "orderType",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "OrderTypeEnum",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "thirdPartyDeliveryPartner",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "timeZoneIdentifier",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "timeZoneOffset",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "timestamp",
+              "type": {
+                "name": "UTCTimestamp",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "EventContact",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "phone",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "EventEntity",
+          "fields": null
+        },
+        {
+          "name": "EventKey",
+          "fields": null
+        },
+        {
+          "name": "EventSubscription",
+          "fields": [
+            {
+              "name": "eventEntity",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "EventEntity",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "eventKey",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "EventKey",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "parentEntity",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ParentEntity",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "parentId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "subscriberId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "ExternalEvent",
+          "fields": [
+            {
+              "name": "entityId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "entityType",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "externalEventsNotificationAttempts",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "key",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "subscriberName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "timestamp",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ISO8601DateTime",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "ExternalEventsNotificationAttempt",
+          "fields": [
+            {
+              "name": "number",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "responseBody",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "responseCode",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "responseReceivedAt",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ISO8601DateTime",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "startedAt",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ISO8601DateTime",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "successful",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "FeeOrDiscountType",
+          "fields": null
+        },
+        {
+          "name": "FoodLabelingTag",
+          "fields": null
+        },
+        {
+          "name": "Hour",
+          "fields": null
+        },
+        {
+          "name": "IndividualWrapStatus",
+          "fields": null
+        },
+        {
+          "name": "ISO8601DateTime",
+          "fields": null
+        },
+        {
+          "name": "Item",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "noteToCaterer",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "originalItemId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "sizes",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "ItemInput",
+          "fields": null
+        },
+        {
+          "name": "ItemSelectionInput",
+          "fields": null
+        },
+        {
+          "name": "ItemSize",
+          "fields": [
+            {
+              "name": "customizationTypes",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "originalItemSizeId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "serves",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "status",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ItemSizeStatus",
+                  "kind": "ENUM"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "ItemSizeStatus",
+          "fields": null
+        },
+        {
+          "name": "ItemStatus",
+          "fields": null
+        },
+        {
+          "name": "ItemTypeTag",
+          "fields": null
+        },
+        {
+          "name": "LineItem",
+          "fields": [
+            {
+              "name": "cost",
+              "type": {
+                "name": "Money",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "Menu",
+          "fields": [
+            {
+              "name": "categories",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "endDate",
+              "type": {
+                "name": "Date",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "startDate",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Date",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "tablewareItems",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "MenuBase",
+          "fields": [
+            {
+              "name": "endDate",
+              "type": {
+                "name": "Date",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "startDate",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Date",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "MenuBaseConnection",
+          "fields": [
+            {
+              "name": "edges",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": "MenuBaseEdge",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "nodes",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": "MenuBase",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "pageInfo",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "PageInfo",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "MenuBaseEdge",
+          "fields": [
+            {
+              "name": "cursor",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "node",
+              "type": {
+                "name": "MenuBase",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "MenuCreatePayload",
+          "fields": [
+            {
+              "name": "errors",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "success",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "MenuInput",
+          "fields": null
+        },
+        {
+          "name": "Money",
+          "fields": [
+            {
+              "name": "currency",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Currency",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "subunits",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "subunitsV2",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "BigInt",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mutation",
+          "fields": [
+            {
+              "name": "courierAssign",
+              "type": {
+                "name": "CourierAssignPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "courierEventCreate",
+              "type": {
+                "name": "CourierEventCreatePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "courierImagesCreate",
+              "type": {
+                "name": "CourierImagesCreatePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "courierTrackingEventCreate",
+              "type": {
+                "name": "CourierTrackingEventCreatePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "courierUnassign",
+              "type": {
+                "name": "CourierUnassignPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createSubscriber",
+              "type": {
+                "name": "CreateSubscriberPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createSubscription",
+              "type": {
+                "name": "CreateSubscriptionPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updateSubscriber",
+              "type": {
+                "name": "UpdateSubscriberPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "menuCreate",
+              "type": {
+                "name": "MenuCreatePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "acceptOrder",
+              "type": {
+                "name": "AcceptOrderPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "rejectOrder",
+              "type": {
+                "name": "RejectOrderPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "NewSubscriber",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "subscriptions",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "webhookSecret",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "webhookUrl",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "OptionInput",
+          "fields": null
+        },
+        {
+          "name": "Order",
+          "fields": [
+            {
+              "name": "deliveryId",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uuid",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "caterer",
+              "type": {
+                "name": "Caterer",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "catererCart",
+              "type": {
+                "name": "CatererCart",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "event",
+              "type": {
+                "name": "Event",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isTaxExempt",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "lifecycle",
+              "type": {
+                "name": "OrderLifecycle",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "orderCustomer",
+              "type": {
+                "name": "OrderCustomer",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "orderNumber",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "orderSourceType",
+              "type": {
+                "name": "OrderSource",
+                "kind": "ENUM",
+                "ofType": null
+              }
+            },
+            {
+              "name": "taxableAddress",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Address",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "totals",
+              "type": {
+                "name": "OrderTotals",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderCustomer",
+          "fields": [
+            {
+              "name": "firstName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "fullName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "lastName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderItem",
+          "fields": [
+            {
+              "name": "customizations",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "labelFor",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "menuItemSizeId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "menuItemSizeName",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "noteToCaterer",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "posItemId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "quantity",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "specialInstructions",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "totalInSubunits",
+              "type": {
+                "name": "Money",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uuid",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderItemCustomization",
+          "fields": [
+            {
+              "name": "customizationId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "customizationTypeId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "customizationTypeName",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "posCustomizationId",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "quantity",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderLifecycle",
+          "fields": [
+            {
+              "name": "orderIsCurrently",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderSource",
+          "fields": null
+        },
+        {
+          "name": "OrderTotals",
+          "fields": [
+            {
+              "name": "customerTotalDue",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Money",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "pointOfSaleIntegrationFee",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Money",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "salesTax",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Money",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "salesTaxRemittance",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Money",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "subTotal",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Money",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "tip",
+              "type": {
+                "name": "Money",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "OrderTypeEnum",
+          "fields": null
+        },
+        {
+          "name": "OrderTypePerspective",
+          "fields": null
+        },
+        {
+          "name": "PageInfo",
+          "fields": [
+            {
+              "name": "endCursor",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "hasNextPage",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "hasPreviousPage",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "startCursor",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "Parent",
+          "fields": null
+        },
+        {
+          "name": "ParentEntity",
+          "fields": null
+        },
+        {
+          "name": "Query",
+          "fields": [
+            {
+              "name": "failedEvents",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "failedExternalEventsWebhooks",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "subscribers",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "caterers",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "order",
+              "type": {
+                "name": "Order",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "menu",
+              "type": {
+                "name": "Menu",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "menus",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "MenuBaseConnection",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "RejectionReasonEnum",
+          "fields": null
+        },
+        {
+          "name": "RejectOrderInput",
+          "fields": null
+        },
+        {
+          "name": "RejectOrderPayload",
+          "fields": [
+            {
+              "name": "order",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Order",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "SelectionIndex",
+          "fields": null
+        },
+        {
+          "name": "Subscriber",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "subscriptions",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "webhookUrl",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tableware",
+          "fields": [
+            {
+              "name": "specialInstructions",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "tablewareChoices",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "TablewareChoice",
+          "fields": [
+            {
+              "name": "choiceUuid",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "isIncluded",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "itemCount",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "TablewareItem",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UUID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "originalTablewareItemId",
+              "type": {
+                "name": "UUID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "TaxCategory",
+          "fields": null
+        },
+        {
+          "name": "UpdateSubscriberFields",
+          "fields": null
+        },
+        {
+          "name": "UpdateSubscriberPayload",
+          "fields": [
+            {
+              "name": "subscriber",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Subscriber",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UserError",
+          "fields": [
+            {
+              "name": "message",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "path",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UTCTimestamp",
+          "fields": null
+        },
+        {
+          "name": "UUID",
+          "fields": null
+        },
+        {
+          "name": "__Schema",
+          "fields": [
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "types",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "queryType",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "mutationType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "subscriptionType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "directives",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "__Type",
+          "fields": [
+            {
+              "name": "kind",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__TypeKind",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "specifiedByURL",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "fields",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "interfaces",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "possibleTypes",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "enumValues",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "inputFields",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "ofType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__TypeKind",
+          "fields": null
+        },
+        {
+          "name": "__Field",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__InputValue",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "defaultValue",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__EnumValue",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__Directive",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isRepeatable",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "locations",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "__DirectiveLocation",
+          "fields": null
+        }
+      ]
+    }
+  }
+}

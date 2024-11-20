@@ -86,7 +86,7 @@ export class GraphqlClientService {
             }
           }
           catererCart {
-              feesAndDiscounts(type: DELIVERY_FEE) {
+              feesAndDiscounts {
                   name
                   cost {
                       subunits
@@ -118,39 +118,44 @@ export class GraphqlClientService {
      * The response is an object with a property 'data' - at least in Postman
      * But here it looks like that's not the case...
      */
-    const response = await client.request(query).catch((reason) => {
-      if (
-        reason !== null &&
-        typeof reason === 'object' &&
-        'response' in reason &&
-        reason['response'] !== null &&
-        typeof reason['response'] === 'object' &&
-        'data' in reason['response'] &&
-        reason['response']['data'] !== null &&
-        typeof reason['response']['data'] === 'object' &&
-        'order' in reason['response']['data'] &&
-        reason['response']['data']['order'] === null
-      ) {
-        const err = new OrderManagerError(
-          'Order not found with id for account',
-        );
-        Sentry.withScope((scope) => {
-          scope.setExtras({
-            orderId,
-            ref,
+    let response;
+    try {
+      response = await client.request(query).catch((reason) => {
+        if (
+          reason !== null &&
+          typeof reason === 'object' &&
+          'response' in reason &&
+          reason['response'] !== null &&
+          typeof reason['response'] === 'object' &&
+          'data' in reason['response'] &&
+          reason['response']['data'] !== null &&
+          typeof reason['response']['data'] === 'object' &&
+          'order' in reason['response']['data'] &&
+          reason['response']['data']['order'] === null
+        ) {
+          const err = new OrderManagerError(
+            'Order not found with id for account',
+          );
+          Sentry.withScope((scope) => {
+            scope.setExtras({
+              orderId,
+              ref,
+            });
+            Sentry.captureException(err);
           });
-          Sentry.captureException(err);
-        });
-        err.isLogged = true;
-        throw err;
-      } else {
-        Sentry.withScope((scope) => {
-          scope.setExtra('message', 'GrapQL client queryOrder failed');
-          Sentry.captureException(reason);
-        });
-        throw reason;
-      }
-    });
+          err.isLogged = true;
+          throw err;
+        } else {
+          Sentry.withScope((scope) => {
+            scope.setExtra('message', 'GrapQL client queryOrder failed');
+            Sentry.captureException(reason);
+          });
+          throw reason;
+        }
+      });
+    } catch (err) {
+      throw err;
+    }
 
     /** FORM SHOULD BE (below) */
     // const response = {

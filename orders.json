@@ -1,0 +1,15 @@
+[
+  {
+    "Gainesville": [
+      { "id": "cc6d9784-8d32-4670-8a3d-7bb2af417407", "name": "HPZHCA" },
+      { "id": "35ba6d28-6a3e-4927-bf1b-7e150019cd27", "name": "T96JR1" },
+      { "id": "4bf832a8-7625-4382-ae26-a862859ed1f5", "name": "C0AE3Z" }
+    ]
+  },
+  {
+    "Athens": [
+      { "id": "35032e35-5685-42f2-9395-9aae269a81ce", "name": "AR458J" },
+      { "id": "ae5ac528-62ab-4f78-8a94-4f3ae7ab51a7", "name": "KYX3XM" }
+    ]
+  }
+]

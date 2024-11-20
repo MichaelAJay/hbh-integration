@@ -1,0 +1,105 @@
+{
+  "orderNumber": "32V5HG",
+  "uuid": "6444925b-3456-4c0a-bf4a-a4abc24ea83a",
+  "event": {
+    "timestamp": "2024-04-26T14:30:00Z",
+    "timeZoneOffset": "-04:00",
+    "address": null,
+    "contact": {
+      "name": null,
+      "phone": null
+    }
+  },
+  "orderCustomer": {
+    "firstName": "Holly",
+    "lastName": "Smith"
+  },
+  "totals": {
+    "customerTotalDue": {
+      "subunits": 65940
+    },
+    "salesTax": {
+      "subunits": 0
+    },
+    "salesTaxRemittance": {
+      "subunits": 0
+    },
+    "subTotal": {
+      "subunits": 65940
+    },
+    "tip": {
+      "subunits": 0
+    }
+  },
+  "caterer": {
+    "address": {
+      "city": "Gainesville"
+    }
+  },
+  "catererCart": {
+    "feesAndDiscounts": [],
+    "orderItems": [
+      {
+        "quantity": 29,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 31871
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Ham Classic Sandwich",
+            "quantity": 29
+          }
+        ]
+      },
+      {
+        "quantity": 27,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 29673
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Roasted Turkey Classic Sandwich",
+            "quantity": 27
+          }
+        ]
+      },
+      {
+        "quantity": 3,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 3297
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Mediterranean Veggie Sandwich",
+            "quantity": 3
+          }
+        ]
+      },
+      {
+        "quantity": 1,
+        "name": "Signature Sandwich Boxed Lunches",
+        "totalInSubunits": {
+          "subunits": 1099
+        },
+        "customizations": [
+          {
+            "customizationTypeName": "Signature Sandwiches",
+            "name": "Ham Classic Sandwich",
+            "quantity": 1
+          }
+        ]
+      }
+    ],
+    "totals": {
+      "catererTotalDue": 639.68
+    }
+  },
+  "orderSourceType": "DIRECT_ENTRY",
+  "isTaxExempt": true
+}

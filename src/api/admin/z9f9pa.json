@@ -51,6 +51,12 @@
         "cost": {
           "subunits": 2500
         }
+      },
+      {
+        "name": "School Discount",
+        "cost": {
+          "subunits": -13738
+        }
       }
     ],
     "orderItems": [

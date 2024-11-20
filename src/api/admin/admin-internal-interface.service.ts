@@ -158,16 +158,27 @@ export class AdminInternalInterfaceService {
       },
     );
 
-    const promiseResults = await Promise.all(
-      internalOrders.map(async (internalOrder) => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        const result = await this.generateCrmEntity({ internalOrder, account });
-        return this.orderDbHandler.updateOne({
-          orderId: internalOrder.id,
-          updates: result,
-        });
-      }),
-    );
+    // const promiseResults = await Promise.all(
+    //   internalOrders.map(async (internalOrder) => {
+    //     await new Promise((resolve) => setTimeout(resolve, 1000));
+    //     const result = await this.generateCrmEntity({ internalOrder, account });
+    //     const updatedResult = await this.orderDbHandler.updateOne({
+    //       orderId: internalOrder.id,
+    //       updates: result,
+    //     });
+    //     return updatedResult;
+    //   }),
+    // );
+    const promiseResults = [];
+    for (const internalOrder of internalOrders) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await this.generateCrmEntity({ internalOrder, account });
+      const updatedResult = await this.orderDbHandler.updateOne({
+        orderId: internalOrder.id,
+        updates: result,
+      });
+      return updatedResult;
+    }
 
     const res = {
       promiseResults,
@@ -293,10 +304,10 @@ export class AdminInternalInterfaceService {
       account,
       ezManageOrder,
     });
-    // if (ezManageOrder.orderSourceType === 'DIRECT_ENTRY') {
-    //   const data = createInvoiceTemplate(ezManageOrder);
-    //   await this.invoiceFlowService.generateInvoice(data);
-    // }
+    if (ezManageOrder.orderSourceType === 'DIRECT_ENTRY') {
+      const data = createInvoiceTemplate(ezManageOrder);
+      await this.invoiceFlowService.generateInvoice(data);
+    }
 
     return 'TURN CRM GENERATOR BACK ON' as any;
   }

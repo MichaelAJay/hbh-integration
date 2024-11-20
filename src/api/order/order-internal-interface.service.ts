@@ -66,7 +66,11 @@ export class OrderInternalInterfaceService {
       status: internalOrder.status,
     });
 
-    return { ...convertedOrder, catererName: internalOrder.catererName };
+    return {
+      ...convertedOrder,
+      catererName: internalOrder.catererName,
+      orderId: ezManageOrder.uuid,
+    };
   }
 
   async getEzManageOrder({
