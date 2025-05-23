@@ -15,6 +15,7 @@ export class OrderHelperService {
     status,
     crmEntity,
     catererName,
+    occurredAt,
   }: {
     account: IAccountModelWithId;
     crmEntity: any;
@@ -22,6 +23,7 @@ export class OrderHelperService {
     catererName: string;
     ezManageOrderNumber: string;
     status: DbOrderStatus;
+    occurredAt: string;
   }) {
     /**
      * @TODO fix the date issue
@@ -35,6 +37,7 @@ export class OrderHelperService {
       status,
       acceptedAt: now,
       lastUpdatedAt: now,
+      occurredAt,
     };
 
     if (crmEntity) {

@@ -12,6 +12,7 @@ export interface IOrderModel {
   warnings?: string[];
   acceptedAt: Date; // Firestore calls this the "timestamp" field type
   lastUpdatedAt: Date;
+  occurredAt?: string;
 }
 
 export interface IOrderModelWithId extends IOrderModel {

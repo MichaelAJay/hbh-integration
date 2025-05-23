@@ -32,6 +32,7 @@ import { createInvoiceTemplate } from './create-invoice-template';
 import { InvoiceflowService } from 'src/external-modules/invoiceflow/invoiceflow.service';
 import { InvoiceFlowInvoiceData } from 'src/external-modules/invoiceflow/generate-invoice.type';
 import { UpdateableOrderModel } from 'src/internal-modules/external-interface-handlers/database/order-db-handler/types';
+import { GeneratePrimaryNutshellEntityReturn } from 'src/internal-modules/external-interface-handlers/crm/types/returns';
 
 @Injectable()
 export class AdminInternalInterfaceService {
@@ -124,7 +125,7 @@ export class AdminInternalInterfaceService {
      * Sentry guard so I don't mess up again
      */
 
-    await this.orderDbHandler.updateOne({ orderId, updates: result });
+    await this.orderDbHandler.updateOne({ orderId, updates: result as any });
     return result;
   }
 
@@ -169,15 +170,29 @@ export class AdminInternalInterfaceService {
     //     return updatedResult;
     //   }),
     // );
-    const promiseResults = [];
+    const promiseResults: any[] = [];
     for (const internalOrder of internalOrders) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const result = await this.generateCrmEntity({ internalOrder, account });
-      const updatedResult = await this.orderDbHandler.updateOne({
-        orderId: internalOrder.id,
-        updates: result,
-      });
-      return updatedResult;
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const result = await this.generateCrmEntity({ internalOrder, account });
+        // const updatedResult =
+        await this.orderDbHandler.updateOne({
+          orderId: internalOrder.id,
+          updates: result as any,
+        });
+        // return updatedResult;
+
+        promiseResults.push({
+          id: result.name,
+          invalidKeys: result?.invalidKeys,
+        });
+      } catch (err) {
+        promiseResults.push({
+          id: internalOrder.crmId,
+          status: 'FAILED',
+          reason: (err as any).message,
+        });
+      }
     }
 
     const res = {
@@ -300,7 +315,7 @@ export class AdminInternalInterfaceService {
     const { ref } = account;
     const { id: orderId } = internalOrder;
     const ezManageOrder = await this.getEzManageOrder({ orderId, ref });
-    await this.orderService.generateCRMEntityFromOrder({
+    const result = await this.orderService.generateCRMEntityFromOrder({
       account,
       ezManageOrder,
     });
@@ -309,7 +324,7 @@ export class AdminInternalInterfaceService {
       await this.invoiceFlowService.generateInvoice(data);
     }
 
-    return 'TURN CRM GENERATOR BACK ON' as any;
+    return { name: ezManageOrder.orderNumber, ...result };
   }
 
   private async generateInvoice({

@@ -7,4 +7,5 @@ export interface IH4HCreateLeadCustomFields {
   'Special Used'?: string;
   'Do they cater?'?: string;
   'Does this company do gifting?'?: string;
+  'Date Order Placed'?: string; // Mon DD, YYYY
 }

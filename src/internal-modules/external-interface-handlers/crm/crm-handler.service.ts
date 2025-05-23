@@ -16,7 +16,7 @@ export class CrmHandlerService {
   /**
    * Need to think about a supertype
    */
-  async generateCRMEntity({
+  async generateCRMEntity<T>({
     account,
     order,
   }: {
@@ -25,13 +25,14 @@ export class CrmHandlerService {
     /**
      * @TODO fix return type
      */
-  }): Promise<any> {
+  }): Promise<T> {
     switch (account.crm) {
       case 'NUTSHELL':
-        return this.nutshellApiHandler.generatePrimaryEntity({
+        const result = await this.nutshellApiHandler.generatePrimaryEntity({
           account,
           order,
         });
+        return result as T;
       default:
         const err = new CrmError('CRM not found for generateCRMEntity');
         Sentry.captureException(err);

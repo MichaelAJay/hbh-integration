@@ -5,8 +5,9 @@ import { ICreateLeadReturn } from 'src/external-modules/nutshell-api/interfaces/
  */
 export type GeneratePrimaryNutshellEntityReturn = Omit<
   ICreateLeadReturn,
-  'id' | 'products'
+  'products'
 > & {
   crmId: string;
   isSubtotalMatch?: boolean;
+  invalidKeys: string[];
 };

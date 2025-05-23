@@ -17,6 +17,7 @@ import * as Sentry from '@sentry/node';
 import { IEzManageOrder } from 'src/external-modules/ezmanage-api/interfaces/gql/responses';
 import { ACCOUNT_REF } from '../external-interface-handlers/database/account-db-handler/types';
 import { OrderHelperService } from './order-helper.service';
+import { GeneratePrimaryNutshellEntityReturn } from '../external-interface-handlers/crm/types/returns';
 
 @Injectable()
 export class OrderService {
@@ -69,6 +70,7 @@ export class OrderService {
       status,
       crmEntity,
       catererName,
+      occurredAt,
     });
 
     await this.orderDbService.create({ orderId, data });
@@ -81,12 +83,12 @@ export class OrderService {
   }: {
     account: IAccountModelWithId;
     ezManageOrder: IEzManageOrder;
-  }): Promise<any> {
+  }): Promise<GeneratePrimaryNutshellEntityReturn | undefined> {
     /**
      * Create Nutshell Lead
      */
     const crmEntity = await this.crmHandler
-      .generateCRMEntity({
+      .generateCRMEntity<GeneratePrimaryNutshellEntityReturn>({
         account,
         order: ezManageOrder,
       })
@@ -101,9 +103,9 @@ export class OrderService {
     if (crmEntity === undefined) return crmEntity;
 
     if (
-      typeof crmEntity.id === 'string' &&
-      typeof crmEntity.isSubtotalMatch === 'boolean' &&
-      crmEntity.isSubtotalMatch === false
+      typeof crmEntity?.id === 'string' &&
+      typeof crmEntity?.isSubtotalMatch === 'boolean' &&
+      crmEntity?.isSubtotalMatch === false
     ) {
       const { crmTag } = H4HWarnings.SUBTOTAL_MISMATCH;
 

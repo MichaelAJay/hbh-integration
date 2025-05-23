@@ -29,28 +29,6 @@ export class NutshellApiHandlerHelperService {
           account,
         });
 
-        if (invalidKeys.length > 0) {
-          Sentry.withScope((scope) => {
-            scope.setExtras({
-              service: 'nutshellApiHandler',
-              method: 'createLead',
-              case: 'H4H',
-              args: {
-                account,
-                order,
-              },
-            });
-            Sentry.captureMessage(
-              `${
-                order.orderNumber
-              } - Invalid keys from outputH4HOrderToCrm: ${invalidKeys.join(
-                ', ',
-              )}`,
-              'warning',
-            );
-          });
-        }
-
         const requiredTags = account.newLeadTags
           ? account.newLeadTags
               .filter((tag) => tag.isRequired)
@@ -72,7 +50,14 @@ export class NutshellApiHandlerHelperService {
           products,
         });
 
-        return { crmId: id, description, isSubtotalMatch, tags };
+        return {
+          id,
+          crmId: id,
+          description,
+          isSubtotalMatch,
+          tags,
+          invalidKeys,
+        };
       case 'ADMIN':
       default:
         const err = new CrmError(`Invalid ref ${ref}`);
